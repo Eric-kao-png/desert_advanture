@@ -30,7 +30,7 @@ public class GameSession implements ExplorationCallbacks {
     private int playerX;
     private int playerY;
     private GameplayMode mode = GameplayMode.EXPLORE_IDLE;
-    private String pendingMessage;
+    private final MessageFeed messageFeed = new MessageFeed();
     private float stormTimer;
     private float scrollOffset;
     private boolean bossAvailableThisCycle;
@@ -56,7 +56,7 @@ public class GameSession implements ExplorationCallbacks {
         stepBudget.resetForCycle(playerStats);
         map.revealAround(getPlayerGridPos());
         mode = GameplayMode.EXPLORE_IDLE;
-        pendingMessage = null;
+        messageFeed.clear();
         bossAvailableThisCycle = false;
     }
 
@@ -147,12 +147,8 @@ public class GameSession implements ExplorationCallbacks {
         return (float) Math.hypot(playerX, playerY);
     }
 
-    public String getPendingMessage() {
-        return pendingMessage;
-    }
-
-    public void clearPendingMessage() {
-        pendingMessage = null;
+    public MessageFeed getMessageFeed() {
+        return messageFeed;
     }
 
     public float getStormTimer() {
@@ -180,7 +176,7 @@ public class GameSession implements ExplorationCallbacks {
             return false;
         }
         if (!map.canEnter(destination)) {
-            pendingMessage = "Cannot enter this tile.";
+            setPendingMessage("Cannot enter this tile.");
             return false;
         }
         if (destination.equals(getPlayerGridPos())) {
@@ -191,7 +187,7 @@ public class GameSession implements ExplorationCallbacks {
         GridPos start = getPlayerGridPos();
         StraightLinePath.Plan plan = StraightLinePath.plan(map, start, destination);
         if (plan == null) {
-            pendingMessage = "Straight path is blocked.";
+            setPendingMessage("Straight path is blocked.");
             return false;
         }
         travel.start(plan, start);
@@ -200,7 +196,7 @@ public class GameSession implements ExplorationCallbacks {
 
     @Override
     public void setPendingMessage(String message) {
-        pendingMessage = message;
+        messageFeed.push(message);
     }
 
     @Override
@@ -224,7 +220,7 @@ public class GameSession implements ExplorationCallbacks {
         map.revealAround(getPlayerGridPos());
         permanentProgress.save();
         mode = GameplayMode.EXPLORE_IDLE;
-        pendingMessage = "Sandstorm... You returned to camp center.";
+        setPendingMessage("Sandstorm... You returned to camp center.");
         bossAvailableThisCycle = false;
     }
 
@@ -235,7 +231,7 @@ public class GameSession implements ExplorationCallbacks {
                 tile.setCycleCleared(true);
                 map.markCycleModified(tile.getPosition());
                 playerStats.addExperience(20);
-                pendingMessage = "Battle won!";
+                setPendingMessage("Battle won!");
                 if (travel.hasActivePlan()) {
                     travel.resume();
                 } else {

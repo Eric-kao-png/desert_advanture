@@ -59,6 +59,14 @@ public final class GameConfig {
     public static final int MAP_VIEW_TILES = 51;
     public static final int MAP_PAN_STEP = 8;
 
+    /** Event / feedback lines stacked above the bottom-left control hint. */
+    public static final int MESSAGE_FEED_MAX_LINES = 5;
+    public static final float MESSAGE_FEED_DISPLAY_SECONDS = 4f;
+    public static final float MESSAGE_FEED_FADE_SECONDS = 1f;
+    public static final float MESSAGE_FEED_X = 16f;
+    public static final float MESSAGE_FEED_BASE_Y = 66f;
+    public static final float MESSAGE_FEED_LINE_HEIGHT = 22f;
+
     public static final float PLAYER_WIDTH = 48f;
     public static final float PLAYER_HEIGHT = 72f;
     public static final float ENEMY_WIDTH = 40f;

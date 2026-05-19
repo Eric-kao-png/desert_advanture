@@ -29,8 +29,6 @@ public class GameplayScreen extends ScreenAdapter {
     private BitmapFont font;
     private boolean combatInitialized;
     private GameplayMode lastMode = GameplayMode.EXPLORE_IDLE;
-    private float messageTimer;
-
     public GameplayScreen(DesertAdventure game) {
         this.game = game;
     }
@@ -58,10 +56,7 @@ public class GameplayScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         update(delta);
-        float feedback = input.handle();
-        if (feedback > 0f) {
-            messageTimer = feedback;
-        }
+        input.handle();
         draw(delta);
     }
 
@@ -69,13 +64,7 @@ public class GameplayScreen extends ScreenAdapter {
         GameplayMode mode = session.getMode();
         detectModeTransitions(mode);
         ensureCombatInitialized(mode);
-
-        if (messageTimer > 0f) {
-            messageTimer -= delta;
-        }
-        if (session.getPendingMessage() != null && messageTimer <= 0f) {
-            messageTimer = 4f;
-        }
+        session.getMessageFeed().update(delta);
 
         switch (mode) {
             case RUNNING -> {
@@ -173,7 +162,7 @@ public class GameplayScreen extends ScreenAdapter {
         }
 
         batch.begin();
-        hud.draw(batch, session, mode, messageTimer);
+        hud.draw(batch, session, mode);
         batch.end();
     }
 

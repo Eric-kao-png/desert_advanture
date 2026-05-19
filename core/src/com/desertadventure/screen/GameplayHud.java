@@ -9,6 +9,9 @@ import com.desertadventure.config.GameConfig;
 import com.desertadventure.map.model.GridPos;
 import com.desertadventure.state.GameSession;
 import com.desertadventure.state.GameplayMode;
+import com.desertadventure.state.MessageFeed;
+
+import java.util.Iterator;
 
 /** HUD text for exploration, combat, and transient messages. */
 public class GameplayHud {
@@ -18,7 +21,7 @@ public class GameplayHud {
         this.font = font;
     }
 
-    public void draw(SpriteBatch batch, GameSession session, GameplayMode mode, float messageTimer) {
+    public void draw(SpriteBatch batch, GameSession session, GameplayMode mode) {
         font.setColor(Color.WHITE);
 
         float top = GameConfig.VIEW_HEIGHT;
@@ -35,7 +38,7 @@ public class GameplayHud {
         font.draw(batch, String.format("Distance from origin: %.1f", session.getDistanceFromOrigin()), 16, top - 112);
 
         drawModeHint(batch, session, mode);
-        drawPendingMessage(batch, session, messageTimer);
+        drawMessageFeed(batch, session.getMessageFeed());
     }
 
     private void drawModeHint(SpriteBatch batch, GameSession session, GameplayMode mode) {
@@ -61,15 +64,22 @@ public class GameplayHud {
         }
     }
 
-    private void drawPendingMessage(SpriteBatch batch, GameSession session, float messageTimer) {
-        String message = session.getPendingMessage();
-        if (message != null && messageTimer > 0f) {
-            font.setColor(Color.YELLOW);
-            drawCentered(batch, message, GameConfig.VIEW_HEIGHT * 0.2f);
-            font.setColor(Color.WHITE);
-        } else if (messageTimer <= 0f) {
-            session.clearPendingMessage();
+    private void drawMessageFeed(SpriteBatch batch, MessageFeed feed) {
+        if (feed.size() == 0) {
+            return;
         }
+        int index = 0;
+        for (Iterator<MessageFeed.Line> it = feed.newestFirst(); it.hasNext(); index++) {
+            MessageFeed.Line line = it.next();
+            float alpha = line.getAlpha();
+            if (alpha <= 0f) {
+                continue;
+            }
+            font.setColor(1f, 1f, 0f, alpha);
+            float y = GameConfig.MESSAGE_FEED_BASE_Y + index * GameConfig.MESSAGE_FEED_LINE_HEIGHT;
+            font.draw(batch, line.getText(), GameConfig.MESSAGE_FEED_X, y);
+        }
+        font.setColor(Color.WHITE);
     }
 
     private static CombatEntity findBoss(GameSession session) {

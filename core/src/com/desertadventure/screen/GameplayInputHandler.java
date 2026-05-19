@@ -26,12 +26,12 @@ public class GameplayInputHandler {
         this.mapInput = mapInput;
     }
 
-    /** @return seconds to show feedback message, or 0 if none */
-    public float handle() {
+    public void handle() {
         GameplayMode mode = session.getMode();
 
         if (mode == GameplayMode.MAP_OVERLAY) {
-            return handleMapOverlay();
+            handleMapOverlay();
+            return;
         }
 
         if (mode == GameplayMode.EXPLORE_IDLE && Gdx.input.isKeyJustPressed(Input.Keys.M)) {
@@ -41,7 +41,6 @@ public class GameplayInputHandler {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             game.setScreen(new MainMenuScreen(game));
         }
-        return 0f;
     }
 
     public void updateMapHover() {
@@ -81,18 +80,16 @@ public class GameplayInputHandler {
         }
     }
 
-    private float handleMapOverlay() {
+    private void handleMapOverlay() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             session.setMode(GameplayMode.EXPLORE_IDLE);
-            return 0f;
+            return;
         }
         panMapView();
         updateMapHover();
         if (Gdx.input.justTouched() && mapInput.getHoveredGridPos() != null) {
             session.trySelectDestination(mapInput.getHoveredGridPos());
-            return 3f;
         }
-        return 0f;
     }
 
     private void panMapView() {
