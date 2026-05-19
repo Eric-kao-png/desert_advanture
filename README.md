@@ -7,10 +7,12 @@ A LibGDX desert roguelite prototype: 2D grid exploration, side-scrolling travel 
 | Key | Action |
 |-----|--------|
 | Enter | Start from main menu |
-| M | Open map (while exploring) |
+| M | Open map (while exploring); close map (while map is open) |
+| N | Open inventory (while exploring); close inventory (while inventory is open) |
 | Arrow keys | Pan map view (while map is open) |
 | Mouse click | Select destination on map |
-| Esc | Close map / return to main menu |
+| Esc | Close map or inventory (while open); return to main menu (while exploring) |
+| X (top-right) | Close map or inventory (while open) |
 | WASD / Arrow keys | Combat movement |
 | J / K / L | Attack / Skill / Ultimate |
 

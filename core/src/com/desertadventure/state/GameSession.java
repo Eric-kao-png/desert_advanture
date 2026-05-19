@@ -134,6 +134,12 @@ public class GameSession implements ExplorationCallbacks {
         mapTravel.openOverlay();
     }
 
+    public void closeMapOverlay() {
+        if (mode == GameplayMode.MAP_OVERLAY) {
+            mode = GameplayMode.EXPLORE_IDLE;
+        }
+    }
+
     public void openCharacterOverlay() {
         if (mode == GameplayMode.RUNNING) {
             travel.stopForMap();

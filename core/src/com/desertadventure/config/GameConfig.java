@@ -99,6 +99,12 @@ public final class GameConfig {
     public static final double PLAYER_BOB_FREQUENCY = 0.02;
     public static final float STORM_OVERLAY_ALPHA_SCALE = 0.85f;
     public static final float MAP_OVERLAY_DIM_ALPHA = 0.65f;
+    /** Top-right dismiss control for map and inventory overlays (32×32 sprites). */
+    public static final float OVERLAY_CLOSE_SIZE = 32f;
+    public static final float OVERLAY_CLOSE_MARGIN = 20f;
+    public static final String OVERLAY_CLOSE_TEXTURE = "sprites/button_close.png";
+    public static final String OVERLAY_CLOSE_TEXTURE_HOVERED = "sprites/button_close_hovered.png";
+    public static final String OVERLAY_CLOSE_TEXTURE_PRESSED = "sprites/button_close_mark.png";
     public static final float CHARACTER_PANEL_WIDTH = 920f;
     public static final float CHARACTER_PANEL_HEIGHT = 520f;
     public static final float CHARACTER_PANEL_LINE_HEIGHT = 32f;

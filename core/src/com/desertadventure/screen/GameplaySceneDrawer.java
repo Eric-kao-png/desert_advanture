@@ -73,14 +73,27 @@ final class GameplaySceneDrawer {
     private void drawMapOverlay(SpriteBatch batch, float delta) {
         drawExplore(batch, false, delta);
         MapOverlayLayout layout = session.createMapOverlayLayout();
-        renderer.renderMapOverlay(session, layout, input.getHoveredGridPos());
+        renderer.renderMapOverlay(
+                session,
+                layout,
+                input.getHoveredGridPos(),
+                batch,
+                input.isMapDismissHovered(),
+                input.isMapDismissPressed());
     }
 
     private void drawCharacterOverlay(SpriteBatch batch, float delta) {
         input.updateCharacterHover();
         drawExplore(batch, false, delta);
         renderer.renderCharacterOverlay(
-                batch, session, uiFont, input.getCharacterLayout(), input.getCharacterInput(), delta);
+                batch,
+                session,
+                uiFont,
+                input.getCharacterLayout(),
+                input.getCharacterInput(),
+                delta,
+                input.isCharacterDismissHovered(),
+                input.isCharacterDismissPressed());
     }
 
     private void drawCombat(SpriteBatch batch, float delta, GameplayMode mode) {

@@ -3,6 +3,7 @@ package com.desertadventure.screen;
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.item.Inventory;
 import com.desertadventure.item.ItemType;
+import com.desertadventure.presentation.OverlayCloseButton;
 
 /** Pointer state for backpack grid: tap-to-detail and drag-to-reorder. */
 public class CharacterOverlayInput {
@@ -10,6 +11,7 @@ public class CharacterOverlayInput {
     private int selectedSlot = -1;
     private boolean hoveredUse;
     private boolean hoveredClose;
+    private boolean hoveredOverlayDismiss;
 
     private int pointerDownSlot = -1;
     private float pointerDownX;
@@ -94,6 +96,13 @@ public class CharacterOverlayInput {
     }
 
     public void updateHover(CharacterOverlayLayout layout, float worldX, float worldY) {
+        hoveredOverlayDismiss = OverlayCloseButton.contains(worldX, worldY);
+        if (hoveredOverlayDismiss) {
+            hoveredSlot = -1;
+            hoveredUse = false;
+            hoveredClose = false;
+            return;
+        }
         hoveredSlot = layout.slotAt(worldX, worldY);
         hoveredUse = layout.useButtonContains(worldX, worldY);
         hoveredClose = layout.closeButtonContains(worldX, worldY);
@@ -109,6 +118,10 @@ public class CharacterOverlayInput {
 
     public boolean isHoveredClose() {
         return hoveredClose;
+    }
+
+    public boolean isHoveredOverlayDismiss() {
+        return hoveredOverlayDismiss;
     }
 
     public boolean isDragging() {

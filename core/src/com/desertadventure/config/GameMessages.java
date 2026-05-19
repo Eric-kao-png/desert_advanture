@@ -49,10 +49,10 @@ public final class GameMessages {
         return "Found nothing on this spot.";
     }
 
-    public static final String HUD_EXPLORE_IDLE = "[M] Map  [C] Character";
-    public static final String HUD_MAP_OVERLAY = "Click destination | Arrows: pan | [Esc] Cancel";
-    public static final String HUD_CHARACTER_OVERLAY = "Drag items to reorder | Click for details | [Esc] or [C] Close";
-    public static final String HUD_RUNNING = "Moving... | [M] Map  [C] Character";
+    public static final String HUD_EXPLORE_IDLE = "[M] Map  [N] Inventory";
+    public static final String HUD_MAP_OVERLAY = "Click destination | Arrows: pan | [X] or [M] or [Esc] Close";
+    public static final String HUD_CHARACTER_OVERLAY = "Drag items to reorder | Click for details | [X] or [N] or [Esc] Close";
+    public static final String HUD_RUNNING = "Moving... | [M] Map  [N] Inventory";
     public static final String HUD_COMBAT = "WASD: Move | J: Attack K: Skill L: Ultimate";
     public static final String HUD_STORM_TITLE = "Sandstorm!";
 

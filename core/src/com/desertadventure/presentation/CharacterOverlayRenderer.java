@@ -20,6 +20,7 @@ import com.desertadventure.state.GameSession;
 /** Coordinates character panel sub-renderers. */
 public class CharacterOverlayRenderer {
     private final ShapeRenderer shapes = new ShapeRenderer();
+    private final OverlayCloseButton closeButton;
     private final ItemSpriteRegistry itemSprites = new ItemSpriteRegistry();
     private final CharacterInventoryView inventoryView;
     private final CharacterStatsView statsView = new CharacterStatsView();
@@ -27,7 +28,8 @@ public class CharacterOverlayRenderer {
     private final GlyphLayout glyphLayout = new GlyphLayout();
     private float animTime;
 
-    public CharacterOverlayRenderer() {
+    public CharacterOverlayRenderer(OverlayCloseButton closeButton) {
+        this.closeButton = closeButton;
         inventoryView = new CharacterInventoryView(itemSprites);
         detailView = new CharacterItemDetailView(itemSprites);
     }
@@ -42,7 +44,9 @@ public class CharacterOverlayRenderer {
             BitmapFont font,
             CharacterOverlayLayout layout,
             CharacterOverlayInput input,
-            float delta) {
+            float delta,
+            boolean hoveredDismiss,
+            boolean pressedDismiss) {
         animTime += delta;
         boolean showDetail = shouldShowDetail(session, input) && !input.isDragging();
 
@@ -65,6 +69,10 @@ public class CharacterOverlayRenderer {
             font.setColor(Color.WHITE);
             batch.end();
         }
+
+        batch.begin();
+        closeButton.draw(batch, hoveredDismiss, pressedDismiss);
+        batch.end();
     }
 
     public void dispose() {

@@ -23,6 +23,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
     private final SkyBackdrop sky;
     private final ParallaxBackground parallax;
     private final BackgroundHouseSpawner houses;
+    private final OverlayCloseButton overlayCloseButton = new OverlayCloseButton();
     private final MapOverlayRenderer mapOverlay;
     private final CharacterOverlayRenderer characterOverlay;
 
@@ -32,8 +33,8 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         sky = new SkyBackdrop();
         parallax = new ParallaxBackground(desertSprites.get(DesertSpriteAtlas.FLOOR_TILE));
         houses = new BackgroundHouseSpawner(desertSprites);
-        mapOverlay = new MapOverlayRenderer();
-        characterOverlay = new CharacterOverlayRenderer();
+        mapOverlay = new MapOverlayRenderer(overlayCloseButton);
+        characterOverlay = new CharacterOverlayRenderer(overlayCloseButton);
     }
 
     @Override
@@ -42,6 +43,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         sky.dispose();
         parallax.dispose();
         desertSprites.dispose();
+        overlayCloseButton.dispose();
         mapOverlay.dispose();
         characterOverlay.dispose();
     }
@@ -93,8 +95,14 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         shapes.end();
     }
 
-    public void renderMapOverlay(GameSession session, MapOverlayLayout layout, GridPos hoverCell) {
-        mapOverlay.render(session, layout, hoverCell);
+    public void renderMapOverlay(
+            GameSession session,
+            MapOverlayLayout layout,
+            GridPos hoverCell,
+            SpriteBatch batch,
+            boolean hoveredDismiss,
+            boolean pressedDismiss) {
+        mapOverlay.render(session, layout, hoverCell, batch, hoveredDismiss, pressedDismiss);
     }
 
     public void renderCharacterOverlay(
@@ -103,8 +111,10 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
             BitmapFont font,
             com.desertadventure.screen.CharacterOverlayLayout layout,
             com.desertadventure.screen.CharacterOverlayInput input,
-            float delta) {
-        characterOverlay.render(batch, session, font, layout, input, delta);
+            float delta,
+            boolean hoveredDismiss,
+            boolean pressedDismiss) {
+        characterOverlay.render(batch, session, font, layout, input, delta, hoveredDismiss, pressedDismiss);
     }
 
     public void renderStorm(float progress) {

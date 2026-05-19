@@ -8,6 +8,7 @@ import com.desertadventure.map.model.GridPos;
 import com.desertadventure.map.view.MapOverlayInput;
 import com.desertadventure.map.view.MapOverlayLayout;
 import com.desertadventure.presentation.GameViewport;
+import com.desertadventure.presentation.OverlayCloseButton;
 import com.desertadventure.state.GameSession;
 import com.desertadventure.state.GameplayMode;
 
@@ -55,7 +56,7 @@ public class GameplayInputHandler {
             session.openMapOverlay();
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.C) && mode.canOpenCharacter()) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.N) && mode.canOpenCharacter()) {
             session.openCharacterOverlay();
         }
 
@@ -66,7 +67,7 @@ public class GameplayInputHandler {
 
     private void handleCharacterOverlay() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
-                || Gdx.input.isKeyJustPressed(Input.Keys.C)) {
+                || Gdx.input.isKeyJustPressed(Input.Keys.N)) {
             characterInput.clearSelection();
             characterInput.resetPointer();
             session.closeCharacterOverlay();
@@ -93,6 +94,12 @@ public class GameplayInputHandler {
     }
 
     private void handleCharacterTouchDown(float worldX, float worldY) {
+        if (OverlayCloseButton.contains(worldX, worldY)) {
+            characterInput.clearSelection();
+            characterInput.resetPointer();
+            session.closeCharacterOverlay();
+            return;
+        }
         characterInput.resetPointer();
         if (characterInput.hasSelection()) {
             if (characterLayout.closeButtonContains(worldX, worldY)) {
@@ -192,15 +199,40 @@ public class GameplayInputHandler {
     }
 
     private void handleMapOverlay() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            session.setMode(GameplayMode.EXPLORE_IDLE);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
+                || Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+            session.closeMapOverlay();
             return;
         }
+        float worldX = viewport.pointerWorldX();
+        float worldY = viewport.pointerWorldY();
         panMapView();
         updateMapHover();
-        if (Gdx.input.justTouched() && mapInput.getHoveredGridPos() != null) {
-            session.trySelectDestination(mapInput.getHoveredGridPos());
+        if (Gdx.input.justTouched()) {
+            if (OverlayCloseButton.contains(worldX, worldY)) {
+                session.closeMapOverlay();
+                return;
+            }
+            if (mapInput.getHoveredGridPos() != null) {
+                session.trySelectDestination(mapInput.getHoveredGridPos());
+            }
         }
+    }
+
+    public boolean isMapDismissHovered() {
+        return mapInput.isHoveredDismiss();
+    }
+
+    public boolean isMapDismissPressed() {
+        return Gdx.input.isTouched() && mapInput.isHoveredDismiss();
+    }
+
+    public boolean isCharacterDismissHovered() {
+        return characterInput.isHoveredOverlayDismiss();
+    }
+
+    public boolean isCharacterDismissPressed() {
+        return Gdx.input.isTouched() && characterInput.isHoveredOverlayDismiss();
     }
 
     private void panMapView() {

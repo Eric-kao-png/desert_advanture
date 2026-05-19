@@ -73,7 +73,7 @@ Exploration uses a large square grid world (**501×501** cells) with world coord
 | Mode | Role |
 |------|------|
 | `EXPLORE_IDLE` | Standing; **M** opens overlay |
-| `MAP_OVERLAY` | 51×51 window; click destination; arrows pan; **Esc** closes |
+| `MAP_OVERLAY` | 51×51 window; click destination; arrows pan; **M** or **Esc** closes |
 | `RUNNING` | `PathRunner` animating; `updateRunning` consumes steps + encounters |
 | `COMBAT` / `BOSS_COMBAT` | Movement paused; `activeMovePlan` may remain for resume |
 | `STORM` | Step budget exhausted; cycle reset after fade |

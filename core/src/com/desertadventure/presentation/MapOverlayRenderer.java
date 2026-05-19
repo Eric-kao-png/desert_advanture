@@ -1,6 +1,7 @@
 package com.desertadventure.presentation;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.desertadventure.config.GameConfig;
@@ -13,12 +14,23 @@ import com.desertadventure.state.GameSession;
 /** Map grid overlay while selecting a destination. */
 public class MapOverlayRenderer {
     private final ShapeRenderer shapes = new ShapeRenderer();
+    private final OverlayCloseButton closeButton;
+
+    public MapOverlayRenderer(OverlayCloseButton closeButton) {
+        this.closeButton = closeButton;
+    }
 
     public void setProjection(Matrix4 projection) {
         shapes.setProjectionMatrix(projection);
     }
 
-    public void render(GameSession session, MapOverlayLayout layout, GridPos hoverCell) {
+    public void render(
+            GameSession session,
+            MapOverlayLayout layout,
+            GridPos hoverCell,
+            SpriteBatch batch,
+            boolean hoveredDismiss,
+            boolean pressedDismiss) {
         GameMap map = session.getMap();
         float cellSize = layout.getCellSize();
         int viewTiles = layout.getViewTiles();
@@ -60,6 +72,10 @@ public class MapOverlayRenderer {
                     cellSize - GameConfig.MAP_CELL_INSET, cellSize - GameConfig.MAP_CELL_INSET);
         }
         shapes.end();
+
+        batch.begin();
+        closeButton.draw(batch, hoveredDismiss, pressedDismiss);
+        batch.end();
     }
 
     public void dispose() {
