@@ -32,7 +32,7 @@ macOS automatically adds `-XstartOnFirstThread` (required by LWJGL3).
 
 - [Movement & map logic](docs/Movement-and-Map-Logic.md) — path planning, steps, mid-path encounters, file index
 - Parallax backgrounds: `core/assets/backgrounds/parallax_{back,middle,forward}.png`
-- Sprite sheet: `core/assets/sprites/desert_sheet.png` + `core/assets/data/desert_sprite_sheet.json`
+- Sprite sheet: `core/assets/sprites/desert_parallax_sheet.png` + `core/assets/data/desert_sprite_sheet.json`
 
 ## Goal
 

@@ -42,7 +42,7 @@ GameplayScreen
 
 `GameplayRenderer.drawParallaxBackground` **必須**在已 `SpriteBatch.begin()` 的狀態下呼叫。順序固定為：
 
-0. **sky** — 全螢幕米黃底色（`GameConfig.SKY_BASE_COLOR`）+ 固定太陽 `sprites/Sun.png`（`SkyBackdrop`）
+0. **sky** — 全螢幕米黃底色（`GameConfig.SKY_BASE_COLOR`）+ 固定太陽 `sprites/sun.png`（`SkyBackdrop`）
 1. **back** — `backgrounds/parallax_back.png`
 2. **houses** — `desert_house_1/2/3`（`BackgroundHouseSpawner`）
 3. **middle** — `backgrounds/parallax_middle.png`
@@ -87,7 +87,7 @@ GameplayScreen
 | 常數 | 值 | 用途 |
 |------|-----|------|
 | `SKY_BASE_COLOR` | RGB ≈ `(245, 230, 199)` | 全屏米黃；`GameplayScreen` GL clear 同色 |
-| `SUN_TEXTURE_PATH` | `sprites/Sun.png` | 32×32 原圖 |
+| `SUN_TEXTURE_PATH` | `sprites/sun.png` | 32×32 原圖 |
 | `SUN_DISPLAY_SIZE` | `112` | 螢幕繪製邊長 |
 | `SUN_X` / `SUN_Y` | 左上 + `SUN_VERTICAL_OFFSET`（**-190**） | 太陽左下角座標，**不捲動** |
 
@@ -150,7 +150,7 @@ scrollProps    += base * HOUSE_PROP_PARALLAX_MULT // (0.25+0.55)/2 = 0.4
 | Back | `core/assets/backgrounds/parallax_back.png` |
 | Middle | `core/assets/backgrounds/parallax_middle.png` |
 | Forward | `core/assets/backgrounds/parallax_forward.png` |
-| Floor | `sprites/desert_sheet.png` 內 `floor_tile`（見 JSON） |
+| Floor | `sprites/desert_parallax_sheet.png` 內 `floor_tile`（見 JSON） |
 
 載入時 `TextureFilter.Linear`。生命週期：`GameplayRenderer.dispose()` → `parallax.dispose()`（三張 PNG；地板 region 的獨立 Texture 由 `DesertSpriteAtlas` 釋放）。
 
@@ -331,7 +331,7 @@ session.addScrollOffset(50f * remaining);
 | 視差後景 | `core/assets/backgrounds/parallax_back.png` |
 | 視差中景 | `core/assets/backgrounds/parallax_middle.png` |
 | 視差前景 | `core/assets/backgrounds/parallax_forward.png` |
-| 精靈圖集 | `core/assets/sprites/desert_sheet.png` |
+| 精靈圖集 | `core/assets/sprites/desert_parallax_sheet.png` |
 | 裁切定義 | `core/assets/data/desert_sprite_sheet.json` |
 
 ---

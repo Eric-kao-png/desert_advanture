@@ -8,7 +8,7 @@ public final class GameConfig {
 
     /** Warm beige sky behind parallax; also used for GL clear. */
     public static final Color SKY_BASE_COLOR = new Color(0.96f, 0.90f, 0.78f, 1f);
-    public static final String SUN_TEXTURE_PATH = "sprites/Sun.png";
+    public static final String SUN_TEXTURE_PATH = "sprites/sun.png";
     /** Drawn size for 32×32 sun sprite (screen space). */
     public static final float SUN_DISPLAY_SIZE = 112f;
     /** Sun bottom-left corner (fixed, does not scroll). */
@@ -119,6 +119,29 @@ public final class GameConfig {
     public static final float INVENTORY_DETAIL_SPRITE_SIZE = 96f;
     public static final float INVENTORY_BUTTON_WIDTH = 120f;
     public static final float INVENTORY_BUTTON_HEIGHT = 36f;
+    public static final float INVENTORY_BUTTON_GAP = 16f;
+    public static final float INVENTORY_SLOT_ICON_SCALE = 0.88f;
+    public static final float INVENTORY_DRAG_ICON_SCALE = 0.92f;
+    public static final float INVENTORY_DRAG_ICON_ALPHA = 0.9f;
+    public static final float CHARACTER_DETAIL_DIM_ALPHA = 0.55f;
+    public static final float CHARACTER_STAT_BAR_INSET = 12f;
+    public static final float CHARACTER_TITLE_LINE_MULT = 1.15f;
+    public static final float CHARACTER_SECTION_LABEL_OFFSET_MULT = 0.25f;
+    public static final float CHARACTER_INVENTORY_LABEL_GAP_MULT = 1.05f;
+    public static final float CHARACTER_STAT_LABEL_ABOVE_BAR_MULT = 0.85f;
+    public static final float CHARACTER_COMBAT_BLOCK_MULT = 1.95f;
+    public static final float CHARACTER_PORTRAIT_TOP_MULT = 0.35f;
+    public static final float CHARACTER_COLUMN_DIVIDER_WIDTH = 2f;
+    public static final float CHARACTER_COLUMN_DIVIDER_TOP_MULT = 0.35f;
+    public static final float CHARACTER_DETAIL_BUTTON_ROW_Y = 24f;
+    public static final float CHARACTER_DETAIL_TEXT_PAD = 20f;
+    public static final float CHARACTER_DETAIL_SPRITE_BOTTOM_OFFSET = 56f;
+    public static final float CHARACTER_DETAIL_NAME_Y_OFFSET = 132f;
+    public static final float CHARACTER_DETAIL_DESC_Y_OFFSET = 168f;
+    public static final float CHARACTER_BAR_VALUE_TEXT_PAD = 6f;
+    public static final float CHARACTER_SLOT_INSET = 2f;
+    public static final float CHARACTER_SLOT_BORDER_WIDTH = 2f;
+    public static final float HUD_STATUS_TOP_OFFSET = 16f;
     public static final int ITEM_SPRITE_FRAME_SIZE = 64;
     public static final float ITEM_SPRITE_FPS = 12f;
     public static final float MAP_CELL_INSET = 1f;
@@ -160,7 +183,6 @@ public final class GameConfig {
     public static final int ITEM_EXPERIENCE = 10;
 
     /** Chance [0,1] to find an item when entering an ITEM tile (once per cycle per tile). */
-    /** Raised for playtesting; lower before release if desired. */
     public static final float ITEM_TILE_DROP_CHANCE = 0.95f;
     /** Loot weights: health potion, stamina potion, health gem, stamina gem. */
     public static final int[] ITEM_DROP_WEIGHTS = {35, 35, 15, 15};
@@ -179,8 +201,6 @@ public final class GameConfig {
     public static final int PLAYER_LEVEL_DEFENSE_GAIN = 1;
     public static final int PLAYER_LEVEL_STEP_BONUS = 1;
     public static final float PLAYER_LEVEL_EXP_MULTIPLIER = 1.4f;
-    public static final int PLAYER_ITEM_ATTACK_BONUS = 2;
-    public static final int PLAYER_ITEM_STEP_BONUS = 1;
 
     public static final float STORM_FADE_SECONDS = 2f;
 

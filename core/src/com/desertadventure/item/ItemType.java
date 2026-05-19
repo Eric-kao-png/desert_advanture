@@ -32,10 +32,10 @@ public enum ItemType {
 
     public String getSpritePath() {
         return switch (this) {
-            case HEALTH_POTION -> "sprites/potion3.png";
-            case STAMINA_POTION -> "sprites/potion2.png";
-            case HEALTH_GEM -> "sprites/crystal3.png";
-            case STAMINA_GEM -> "sprites/crystal2.png";
+            case HEALTH_POTION -> "sprites/item_health_potion.png";
+            case STAMINA_POTION -> "sprites/item_stamina_potion.png";
+            case HEALTH_GEM -> "sprites/item_health_gem.png";
+            case STAMINA_GEM -> "sprites/item_stamina_gem.png";
         };
     }
 

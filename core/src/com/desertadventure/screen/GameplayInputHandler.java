@@ -73,8 +73,8 @@ public class GameplayInputHandler {
             return;
         }
 
-        float worldX = viewport.toWorldX(Gdx.input.getX(), Gdx.input.getY());
-        float worldY = viewport.toWorldY(Gdx.input.getX(), Gdx.input.getY());
+        float worldX = viewport.pointerWorldX();
+        float worldY = viewport.pointerWorldY();
         boolean pointerDown = Gdx.input.isTouched();
 
         updateCharacterHover();
@@ -143,9 +143,7 @@ public class GameplayInputHandler {
         if (session.getMode() != GameplayMode.CHARACTER_OVERLAY) {
             return;
         }
-        float worldX = viewport.toWorldX(Gdx.input.getX(), Gdx.input.getY());
-        float worldY = viewport.toWorldY(Gdx.input.getX(), Gdx.input.getY());
-        characterInput.updateHover(characterLayout, worldX, worldY);
+        characterInput.updateHover(characterLayout, viewport.pointerWorldX(), viewport.pointerWorldY());
     }
 
     public CharacterOverlayInput getCharacterInput() {
@@ -160,8 +158,8 @@ public class GameplayInputHandler {
         if (session.getMode() != GameplayMode.MAP_OVERLAY) {
             return;
         }
-        float worldX = viewport.toWorldX(Gdx.input.getX(), Gdx.input.getY());
-        float worldY = viewport.toWorldY(Gdx.input.getX(), Gdx.input.getY());
+        float worldX = viewport.pointerWorldX();
+        float worldY = viewport.pointerWorldY();
         MapOverlayLayout layout = session.createMapOverlayLayout();
         mapInput.updateHover(layout, worldX, worldY);
     }

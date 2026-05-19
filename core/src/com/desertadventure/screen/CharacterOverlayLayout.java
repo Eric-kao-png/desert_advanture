@@ -1,157 +1,81 @@
 package com.desertadventure.screen;
 
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.screen.layout.CharacterPanelGeometry;
+import com.desertadventure.screen.layout.CharacterStatsLayout;
+import com.desertadventure.screen.layout.InventoryGridLayout;
+import com.desertadventure.screen.layout.ItemDetailLayout;
 
-/** Three-column character panel: backpack (left), portrait (center), stats (right). */
+/** Hit areas and layout metrics for the character overlay (facade over layout helpers). */
 public class CharacterOverlayLayout {
-    private final float panelX;
-    private final float panelY;
-    private final float panelW;
-    private final float panelH;
-    private final float leftColX;
-    private final float centerColX;
-    private final float rightColX;
-    private final float columnW;
-    private final float contentBottom;
-    private final float headerBottom;
-    private final float gridLeft;
-    private final float gridTop;
-    private final float slotSize;
-    private final float slotGap;
-    private final int cols;
-    private final int slotCount;
+    private final CharacterPanelGeometry panel;
+    private final InventoryGridLayout grid;
+    private final CharacterStatsLayout stats;
+    private final ItemDetailLayout detail;
+    private final float inventoryTitleX;
+    private final float inventoryTitleY;
     private final float portraitX;
     private final float portraitY;
     private final float portraitW;
     private final float portraitH;
-    private final float statsTextX;
-    private final float statsTopY;
-    private final float statBarX;
-    private final float statBarW;
-    private final float statBarH;
-    private final float hpBarBottom;
-    private final float combatSectionY;
-    private final float explorationSectionY;
-    private final float staminaBarBottom;
-    private final float inventoryTitleX;
-    private final float inventoryTitleY;
-    private final float titleY;
-    private final float detailX;
-    private final float detailY;
-    private final float detailW;
-    private final float detailH;
-    private final float useButtonX;
-    private final float useButtonY;
-    private final float closeButtonX;
-    private final float closeButtonY;
-    private final float buttonW;
-    private final float buttonH;
 
     public CharacterOverlayLayout() {
-        panelW = GameConfig.CHARACTER_PANEL_WIDTH;
-        panelH = GameConfig.CHARACTER_PANEL_HEIGHT;
-        panelX = (GameConfig.VIEW_WIDTH - panelW) / 2f;
-        panelY = (GameConfig.VIEW_HEIGHT - panelH) / 2f;
-
-        float pad = GameConfig.CHARACTER_PANEL_PADDING;
-        float colGap = GameConfig.CHARACTER_PANEL_COLUMN_GAP;
-        float contentW = panelW - pad * 2f;
-        columnW = (contentW - colGap * 2f) / 3f;
-
-        leftColX = panelX + pad;
-        centerColX = leftColX + columnW + colGap;
-        rightColX = centerColX + columnW + colGap;
-        contentBottom = panelY + pad;
-
+        panel = new CharacterPanelGeometry();
         float lineH = GameConfig.CHARACTER_PANEL_LINE_HEIGHT;
-        titleY = panelY + panelH - pad;
-        headerBottom = titleY - lineH * 1.15f;
-        inventoryTitleX = leftColX;
-        inventoryTitleY = headerBottom - lineH * 0.25f;
-        statsTextX = rightColX;
-        statsTopY = headerBottom - lineH * 0.25f;
+        inventoryTitleX = panel.leftColX;
+        inventoryTitleY = panel.headerBottom - lineH * GameConfig.CHARACTER_SECTION_LABEL_OFFSET_MULT;
+        grid = new InventoryGridLayout(panel.leftColX, panel.columnW, inventoryTitleY);
+        stats = new CharacterStatsLayout(panel.rightColX, panel.columnW, panel.headerBottom);
+        detail = new ItemDetailLayout(panel.panelX, panel.panelY, panel.panelW, panel.panelH);
 
-        statBarH = GameConfig.CHARACTER_STAT_BAR_HEIGHT;
-        statBarW = columnW - 12f;
-        statBarX = statsTextX;
-        hpBarBottom = statsTopY - lineH * 0.85f - statBarH;
-        combatSectionY = hpBarBottom - GameConfig.CHARACTER_STAT_BAR_SECTION_GAP;
-        explorationSectionY = combatSectionY - lineH * 1.95f;
-        staminaBarBottom = explorationSectionY - lineH * 0.85f - statBarH;
-
-        slotSize = GameConfig.INVENTORY_SLOT_SIZE;
-        slotGap = GameConfig.INVENTORY_SLOT_GAP;
-        cols = GameConfig.INVENTORY_GRID_COLS;
-        slotCount = GameConfig.INVENTORY_SLOT_COUNT;
-
-        float gridW = cols * slotSize + (cols - 1) * slotGap;
-        gridLeft = leftColX + (columnW - gridW) / 2f;
-        gridTop = inventoryTitleY - lineH * 1.05f;
-
-        portraitX = centerColX;
-        portraitY = contentBottom;
-        portraitW = columnW;
-        portraitH = headerBottom - lineH * 0.35f - contentBottom;
-
-        detailW = GameConfig.INVENTORY_DETAIL_WIDTH;
-        detailH = GameConfig.INVENTORY_DETAIL_HEIGHT;
-        detailX = panelX + (panelW - detailW) / 2f;
-        detailY = panelY + (panelH - detailH) / 2f;
-
-        buttonW = GameConfig.INVENTORY_BUTTON_WIDTH;
-        buttonH = GameConfig.INVENTORY_BUTTON_HEIGHT;
-        float buttonGap = 16f;
-        float buttonsY = detailY + 24f;
-        float buttonsW = buttonW * 2f + buttonGap;
-        float buttonsLeft = detailX + (detailW - buttonsW) / 2f;
-        useButtonX = buttonsLeft;
-        useButtonY = buttonsY;
-        closeButtonX = buttonsLeft + buttonW + buttonGap;
-        closeButtonY = buttonsY;
+        portraitX = panel.centerColX;
+        portraitY = panel.contentBottom;
+        portraitW = panel.columnW;
+        portraitH = panel.headerBottom - lineH * GameConfig.CHARACTER_PORTRAIT_TOP_MULT - panel.contentBottom;
     }
 
     public float getPanelX() {
-        return panelX;
+        return panel.panelX;
     }
 
     public float getPanelY() {
-        return panelY;
+        return panel.panelY;
     }
 
     public float getPanelW() {
-        return panelW;
+        return panel.panelW;
     }
 
     public float getPanelH() {
-        return panelH;
+        return panel.panelH;
     }
 
     public float getTitleY() {
-        return titleY;
+        return panel.titleY;
     }
 
     public float getLeftColX() {
-        return leftColX;
+        return panel.leftColX;
     }
 
     public float getCenterColX() {
-        return centerColX;
+        return panel.centerColX;
     }
 
     public float getRightColX() {
-        return rightColX;
+        return panel.rightColX;
     }
 
     public float getColumnW() {
-        return columnW;
+        return panel.columnW;
     }
 
     public float getContentBottom() {
-        return contentBottom;
+        return panel.contentBottom;
     }
 
     public float getHeaderBottom() {
-        return headerBottom;
+        return panel.headerBottom;
     }
 
     public float getPortraitX() {
@@ -171,39 +95,39 @@ public class CharacterOverlayLayout {
     }
 
     public float getStatsTextX() {
-        return statsTextX;
+        return stats.statsTextX;
     }
 
     public float getStatsTopY() {
-        return statsTopY;
+        return stats.statsTopY;
     }
 
     public float getStatBarX() {
-        return statBarX;
+        return stats.statBarX;
     }
 
     public float getStatBarW() {
-        return statBarW;
+        return stats.statBarW;
     }
 
     public float getStatBarH() {
-        return statBarH;
+        return stats.statBarH;
     }
 
     public float getHpBarBottom() {
-        return hpBarBottom;
+        return stats.hpBarBottom;
     }
 
     public float getCombatSectionY() {
-        return combatSectionY;
+        return stats.combatSectionY;
     }
 
     public float getExplorationSectionY() {
-        return explorationSectionY;
+        return stats.explorationSectionY;
     }
 
     public float getStaminaBarBottom() {
-        return staminaBarBottom;
+        return stats.staminaBarBottom;
     }
 
     public float getInventoryTitleX() {
@@ -215,117 +139,98 @@ public class CharacterOverlayLayout {
     }
 
     public int getSlotCount() {
-        return slotCount;
+        return grid.slotCount;
     }
 
     public boolean containsPanel(float worldX, float worldY) {
-        return worldX >= panelX && worldX <= panelX + panelW
-                && worldY >= panelY && worldY <= panelY + panelH;
+        return worldX >= panel.panelX && worldX <= panel.panelX + panel.panelW
+                && worldY >= panel.panelY && worldY <= panel.panelY + panel.panelH;
     }
 
     public int slotAt(float worldX, float worldY) {
         if (!containsPanel(worldX, worldY)) {
             return -1;
         }
-        for (int i = 0; i < slotCount; i++) {
-            if (containsSlot(worldX, worldY, i)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public boolean containsSlot(float worldX, float worldY, int index) {
-        float left = slotLeft(index);
-        float bottom = slotBottom(index);
-        return worldX >= left && worldX <= left + slotSize
-                && worldY >= bottom && worldY <= bottom + slotSize;
+        return grid.slotAt(worldX, worldY);
     }
 
     public float slotLeft(int index) {
-        int col = index % cols;
-        return gridLeft + col * (slotSize + slotGap);
+        return grid.slotLeft(index);
     }
 
     public float slotBottom(int index) {
-        int row = index / cols;
-        return gridTop - (row + 1) * slotSize - row * slotGap;
+        return grid.slotBottom(index);
     }
 
     public float slotSize() {
-        return slotSize;
+        return grid.slotSize;
     }
 
     public boolean detailContains(float worldX, float worldY) {
-        return worldX >= detailX && worldX <= detailX + detailW
-                && worldY >= detailY && worldY <= detailY + detailH;
+        return detail.contains(worldX, worldY);
     }
 
     public float getDetailX() {
-        return detailX;
+        return detail.detailX;
     }
 
     public float getDetailY() {
-        return detailY;
+        return detail.detailY;
     }
 
     public float getDetailW() {
-        return detailW;
+        return detail.detailW;
     }
 
     public float getDetailH() {
-        return detailH;
+        return detail.detailH;
     }
 
     public float detailSpriteCenterX() {
-        return detailX + detailW / 2f;
+        return detail.detailX + detail.detailW / 2f;
     }
 
     public float detailSpriteBottom() {
-        return detailY + detailH - 56f;
+        return detail.detailY + detail.detailH - GameConfig.CHARACTER_DETAIL_SPRITE_BOTTOM_OFFSET;
     }
 
     public float detailNameY() {
-        return detailY + detailH - 132f;
+        return detail.detailY + detail.detailH - GameConfig.CHARACTER_DETAIL_NAME_Y_OFFSET;
     }
 
     public float detailDescY() {
-        return detailY + detailH - 168f;
+        return detail.detailY + detail.detailH - GameConfig.CHARACTER_DETAIL_DESC_Y_OFFSET;
     }
 
     public boolean useButtonContains(float worldX, float worldY) {
-        return containsButton(worldX, worldY, useButtonX, useButtonY);
+        return detail.useButtonContains(worldX, worldY);
     }
 
     public boolean closeButtonContains(float worldX, float worldY) {
-        return containsButton(worldX, worldY, closeButtonX, closeButtonY);
+        return detail.closeButtonContains(worldX, worldY);
     }
 
     public float getUseButtonX() {
-        return useButtonX;
+        return detail.useButtonX;
     }
 
     public float getUseButtonY() {
-        return useButtonY;
+        return detail.useButtonY;
     }
 
     public float getCloseButtonX() {
-        return closeButtonX;
+        return detail.closeButtonX;
     }
 
     public float getCloseButtonY() {
-        return closeButtonY;
+        return detail.closeButtonY;
     }
 
     public float getButtonW() {
-        return buttonW;
+        return detail.buttonW;
     }
 
     public float getButtonH() {
-        return buttonH;
-    }
-
-    private boolean containsButton(float worldX, float worldY, float x, float y) {
-        return worldX >= x && worldX <= x + buttonW && worldY >= y && worldY <= y + buttonH;
+        return detail.buttonH;
     }
 }

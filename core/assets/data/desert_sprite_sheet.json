@@ -1,5 +1,5 @@
 {
-  "texture": "sprites/desert_sheet.png",
+  "texture": "sprites/desert_parallax_sheet.png",
   "origin": "bottom-left",
   "sprites": [
     {

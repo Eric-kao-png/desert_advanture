@@ -40,6 +40,14 @@ public final class GameViewport {
         return pointer.y;
     }
 
+    public float pointerWorldX() {
+        return toWorldX(Gdx.input.getX(), Gdx.input.getY());
+    }
+
+    public float pointerWorldY() {
+        return toWorldY(Gdx.input.getX(), Gdx.input.getY());
+    }
+
     public com.badlogic.gdx.math.Matrix4 getProjectionMatrix() {
         return camera.combined;
     }

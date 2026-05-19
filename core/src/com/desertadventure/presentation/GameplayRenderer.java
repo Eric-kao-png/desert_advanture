@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.config.UiColors;
 import com.desertadventure.map.model.GridPos;
 import com.desertadventure.map.view.MapOverlayLayout;
 import com.desertadventure.presentation.sprites.DesertSpriteAtlas;
@@ -75,7 +76,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         float h = GameConfig.VIEW_HEIGHT;
         drawPlayer(w * GameConfig.EXPLORE_PLAYER_X_RATIO, GameConfig.EXPLORE_GROUND_Y, running);
         ShapeDrawer.fillRect(shapes, 0, h - GameConfig.HUD_TOP_BAR_HEIGHT, w, GameConfig.HUD_TOP_BAR_HEIGHT,
-                new Color(0f, 0f, 0f, GameConfig.HUD_TOP_BAR_ALPHA));
+                UiColors.HUD_TOP_BAR);
     }
 
     public void renderCombatEntities(List<CombatEntity> entities) {
@@ -110,13 +111,13 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         float alpha = Math.min(1f, progress);
         shapes.setProjectionMatrix(screenProjection);
         ShapeDrawer.fillRect(shapes, 0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT,
-                new Color(0.9f, 0.75f, 0.35f, alpha * GameConfig.STORM_OVERLAY_ALPHA_SCALE));
+                UiColors.STORM_TINT.cpy().mul(1f, 1f, 1f, alpha * GameConfig.STORM_OVERLAY_ALPHA_SCALE));
     }
 
     private void drawPlayer(float x, float y, boolean running) {
         shapes.setProjectionMatrix(screenProjection);
         shapes.begin(ShapeRenderer.ShapeType.Filled);
-        shapes.setColor(0.2f, 0.5f, 0.95f, 1f);
+        shapes.setColor(UiColors.EXPLORE_PLAYER);
         float bob = running
                 ? (float) (Math.sin(System.currentTimeMillis() * GameConfig.PLAYER_BOB_FREQUENCY)
                 * GameConfig.PLAYER_BOB_AMPLITUDE)

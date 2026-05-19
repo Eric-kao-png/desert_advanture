@@ -6,7 +6,6 @@ import com.desertadventure.config.GameMessages;
 import com.desertadventure.event.RequiredEventTracker;
 import com.desertadventure.exploration.StepBudgetService;
 import com.desertadventure.item.Inventory;
-import com.desertadventure.item.InventoryService;
 import com.desertadventure.item.ItemType;
 import com.desertadventure.exploration.StormResetService;
 import com.desertadventure.exploration.TileInteractionContext;
@@ -32,7 +31,6 @@ public class GameSession implements ExplorationCallbacks {
     private final MapViewState mapViewState = new MapViewState();
     private final MessageFeed messageFeed = new MessageFeed();
     private final Inventory inventory = new Inventory();
-    private final InventoryService inventoryService = new InventoryService(inventory);
     private final MapTravelActions mapTravel;
     private final CombatOutcomeApplier combatOutcomes;
     private final TileInteractionContext tileContext;
@@ -51,10 +49,10 @@ public class GameSession implements ExplorationCallbacks {
         combatController = new CombatController(playerStats);
         mapTravel = new MapTravelActions(
                 map, mapViewState, travel, messageFeed,
-                modeAccess(), playerPosition());
+                GameSessionDelegates.modeAccess(this), GameSessionDelegates.playerPosition(this));
         combatOutcomes = new CombatOutcomeApplier(
                 map, playerStats, permanentProgress, travel, messageFeed,
-                modeAccess(), this::triggerStorm, this::getPlayerGridPos);
+                GameSessionDelegates.modeAccess(this), this::triggerStorm, this::getPlayerGridPos);
         tileContext = new TileInteractionContext(
                 this, map, playerStats, permanentProgress,
                 eventTracker, inventory, stepBudget,
@@ -75,34 +73,6 @@ public class GameSession implements ExplorationCallbacks {
         messageFeed.clear();
         inventory.clear();
         bossAvailableThisCycle = false;
-    }
-
-    private SessionModeAccess modeAccess() {
-        return new SessionModeAccess() {
-            @Override
-            public GameplayMode get() {
-                return mode;
-            }
-
-            @Override
-            public void set(GameplayMode value) {
-                mode = value;
-            }
-        };
-    }
-
-    private MapTravelActions.PlayerPosition playerPosition() {
-        return new MapTravelActions.PlayerPosition() {
-            @Override
-            public GridPos get() {
-                return GameSession.this.getPlayerGridPos();
-            }
-
-            @Override
-            public void set(int x, int y) {
-                GameSession.this.setPlayerGridPos(x, y);
-            }
-        };
     }
 
     private void resetToSpawn() {
@@ -183,7 +153,7 @@ public class GameSession implements ExplorationCallbacks {
             return false;
         }
         String name = type.getDisplayName();
-        if (!inventoryService.useSlot(slotIndex, playerStats, stepBudget)) {
+        if (!inventory.useSlot(slotIndex, playerStats, stepBudget)) {
             setPendingMessage(GameMessages.itemEmpty(name));
             return false;
         }

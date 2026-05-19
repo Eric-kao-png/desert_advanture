@@ -25,8 +25,7 @@ public class MapOverlayRenderer {
         int originX = layout.getViewOriginX();
         int originY = layout.getViewOriginY();
 
-        ShapeDrawer.fillRect(shapes, 0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT,
-                new Color(0f, 0f, 0f, GameConfig.MAP_OVERLAY_DIM_ALPHA));
+        OverlayBackdrop.drawDim(shapes);
 
         shapes.begin(ShapeRenderer.ShapeType.Filled);
         GridPos player = session.getPlayerGridPos();

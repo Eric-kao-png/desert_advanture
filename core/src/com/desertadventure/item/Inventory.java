@@ -1,6 +1,8 @@
 package com.desertadventure.item;
 
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.exploration.StepBudgetService;
+import com.desertadventure.player.PlayerStats;
 
 import java.util.Arrays;
 
@@ -61,6 +63,16 @@ public class Inventory {
         ItemType temp = items[fromIndex];
         items[fromIndex] = items[toIndex];
         items[toIndex] = temp;
+    }
+
+    /** Consumes the item in the slot and applies its effect to the player. */
+    public boolean useSlot(int index, PlayerStats stats, StepBudgetService stepBudget) {
+        ItemType type = takeFromSlot(index);
+        if (type == null) {
+            return false;
+        }
+        type.apply(stats, stepBudget);
+        return true;
     }
 
     /** Removes and returns the item in the slot (one item per cell). */
