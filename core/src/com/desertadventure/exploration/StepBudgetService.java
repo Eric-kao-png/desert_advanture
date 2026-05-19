@@ -34,4 +34,12 @@ public class StepBudgetService {
     public boolean isExhausted() {
         return stepsUsed >= stepBudget - 1e-4f;
     }
+
+    public void restoreStamina(float amount) {
+        stepsUsed = Math.max(0f, stepsUsed - amount);
+    }
+
+    public void increaseMaxStamina(float amount) {
+        stepBudget += amount;
+    }
 }

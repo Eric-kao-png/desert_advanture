@@ -99,11 +99,23 @@ public final class GameConfig {
     public static final double PLAYER_BOB_FREQUENCY = 0.02;
     public static final float STORM_OVERLAY_ALPHA_SCALE = 0.85f;
     public static final float MAP_OVERLAY_DIM_ALPHA = 0.65f;
-    public static final float CHARACTER_PANEL_WIDTH = 440f;
-    public static final float CHARACTER_PANEL_HEIGHT = 300f;
+    public static final float CHARACTER_PANEL_WIDTH = 520f;
+    public static final float CHARACTER_PANEL_HEIGHT = 540f;
     public static final float CHARACTER_PANEL_LINE_HEIGHT = 32f;
     public static final float CHARACTER_PANEL_PADDING = 28f;
     public static final float CHARACTER_PANEL_BG_ALPHA = 0.92f;
+    public static final float CHARACTER_STATS_BLOCK_HEIGHT = 248f;
+    public static final int INVENTORY_SLOT_COUNT = 12;
+    public static final int INVENTORY_GRID_COLS = 4;
+    public static final float INVENTORY_SLOT_SIZE = 64f;
+    public static final float INVENTORY_SLOT_GAP = 10f;
+    public static final float INVENTORY_DETAIL_WIDTH = 360f;
+    public static final float INVENTORY_DETAIL_HEIGHT = 300f;
+    public static final float INVENTORY_DETAIL_SPRITE_SIZE = 96f;
+    public static final float INVENTORY_BUTTON_WIDTH = 120f;
+    public static final float INVENTORY_BUTTON_HEIGHT = 36f;
+    public static final int ITEM_SPRITE_FRAME_SIZE = 64;
+    public static final float ITEM_SPRITE_FPS = 12f;
     public static final float MAP_CELL_INSET = 1f;
     public static final float MAP_PLAYER_MARKER_INSET = 2f;
     public static final float MAP_PLAYER_MARKER_SHRINK = 5f;
@@ -141,6 +153,16 @@ public final class GameConfig {
     public static final int ULTIMATE_ATTACK_BONUS = 50;
     public static final int VICTORY_EXPERIENCE = 20;
     public static final int ITEM_EXPERIENCE = 10;
+
+    /** Chance [0,1] to find an item when entering an ITEM tile (once per cycle per tile). */
+    /** Raised for playtesting; lower before release if desired. */
+    public static final float ITEM_TILE_DROP_CHANCE = 0.95f;
+    /** Loot weights: health potion, stamina potion, health gem, stamina gem. */
+    public static final int[] ITEM_DROP_WEIGHTS = {35, 35, 15, 15};
+    public static final float ITEM_HEALTH_POTION_RESTORE = 50f;
+    public static final float ITEM_STAMINA_POTION_RESTORE = 5f;
+    public static final float ITEM_HEALTH_GEM_BONUS = 50f;
+    public static final float ITEM_STAMINA_GEM_BONUS = 5f;
 
     public static final int PLAYER_INITIAL_LEVEL = 1;
     public static final int PLAYER_INITIAL_EXPERIENCE_TO_NEXT = 30;

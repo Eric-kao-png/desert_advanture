@@ -17,13 +17,22 @@ public class GameplayInputHandler {
     private final GameSession session;
     private final GameViewport viewport;
     private final MapOverlayInput mapInput;
+    private final CharacterOverlayInput characterInput;
+    private final CharacterOverlayLayout characterLayout;
 
-    public GameplayInputHandler(DesertAdventure game, GameSession session,
-                                GameViewport viewport, MapOverlayInput mapInput) {
+    public GameplayInputHandler(
+            DesertAdventure game,
+            GameSession session,
+            GameViewport viewport,
+            MapOverlayInput mapInput,
+            CharacterOverlayInput characterInput,
+            CharacterOverlayLayout characterLayout) {
         this.game = game;
         this.session = session;
         this.viewport = viewport;
         this.mapInput = mapInput;
+        this.characterInput = characterInput;
+        this.characterLayout = characterLayout;
     }
 
     public void handle() {
@@ -55,8 +64,69 @@ public class GameplayInputHandler {
     private void handleCharacterOverlay() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
                 || Gdx.input.isKeyJustPressed(Input.Keys.C)) {
+            characterInput.clearSelection();
             session.closeCharacterOverlay();
+            return;
         }
+        updateCharacterHover();
+        if (!Gdx.input.justTouched()) {
+            return;
+        }
+        float worldX = viewport.toWorldX(Gdx.input.getX(), Gdx.input.getY());
+        float worldY = viewport.toWorldY(Gdx.input.getX(), Gdx.input.getY());
+
+        if (characterInput.hasSelection()) {
+            if (characterLayout.closeButtonContains(worldX, worldY)) {
+                characterInput.clearSelection();
+                return;
+            }
+            if (characterLayout.useButtonContains(worldX, worldY)) {
+                int slot = characterInput.getSelectedSlot();
+                session.tryUseInventoryItemAtSlot(slot);
+                if (isSlotEmpty(slot)) {
+                    characterInput.clearSelection();
+                }
+                return;
+            }
+            if (characterLayout.detailContains(worldX, worldY)) {
+                return;
+            }
+        }
+
+        int slot = characterLayout.slotAt(worldX, worldY);
+        if (slot >= 0) {
+            if (!session.getInventory().isSlotEmpty(slot)) {
+                characterInput.selectSlot(slot);
+            } else {
+                characterInput.clearSelection();
+            }
+            return;
+        }
+
+        if (characterInput.hasSelection()) {
+            characterInput.clearSelection();
+        }
+    }
+
+    private boolean isSlotEmpty(int slot) {
+        return session.getInventory().isSlotEmpty(slot);
+    }
+
+    public void updateCharacterHover() {
+        if (session.getMode() != GameplayMode.CHARACTER_OVERLAY) {
+            return;
+        }
+        float worldX = viewport.toWorldX(Gdx.input.getX(), Gdx.input.getY());
+        float worldY = viewport.toWorldY(Gdx.input.getX(), Gdx.input.getY());
+        characterInput.updateHover(characterLayout, worldX, worldY);
+    }
+
+    public CharacterOverlayInput getCharacterInput() {
+        return characterInput;
+    }
+
+    public CharacterOverlayLayout getCharacterLayout() {
+        return characterLayout;
     }
 
     public void updateMapHover() {

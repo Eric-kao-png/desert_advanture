@@ -1,7 +1,8 @@
 package com.desertadventure.exploration;
 
-import com.desertadventure.config.GameConfig;
 import com.desertadventure.config.GameMessages;
+import com.desertadventure.item.ItemLoot;
+import com.desertadventure.item.ItemType;
 import com.desertadventure.map.model.Tile;
 import com.desertadventure.map.model.TileType;
 import com.desertadventure.state.GameplayMode;
@@ -24,9 +25,16 @@ public final class TileInteractionHandler {
         if (!tile.isItemCollectedThisCycle()) {
             tile.setItemCollectedThisCycle(true);
             ctx.map.markCycleModified(tile.getPosition());
-            ctx.playerStats.applyItemBonus();
-            ctx.playerStats.addExperience(GameConfig.ITEM_EXPERIENCE);
-            ctx.callbacks.setPendingMessage(GameMessages.ITEM_COLLECTED);
+            ItemType drop = ItemLoot.rollDrop();
+            if (drop != null) {
+                if (ctx.inventory.add(drop)) {
+                    ctx.callbacks.setPendingMessage(GameMessages.itemObtained(drop.getDisplayName()));
+                } else {
+                    ctx.callbacks.setPendingMessage(GameMessages.inventoryFull());
+                }
+            } else {
+                ctx.callbacks.setPendingMessage(GameMessages.itemTileEmpty());
+            }
         }
         ctx.finish(duringMove);
     }

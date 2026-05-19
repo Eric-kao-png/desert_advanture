@@ -5,6 +5,9 @@ import com.desertadventure.combat.system.CombatController;
 import com.desertadventure.config.GameMessages;
 import com.desertadventure.event.RequiredEventTracker;
 import com.desertadventure.exploration.StepBudgetService;
+import com.desertadventure.item.Inventory;
+import com.desertadventure.item.InventoryService;
+import com.desertadventure.item.ItemType;
 import com.desertadventure.exploration.StormResetService;
 import com.desertadventure.exploration.TileInteractionContext;
 import com.desertadventure.exploration.TileInteractionHandler;
@@ -28,6 +31,8 @@ public class GameSession implements ExplorationCallbacks {
     private final CombatController combatController;
     private final MapViewState mapViewState = new MapViewState();
     private final MessageFeed messageFeed = new MessageFeed();
+    private final Inventory inventory = new Inventory();
+    private final InventoryService inventoryService = new InventoryService(inventory);
     private final MapTravelActions mapTravel;
     private final CombatOutcomeApplier combatOutcomes;
     private final TileInteractionContext tileContext;
@@ -52,7 +57,8 @@ public class GameSession implements ExplorationCallbacks {
                 modeAccess(), this::triggerStorm, this::getPlayerGridPos);
         tileContext = new TileInteractionContext(
                 this, map, playerStats, permanentProgress,
-                eventTracker, travel::resume, available -> bossAvailableThisCycle = available);
+                eventTracker, inventory, stepBudget,
+                travel::resume, available -> bossAvailableThisCycle = available);
         resetToSpawn();
         stepBudget.resetForCycle(playerStats);
         map.revealAround(getPlayerGridPos());
@@ -67,6 +73,7 @@ public class GameSession implements ExplorationCallbacks {
         map.revealAround(getPlayerGridPos());
         mode = GameplayMode.EXPLORE_IDLE;
         messageFeed.clear();
+        inventory.clear();
         bossAvailableThisCycle = false;
     }
 
@@ -124,6 +131,10 @@ public class GameSession implements ExplorationCallbacks {
         return stepBudget;
     }
 
+    public Inventory getInventory() {
+        return inventory;
+    }
+
     public PathRunner getPathRunner() {
         return travel.getPathRunner();
     }
@@ -164,6 +175,20 @@ public class GameSession implements ExplorationCallbacks {
         if (mode == GameplayMode.CHARACTER_OVERLAY) {
             mode = GameplayMode.EXPLORE_IDLE;
         }
+    }
+
+    public boolean tryUseInventoryItemAtSlot(int slotIndex) {
+        ItemType type = inventory.getItemAt(slotIndex);
+        if (type == null) {
+            return false;
+        }
+        String name = type.getDisplayName();
+        if (!inventoryService.useSlot(slotIndex, playerStats, stepBudget)) {
+            setPendingMessage(GameMessages.itemEmpty(name));
+            return false;
+        }
+        setPendingMessage(GameMessages.itemUsed(name));
+        return true;
     }
 
     public void panMapView(int dx, int dy) {

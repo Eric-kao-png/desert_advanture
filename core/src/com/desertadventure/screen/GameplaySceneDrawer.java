@@ -77,8 +77,10 @@ final class GameplaySceneDrawer {
     }
 
     private void drawCharacterOverlay(SpriteBatch batch, float delta) {
+        input.updateCharacterHover();
         drawExplore(batch, false, delta);
-        renderer.renderCharacterOverlay(batch, session, uiFont);
+        renderer.renderCharacterOverlay(
+                batch, session, uiFont, input.getCharacterLayout(), input.getCharacterInput(), delta);
     }
 
     private void drawCombat(SpriteBatch batch, float delta, GameplayMode mode) {

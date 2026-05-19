@@ -96,8 +96,14 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         mapOverlay.render(session, layout, hoverCell);
     }
 
-    public void renderCharacterOverlay(SpriteBatch batch, GameSession session, BitmapFont font) {
-        characterOverlay.render(batch, session, font);
+    public void renderCharacterOverlay(
+            SpriteBatch batch,
+            GameSession session,
+            BitmapFont font,
+            com.desertadventure.screen.CharacterOverlayLayout layout,
+            com.desertadventure.screen.CharacterOverlayInput input,
+            float delta) {
+        characterOverlay.render(batch, session, font, layout, input, delta);
     }
 
     public void renderStorm(float progress) {

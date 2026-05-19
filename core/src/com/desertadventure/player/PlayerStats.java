@@ -65,6 +65,15 @@ public class PlayerStats {
         hp = maxHp;
     }
 
+    public void restoreHp(float amount) {
+        setHp(hp + amount);
+    }
+
+    public void increaseMaxHp(float amount) {
+        maxHp += amount;
+        hp += amount;
+    }
+
     public void addExperience(int amount) {
         experience += amount;
         while (experience >= experienceToNext) {
@@ -81,11 +90,6 @@ public class PlayerStats {
         defense += GameConfig.PLAYER_LEVEL_DEFENSE_GAIN;
         stepBudgetBonus += GameConfig.PLAYER_LEVEL_STEP_BONUS;
         experienceToNext = (int) (experienceToNext * GameConfig.PLAYER_LEVEL_EXP_MULTIPLIER);
-    }
-
-    public void applyItemBonus() {
-        attack += GameConfig.PLAYER_ITEM_ATTACK_BONUS;
-        stepBudgetBonus += GameConfig.PLAYER_ITEM_STEP_BONUS;
     }
 
     public void resetForNewGame() {

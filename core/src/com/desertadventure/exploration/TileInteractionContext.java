@@ -1,6 +1,7 @@
 package com.desertadventure.exploration;
 
 import com.desertadventure.event.RequiredEventTracker;
+import com.desertadventure.item.Inventory;
 import com.desertadventure.map.model.GameMap;
 import com.desertadventure.player.PlayerStats;
 import com.desertadventure.state.ExplorationCallbacks;
@@ -14,6 +15,8 @@ public final class TileInteractionContext {
     final PlayerStats playerStats;
     final PermanentProgress permanentProgress;
     final RequiredEventTracker eventTracker;
+    final Inventory inventory;
+    final StepBudgetService stepBudget;
     private final Runnable resumeTravel;
     private final java.util.function.Consumer<Boolean> setBossAvailable;
 
@@ -23,6 +26,8 @@ public final class TileInteractionContext {
             PlayerStats playerStats,
             PermanentProgress permanentProgress,
             RequiredEventTracker eventTracker,
+            Inventory inventory,
+            StepBudgetService stepBudget,
             Runnable resumeTravel,
             java.util.function.Consumer<Boolean> setBossAvailable) {
         this.callbacks = callbacks;
@@ -30,6 +35,8 @@ public final class TileInteractionContext {
         this.playerStats = playerStats;
         this.permanentProgress = permanentProgress;
         this.eventTracker = eventTracker;
+        this.inventory = inventory;
+        this.stepBudget = stepBudget;
         this.resumeTravel = resumeTravel;
         this.setBossAvailable = setBossAvailable;
     }

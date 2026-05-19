@@ -14,4 +14,12 @@ public final class ShapeDrawer {
         shapes.rect(x, y, w, h);
         shapes.end();
     }
+
+    public static void strokeRect(
+            ShapeRenderer shapes, float x, float y, float w, float h, Color color, float thickness) {
+        fillRect(shapes, x, y, w, thickness, color);
+        fillRect(shapes, x, y + h - thickness, w, thickness, color);
+        fillRect(shapes, x, y, thickness, h, color);
+        fillRect(shapes, x + w - thickness, y, thickness, h, color);
+    }
 }
