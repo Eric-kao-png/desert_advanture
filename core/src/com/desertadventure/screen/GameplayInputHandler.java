@@ -19,6 +19,7 @@ public class GameplayInputHandler {
     private final MapOverlayInput mapInput;
     private final CharacterOverlayInput characterInput;
     private final CharacterOverlayLayout characterLayout;
+    private boolean characterPointerWasDown;
 
     public GameplayInputHandler(
             DesertAdventure game,
@@ -48,6 +49,8 @@ public class GameplayInputHandler {
             return;
         }
 
+        characterPointerWasDown = false;
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.M) && mode.canOpenMap()) {
             session.openMapOverlay();
         }
@@ -65,16 +68,32 @@ public class GameplayInputHandler {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
                 || Gdx.input.isKeyJustPressed(Input.Keys.C)) {
             characterInput.clearSelection();
+            characterInput.resetPointer();
             session.closeCharacterOverlay();
             return;
         }
-        updateCharacterHover();
-        if (!Gdx.input.justTouched()) {
-            return;
-        }
+
         float worldX = viewport.toWorldX(Gdx.input.getX(), Gdx.input.getY());
         float worldY = viewport.toWorldY(Gdx.input.getX(), Gdx.input.getY());
+        boolean pointerDown = Gdx.input.isTouched();
 
+        updateCharacterHover();
+
+        if (pointerDown) {
+            if (Gdx.input.justTouched()) {
+                handleCharacterTouchDown(worldX, worldY);
+            } else {
+                characterInput.onTouchDrag(worldX, worldY);
+            }
+        } else if (characterPointerWasDown) {
+            handleCharacterTouchUp(worldX, worldY);
+        }
+
+        characterPointerWasDown = pointerDown;
+    }
+
+    private void handleCharacterTouchDown(float worldX, float worldY) {
+        characterInput.resetPointer();
         if (characterInput.hasSelection()) {
             if (characterLayout.closeButtonContains(worldX, worldY)) {
                 characterInput.clearSelection();
@@ -92,18 +111,26 @@ public class GameplayInputHandler {
                 return;
             }
         }
+        characterInput.onTouchDown(worldX, worldY, characterLayout, session.getInventory());
+    }
 
-        int slot = characterLayout.slotAt(worldX, worldY);
-        if (slot >= 0) {
-            if (!session.getInventory().isSlotEmpty(slot)) {
-                characterInput.selectSlot(slot);
+    private void handleCharacterTouchUp(float worldX, float worldY) {
+        if (characterInput.isDragging()) {
+            characterInput.onTouchUp(worldX, worldY, characterLayout, session.getInventory());
+            return;
+        }
+
+        int tapSlot = characterInput.onTouchUp(worldX, worldY, characterLayout, session.getInventory());
+        if (tapSlot >= 0) {
+            if (!session.getInventory().isSlotEmpty(tapSlot)) {
+                characterInput.selectSlot(tapSlot);
             } else {
                 characterInput.clearSelection();
             }
             return;
         }
 
-        if (characterInput.hasSelection()) {
+        if (characterInput.hasSelection() && !characterLayout.detailContains(worldX, worldY)) {
             characterInput.clearSelection();
         }
     }

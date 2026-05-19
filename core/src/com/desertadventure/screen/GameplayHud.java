@@ -56,7 +56,8 @@ public class GameplayHud {
                     GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
             case MAP_OVERLAY -> font.draw(batch, "Click destination | Arrows: pan | [Esc] Cancel",
                     GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
-            case CHARACTER_OVERLAY -> font.draw(batch, "Click item for details | [Esc] or [C] Close",
+            case CHARACTER_OVERLAY -> font.draw(batch,
+                    "Drag items to reorder | Click for details | [Esc] or [C] Close",
                     GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
             case RUNNING -> font.draw(batch, "Moving... | [M] Map  [C] Character",
                     GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);

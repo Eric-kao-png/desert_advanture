@@ -112,6 +112,8 @@ public final class GameConfig {
     public static final int INVENTORY_GRID_COLS = 3;
     public static final float INVENTORY_SLOT_SIZE = 64f;
     public static final float INVENTORY_SLOT_GAP = 10f;
+    /** Min pointer movement (world px) before a press becomes a drag. */
+    public static final float INVENTORY_DRAG_THRESHOLD = 10f;
     public static final float INVENTORY_DETAIL_WIDTH = 360f;
     public static final float INVENTORY_DETAIL_HEIGHT = 300f;
     public static final float INVENTORY_DETAIL_SPRITE_SIZE = 96f;

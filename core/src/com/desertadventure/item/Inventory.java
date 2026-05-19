@@ -50,6 +50,19 @@ public class Inventory {
         return true;
     }
 
+    /** Swaps contents of two slots (either may be empty). */
+    public void swapSlots(int fromIndex, int toIndex) {
+        if (fromIndex < 0 || toIndex < 0 || fromIndex >= items.length || toIndex >= items.length) {
+            return;
+        }
+        if (fromIndex == toIndex) {
+            return;
+        }
+        ItemType temp = items[fromIndex];
+        items[fromIndex] = items[toIndex];
+        items[toIndex] = temp;
+    }
+
     /** Removes and returns the item in the slot (one item per cell). */
     public ItemType takeFromSlot(int index) {
         if (index < 0 || index >= items.length) {

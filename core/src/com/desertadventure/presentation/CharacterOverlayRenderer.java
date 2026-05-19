@@ -44,7 +44,7 @@ public class CharacterOverlayRenderer {
             CharacterOverlayInput input,
             float delta) {
         animTime += delta;
-        boolean showDetail = shouldShowDetail(session, input);
+        boolean showDetail = shouldShowDetail(session, input) && !input.isDragging();
 
         drawBaseShapes(layout, input);
         drawStatBars(session, layout);
@@ -52,7 +52,7 @@ public class CharacterOverlayRenderer {
         float lineH = GameConfig.CHARACTER_PANEL_LINE_HEIGHT;
         batch.begin();
         drawTitle(batch, font, layout);
-        drawInventorySection(batch, font, layout, session);
+        drawInventorySection(batch, font, layout, session, input);
         drawPortraitPlaceholder(batch, font, layout);
         drawStatsSection(batch, font, session, layout, lineH);
         batch.end();
@@ -77,11 +77,13 @@ public class CharacterOverlayRenderer {
             SpriteBatch batch,
             BitmapFont font,
             CharacterOverlayLayout layout,
-            GameSession session) {
+            GameSession session,
+            CharacterOverlayInput input) {
         font.setColor(0.85f, 0.75f, 0.55f, 1f);
         font.draw(batch, GameMessages.INVENTORY_SECTION,
                 layout.getInventoryTitleX(), layout.getInventoryTitleY());
-        drawSlotIcons(batch, layout, session);
+        drawSlotIcons(batch, layout, session, input);
+        drawDraggedIcon(batch, layout, input);
     }
 
     private void drawPortraitPlaceholder(SpriteBatch batch, BitmapFont font, CharacterOverlayLayout layout) {
@@ -203,8 +205,12 @@ public class CharacterOverlayRenderer {
             ShapeDrawer.fillRect(shapes, left + 2f, bottom + 2f, slotSize - 4f, slotSize - 4f,
                     new Color(0.08f, 0.07f, 0.06f, 0.75f));
             boolean selected = input.hasSelection() && input.getSelectedSlot() == i;
+            boolean dropTarget = input.isDragging() && i == input.getHoveredSlot()
+                    && i != input.getDragSourceSlot();
             boolean hovered = i == input.getHoveredSlot();
-            Color border = selected
+            Color border = dropTarget
+                    ? new Color(0.55f, 0.85f, 0.45f, 1f)
+                    : selected
                     ? new Color(0.95f, 0.8f, 0.35f, 1f)
                     : hovered
                     ? new Color(0.55f, 0.5f, 0.42f, 1f)
@@ -216,22 +222,54 @@ public class CharacterOverlayRenderer {
     private void drawSlotIcons(
             SpriteBatch batch,
             CharacterOverlayLayout layout,
-            GameSession session) {
+            GameSession session,
+            CharacterOverlayInput input) {
         Inventory inventory = session.getInventory();
         float slotDrawSize = layout.slotSize() * 0.88f;
         batch.setColor(Color.WHITE);
         for (int i = 0; i < layout.getSlotCount(); i++) {
+            if (input.isDragging() && i == input.getDragSourceSlot()) {
+                continue;
+            }
             ItemType type = inventory.getItemAt(i);
             if (type == null) {
                 continue;
             }
-            float left = layout.slotLeft(i);
-            float bottom = layout.slotBottom(i);
-            float iconX = left + (layout.slotSize() - slotDrawSize) / 2f;
-            float iconY = bottom + (layout.slotSize() - slotDrawSize) / 2f;
-            TextureRegion frame = itemSprites.getFrame(type, animTime);
-            batch.draw(frame, iconX, iconY, slotDrawSize, slotDrawSize);
+            drawItemIcon(batch, layout, type, i, slotDrawSize, 1f);
         }
+    }
+
+    private void drawDraggedIcon(
+            SpriteBatch batch,
+            CharacterOverlayLayout layout,
+            CharacterOverlayInput input) {
+        if (!input.isDragging() || input.getDragItem() == null) {
+            return;
+        }
+        float slotDrawSize = layout.slotSize() * 0.92f;
+        float iconX = input.getDragX() - slotDrawSize / 2f;
+        float iconY = input.getDragY() - slotDrawSize / 2f;
+        TextureRegion frame = itemSprites.getFrame(input.getDragItem(), animTime);
+        batch.setColor(1f, 1f, 1f, 0.9f);
+        batch.draw(frame, iconX, iconY, slotDrawSize, slotDrawSize);
+        batch.setColor(Color.WHITE);
+    }
+
+    private void drawItemIcon(
+            SpriteBatch batch,
+            CharacterOverlayLayout layout,
+            ItemType type,
+            int slotIndex,
+            float drawSize,
+            float alpha) {
+        float left = layout.slotLeft(slotIndex);
+        float bottom = layout.slotBottom(slotIndex);
+        float iconX = left + (layout.slotSize() - drawSize) / 2f;
+        float iconY = bottom + (layout.slotSize() - drawSize) / 2f;
+        TextureRegion frame = itemSprites.getFrame(type, animTime);
+        batch.setColor(1f, 1f, 1f, alpha);
+        batch.draw(frame, iconX, iconY, drawSize, drawSize);
+        batch.setColor(Color.WHITE);
     }
 
     private boolean shouldShowDetail(GameSession session, CharacterOverlayInput input) {
