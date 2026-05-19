@@ -4,20 +4,13 @@ import com.desertadventure.config.GameConfig;
 
 import java.util.Random;
 
-/**
- * Procedurally builds the world map (too large for hand-authored JSON).
- * World origin (0, 0) is the map center and player spawn.
- */
 public final class MapGenerator {
-    private static final int BLOCKED_DENSITY_PERCENT = 4;
-
     private MapGenerator() {
     }
 
     public static GameMap createWorld() {
         GameMap map = new GameMap(GameConfig.MAP_SIZE);
-        Random random = new Random(42L);
-
+        Random random = new Random(GameConfig.MAP_GENERATOR_SEED);
         scatterBlocked(map, random);
         placeKeyLocations(map);
         scatterInteractables(map, random);
@@ -25,15 +18,16 @@ public final class MapGenerator {
     }
 
     private static void scatterBlocked(GameMap map, Random random) {
+        int clear = GameConfig.MAP_CAMP_CLEAR_RADIUS;
         for (int wx = map.getMinCoord(); wx <= map.getMaxCoord(); wx++) {
             for (int wy = map.getMinCoord(); wy <= map.getMaxCoord(); wy++) {
                 if (wx == 0 && wy == 0) {
                     continue;
                 }
-                if (Math.abs(wx) <= 2 && Math.abs(wy) <= 2) {
+                if (Math.abs(wx) <= clear && Math.abs(wy) <= clear) {
                     continue;
                 }
-                if (random.nextInt(100) < BLOCKED_DENSITY_PERCENT) {
+                if (random.nextInt(100) < GameConfig.MAP_BLOCKED_DENSITY_PERCENT) {
                     map.getTile(wx, wy).setType(TileType.BLOCKED);
                 }
             }
@@ -41,7 +35,6 @@ public final class MapGenerator {
     }
 
     private static void placeKeyLocations(GameMap map) {
-        // Pulled in near spawn for easier testing (was ±55 / -70).
         setEvent(map, -12, 0, "event_1");
         setEvent(map, 0, 12, "event_2");
         setEvent(map, 12, 0, "event_3");
@@ -63,20 +56,24 @@ public final class MapGenerator {
     }
 
     private static void scatterInteractables(GameMap map, Random random) {
+        int minDist = GameConfig.MAP_MIN_INTERACTABLE_DISTANCE;
+        int combatRoll = GameConfig.MAP_COMBAT_ROLL_THRESHOLD;
+        int itemRoll = GameConfig.MAP_ITEM_ROLL_THRESHOLD;
+        int rollMax = GameConfig.MAP_SCATTER_ROLL_DENOMINATOR;
+
         for (int wx = map.getMinCoord(); wx <= map.getMaxCoord(); wx++) {
             for (int wy = map.getMinCoord(); wy <= map.getMaxCoord(); wy++) {
                 Tile tile = map.getTile(wx, wy);
                 if (tile.getType() != TileType.EMPTY) {
                     continue;
                 }
-                int distance = Math.abs(wx) + Math.abs(wy);
-                if (distance < 8) {
+                if (Math.abs(wx) + Math.abs(wy) < minDist) {
                     continue;
                 }
-                int roll = random.nextInt(1000);
-                if (roll < 12) {
+                int roll = random.nextInt(rollMax);
+                if (roll < combatRoll) {
                     tile.setType(TileType.COMBAT);
-                } else if (roll < 22) {
+                } else if (roll < itemRoll) {
                     tile.setType(TileType.ITEM);
                 }
             }

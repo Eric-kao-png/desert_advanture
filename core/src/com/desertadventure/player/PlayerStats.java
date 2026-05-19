@@ -3,13 +3,13 @@ package com.desertadventure.player;
 import com.desertadventure.config.GameConfig;
 
 public class PlayerStats {
-    private int level = 1;
+    private int level = GameConfig.PLAYER_INITIAL_LEVEL;
     private int experience;
-    private int experienceToNext = 30;
-    private float maxHp = 100f;
-    private float hp = 100f;
-    private int attack = 10;
-    private int defense = 2;
+    private int experienceToNext = GameConfig.PLAYER_INITIAL_EXPERIENCE_TO_NEXT;
+    private float maxHp = GameConfig.PLAYER_INITIAL_MAX_HP;
+    private float hp = GameConfig.PLAYER_INITIAL_MAX_HP;
+    private int attack = GameConfig.PLAYER_INITIAL_ATTACK;
+    private int defense = GameConfig.PLAYER_INITIAL_DEFENSE;
     private int stepBudgetBonus;
     private float moveSpeed = GameConfig.PLAYER_SPEED;
 
@@ -75,27 +75,27 @@ public class PlayerStats {
 
     private void levelUp() {
         level++;
-        maxHp += 15f;
+        maxHp += GameConfig.PLAYER_LEVEL_HP_GAIN;
         hp = maxHp;
-        attack += 3;
-        defense += 1;
-        stepBudgetBonus += 1;
-        experienceToNext = (int) (experienceToNext * 1.4f);
+        attack += GameConfig.PLAYER_LEVEL_ATTACK_GAIN;
+        defense += GameConfig.PLAYER_LEVEL_DEFENSE_GAIN;
+        stepBudgetBonus += GameConfig.PLAYER_LEVEL_STEP_BONUS;
+        experienceToNext = (int) (experienceToNext * GameConfig.PLAYER_LEVEL_EXP_MULTIPLIER);
     }
 
     public void applyItemBonus() {
-        attack += 2;
-        stepBudgetBonus += 1;
+        attack += GameConfig.PLAYER_ITEM_ATTACK_BONUS;
+        stepBudgetBonus += GameConfig.PLAYER_ITEM_STEP_BONUS;
     }
 
     public void resetForNewGame() {
-        level = 1;
+        level = GameConfig.PLAYER_INITIAL_LEVEL;
         experience = 0;
-        experienceToNext = 30;
-        maxHp = 100f;
-        hp = 100f;
-        attack = 10;
-        defense = 2;
+        experienceToNext = GameConfig.PLAYER_INITIAL_EXPERIENCE_TO_NEXT;
+        maxHp = GameConfig.PLAYER_INITIAL_MAX_HP;
+        hp = GameConfig.PLAYER_INITIAL_MAX_HP;
+        attack = GameConfig.PLAYER_INITIAL_ATTACK;
+        defense = GameConfig.PLAYER_INITIAL_DEFENSE;
         stepBudgetBonus = 0;
         moveSpeed = GameConfig.PLAYER_SPEED;
     }

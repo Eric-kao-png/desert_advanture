@@ -15,8 +15,6 @@ import java.util.List;
 
 /** Facade for gameplay visuals: parallax, houses, map overlay, combat shapes. */
 public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
-    public static final float EXPLORE_GROUND_Y = 120f;
-
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final Matrix4 screenProjection = new Matrix4();
     private final DesertSpriteAtlas desertSprites;
@@ -64,14 +62,15 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         houses.draw(batch, w);
         parallax.drawMiddle(batch, w, h);
         parallax.drawForward(batch, w, h);
-        parallax.drawFloor(batch, w, EXPLORE_GROUND_Y);
+        parallax.drawFloor(batch, w, GameConfig.EXPLORE_GROUND_Y);
     }
 
     public void renderExploreForeground(GameSession session, boolean running) {
         float w = GameConfig.VIEW_WIDTH;
         float h = GameConfig.VIEW_HEIGHT;
-        drawPlayer(w * 0.35f, EXPLORE_GROUND_Y, running);
-        fillRect(0, h - 60, w, 60, new Color(0f, 0f, 0f, 0.35f));
+        drawPlayer(w * GameConfig.EXPLORE_PLAYER_X_RATIO, GameConfig.EXPLORE_GROUND_Y, running);
+        ShapeDrawer.fillRect(shapes, 0, h - GameConfig.HUD_TOP_BAR_HEIGHT, w, GameConfig.HUD_TOP_BAR_HEIGHT,
+                new Color(0f, 0f, 0f, GameConfig.HUD_TOP_BAR_ALPHA));
     }
 
     public void renderCombatEntities(List<CombatEntity> entities) {
@@ -81,7 +80,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
             if (!entity.isAlive() && entity.getKind() != CombatEntity.Kind.PLAYER) {
                 continue;
             }
-            shapes.setColor(colorForEntity(entity, entity.getHurtFlash() > 0f));
+            shapes.setColor(CombatEntityColors.forEntity(entity, entity.getHurtFlash() > 0f));
             shapes.rect(entity.getX() - entity.getWidth() / 2f, entity.getY(),
                     entity.getWidth(), entity.getHeight());
         }
@@ -94,36 +93,22 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
 
     public void renderStorm(float progress) {
         float alpha = Math.min(1f, progress);
-        fillRect(0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT,
-                new Color(0.9f, 0.75f, 0.35f, alpha * 0.85f));
+        shapes.setProjectionMatrix(screenProjection);
+        ShapeDrawer.fillRect(shapes, 0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT,
+                new Color(0.9f, 0.75f, 0.35f, alpha * GameConfig.STORM_OVERLAY_ALPHA_SCALE));
     }
 
     private void drawPlayer(float x, float y, boolean running) {
         shapes.setProjectionMatrix(screenProjection);
         shapes.begin(ShapeRenderer.ShapeType.Filled);
         shapes.setColor(0.2f, 0.5f, 0.95f, 1f);
-        float bob = running ? (float) Math.sin(System.currentTimeMillis() * 0.02) * 4f : 0f;
+        float bob = running
+                ? (float) (Math.sin(System.currentTimeMillis() * GameConfig.PLAYER_BOB_FREQUENCY)
+                * GameConfig.PLAYER_BOB_AMPLITUDE)
+                : 0f;
         shapes.rect(x - GameConfig.PLAYER_WIDTH / 2f, y + bob,
                 GameConfig.PLAYER_WIDTH, GameConfig.PLAYER_HEIGHT);
         shapes.end();
     }
 
-    private void fillRect(float x, float y, float w, float h, Color color) {
-        shapes.setProjectionMatrix(screenProjection);
-        shapes.begin(ShapeRenderer.ShapeType.Filled);
-        shapes.setColor(color);
-        shapes.rect(x, y, w, h);
-        shapes.end();
-    }
-
-    private static Color colorForEntity(CombatEntity entity, boolean hurt) {
-        if (hurt) {
-            return Color.WHITE;
-        }
-        return switch (entity.getKind()) {
-            case PLAYER -> new Color(0.2f, 0.5f, 0.95f, 1f);
-            case ENEMY -> new Color(0.9f, 0.25f, 0.2f, 1f);
-            case BOSS -> new Color(0.55f, 0.2f, 0.85f, 1f);
-        };
-    }
 }

@@ -1,5 +1,6 @@
 package com.desertadventure.exploration;
 
+import com.desertadventure.config.GameConfig;
 import com.desertadventure.map.model.GameMap;
 import com.desertadventure.map.model.GridPos;
 import com.desertadventure.map.model.StraightLinePath;
@@ -54,15 +55,7 @@ public class TravelMovement {
             return;
         }
 
-        float segmentTravel = pathRunner.getProgress() * pathRunner.getTotalDistance();
-        float targetConsumed = stepBaseline + segmentTravel;
-        float deltaCost = targetConsumed - stepsApplied;
-        if (deltaCost > 1e-5f) {
-            session.getStepBudget().consumeSteps(deltaCost);
-            stepsApplied = targetConsumed;
-            session.getMap().revealAround(session.getDisplayGridPos());
-        }
-
+        applyProgressSteps();
         if (session.getStepBudget().isExhausted()) {
             interruptForStorm();
             return;
@@ -75,7 +68,7 @@ public class TravelMovement {
         pauseX = pathRunner.getCurrentX();
         pauseY = pathRunner.getCurrentY();
         pathRunner.pause();
-        session.setPlayerGridPos(Math.round(pauseX), Math.round(pauseY));
+        syncPlayerToRunnerPosition();
         lastCell = session.getPlayerGridPos();
         session.getMap().revealAround(session.getPlayerGridPos());
     }
@@ -85,17 +78,9 @@ public class TravelMovement {
         if (activePlan == null) {
             return;
         }
-        PathRunner runner = pathRunner;
-        if (runner.isRunning()) {
-            float segmentTravel = runner.getProgress() * runner.getTotalDistance();
-            float targetConsumed = stepBaseline + segmentTravel;
-            float deltaCost = targetConsumed - stepsApplied;
-            if (deltaCost > 1e-5f) {
-                session.getStepBudget().consumeSteps(deltaCost);
-                stepsApplied = targetConsumed;
-            }
-            session.setPlayerGridPos(Math.round(runner.getCurrentX()), Math.round(runner.getCurrentY()));
-            runner.cancel();
+        if (pathRunner.isRunning()) {
+            applyProgressSteps();
+            cancelRunnerAtCurrentCell();
         }
         clearPlan();
         session.getMap().revealAround(session.getPlayerGridPos());
@@ -108,7 +93,7 @@ public class TravelMovement {
         }
         GridPos dest = activePlan.getDestination();
         float remaining = (float) Math.hypot(dest.x - pauseX, dest.y - pauseY);
-        if (remaining < 0.01f) {
+        if (remaining < GameConfig.PATH_REMAINING_EPSILON) {
             onPathComplete();
             return;
         }
@@ -119,15 +104,15 @@ public class TravelMovement {
     }
 
     private void onPathComplete() {
-        if (isInterruptedMode()) {
+        if (session.getMode().interruptsTravel()) {
             return;
         }
 
         StraightLinePath.Plan plan = activePlan;
         float remaining = plan.getDistance() - stepsApplied;
-        if (remaining > 1e-4f) {
+        if (remaining > GameConfig.PLAN_DISTANCE_EPSILON) {
             session.getStepBudget().consumeSteps(remaining);
-            session.addScrollOffset(50f * remaining);
+            session.addScrollOffset(GameConfig.SCROLL_OFFSET_PER_STEP * remaining);
             stepsApplied = plan.getDistance();
         }
 
@@ -149,10 +134,7 @@ public class TravelMovement {
     }
 
     private void interruptForStorm() {
-        if (pathRunner.isRunning()) {
-            session.setPlayerGridPos(Math.round(pathRunner.getCurrentX()), Math.round(pathRunner.getCurrentY()));
-            pathRunner.cancel();
-        }
+        cancelRunnerAtCurrentCell();
         clearPlan();
         session.getMap().revealAround(session.getPlayerGridPos());
         session.triggerStorm();
@@ -175,6 +157,32 @@ public class TravelMovement {
         session.handleTileInteraction(tile, true);
     }
 
+    private void applyProgressSteps() {
+        if (!pathRunner.isRunning()) {
+            return;
+        }
+        float segmentTravel = pathRunner.getProgress() * pathRunner.getTotalDistance();
+        float targetConsumed = stepBaseline + segmentTravel;
+        float deltaCost = targetConsumed - stepsApplied;
+        if (deltaCost > GameConfig.STEP_CONSUME_EPSILON) {
+            session.getStepBudget().consumeSteps(deltaCost);
+            stepsApplied = targetConsumed;
+            session.getMap().revealAround(session.getDisplayGridPos());
+        }
+    }
+
+    private void syncPlayerToRunnerPosition() {
+        session.setPlayerGridPos(Math.round(pathRunner.getCurrentX()), Math.round(pathRunner.getCurrentY()));
+    }
+
+    private void cancelRunnerAtCurrentCell() {
+        if (!pathRunner.isRunning()) {
+            return;
+        }
+        syncPlayerToRunnerPosition();
+        pathRunner.cancel();
+    }
+
     private void revealLine(StraightLinePath.Plan plan) {
         GameMap map = session.getMap();
         for (GridPos cell : plan.getCellsOnLine()) {
@@ -186,10 +194,5 @@ public class TravelMovement {
         activePlan = null;
         stepsApplied = 0f;
         stepBaseline = 0f;
-    }
-
-    private boolean isInterruptedMode() {
-        GameplayMode mode = session.getMode();
-        return mode == GameplayMode.STORM || mode == GameplayMode.COMBAT || mode == GameplayMode.BOSS_COMBAT;
     }
 }

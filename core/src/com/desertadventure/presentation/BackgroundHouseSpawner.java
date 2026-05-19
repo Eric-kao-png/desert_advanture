@@ -43,7 +43,7 @@ public class BackgroundHouseSpawner {
         scrollProps = 0f;
         resetPacing();
         ThreadLocalRandom rng = ThreadLocalRandom.current();
-        float margin = 180f;
+        float margin = GameConfig.HOUSE_SPAWN_SCREEN_MARGIN;
         float maxX = Math.max(margin, screenW - margin);
         for (int i = 0; i < GameConfig.HOUSE_REPOPULATE_ATTEMPTS; i++) {
             trySpawn(margin + rng.nextFloat() * (maxX - margin));

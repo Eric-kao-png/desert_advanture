@@ -1,16 +1,18 @@
 package com.desertadventure.state;
 
+import com.desertadventure.combat.CombatOutcome;
 import com.desertadventure.combat.system.CombatController;
+import com.desertadventure.config.GameMessages;
 import com.desertadventure.event.RequiredEventTracker;
 import com.desertadventure.exploration.StepBudgetService;
 import com.desertadventure.exploration.StormResetService;
+import com.desertadventure.exploration.TileInteractionContext;
 import com.desertadventure.exploration.TileInteractionHandler;
 import com.desertadventure.exploration.TravelMovement;
 import com.desertadventure.exploration.PathRunner;
 import com.desertadventure.map.model.GameMap;
 import com.desertadventure.map.model.GridPos;
 import com.desertadventure.map.model.MapGenerator;
-import com.desertadventure.map.model.StraightLinePath;
 import com.desertadventure.map.model.Tile;
 import com.desertadventure.map.view.MapOverlayLayout;
 import com.desertadventure.player.PlayerStats;
@@ -25,12 +27,14 @@ public class GameSession implements ExplorationCallbacks {
     private final TravelMovement travel;
     private final CombatController combatController;
     private final MapViewState mapViewState = new MapViewState();
-    private final TileInteractionHandler.InteractionContext tileContext;
+    private final MessageFeed messageFeed = new MessageFeed();
+    private final MapTravelActions mapTravel;
+    private final CombatOutcomeApplier combatOutcomes;
+    private final TileInteractionContext tileContext;
 
     private int playerX;
     private int playerY;
     private GameplayMode mode = GameplayMode.EXPLORE_IDLE;
-    private final MessageFeed messageFeed = new MessageFeed();
     private float stormTimer;
     private float scrollOffset;
     private boolean bossAvailableThisCycle;
@@ -40,7 +44,13 @@ public class GameSession implements ExplorationCallbacks {
         travel = new TravelMovement(this);
         eventTracker = new RequiredEventTracker(permanentProgress);
         combatController = new CombatController(playerStats);
-        tileContext = new TileInteractionHandler.InteractionContext(
+        mapTravel = new MapTravelActions(
+                map, mapViewState, travel, messageFeed,
+                modeAccess(), playerPosition());
+        combatOutcomes = new CombatOutcomeApplier(
+                map, playerStats, permanentProgress, travel, messageFeed,
+                modeAccess(), this::triggerStorm, this::getPlayerGridPos);
+        tileContext = new TileInteractionContext(
                 this, map, playerStats, permanentProgress,
                 eventTracker, travel::resume, available -> bossAvailableThisCycle = available);
         resetToSpawn();
@@ -58,6 +68,34 @@ public class GameSession implements ExplorationCallbacks {
         mode = GameplayMode.EXPLORE_IDLE;
         messageFeed.clear();
         bossAvailableThisCycle = false;
+    }
+
+    private SessionModeAccess modeAccess() {
+        return new SessionModeAccess() {
+            @Override
+            public GameplayMode get() {
+                return mode;
+            }
+
+            @Override
+            public void set(GameplayMode value) {
+                mode = value;
+            }
+        };
+    }
+
+    private MapTravelActions.PlayerPosition playerPosition() {
+        return new MapTravelActions.PlayerPosition() {
+            @Override
+            public GridPos get() {
+                return GameSession.this.getPlayerGridPos();
+            }
+
+            @Override
+            public void set(int x, int y) {
+                GameSession.this.setPlayerGridPos(x, y);
+            }
+        };
     }
 
     private void resetToSpawn() {
@@ -112,11 +150,7 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public void openMapOverlay() {
-        if (mode == GameplayMode.RUNNING) {
-            travel.stopForMap();
-        }
-        mapViewState.centerOn(getPlayerGridPos(), map);
-        mode = GameplayMode.MAP_OVERLAY;
+        mapTravel.openOverlay();
     }
 
     public void panMapView(int dx, int dy) {
@@ -135,19 +169,26 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public GridPos getDisplayGridPos() {
-        if (mode == GameplayMode.RUNNING && travel.getPathRunner().isRunning()) {
-            PathRunner runner = travel.getPathRunner();
+        PathRunner runner = activePathRunner();
+        if (runner != null) {
             return new GridPos(Math.round(runner.getCurrentX()), Math.round(runner.getCurrentY()));
         }
         return getPlayerGridPos();
     }
 
     public float getDistanceFromOrigin() {
-        if (mode == GameplayMode.RUNNING && travel.getPathRunner().isRunning()) {
-            PathRunner runner = travel.getPathRunner();
+        PathRunner runner = activePathRunner();
+        if (runner != null) {
             return (float) Math.hypot(runner.getCurrentX(), runner.getCurrentY());
         }
         return (float) Math.hypot(playerX, playerY);
+    }
+
+    private PathRunner activePathRunner() {
+        if (mode == GameplayMode.RUNNING && travel.getPathRunner().isRunning()) {
+            return travel.getPathRunner();
+        }
+        return null;
     }
 
     public MessageFeed getMessageFeed() {
@@ -172,29 +213,7 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public boolean trySelectDestination(GridPos destination) {
-        if (mode != GameplayMode.MAP_OVERLAY) {
-            return false;
-        }
-        if (!map.isInside(destination)) {
-            return false;
-        }
-        if (!map.canEnter(destination)) {
-            setPendingMessage("Cannot enter this tile.");
-            return false;
-        }
-        if (destination.equals(getPlayerGridPos())) {
-            mode = GameplayMode.EXPLORE_IDLE;
-            return true;
-        }
-
-        GridPos start = getPlayerGridPos();
-        StraightLinePath.Plan plan = StraightLinePath.plan(map, start, destination);
-        if (plan == null) {
-            setPendingMessage("Straight path is blocked.");
-            return false;
-        }
-        travel.start(plan, start);
-        return true;
+        return mapTravel.trySelectDestination(destination);
     }
 
     @Override
@@ -223,32 +242,12 @@ public class GameSession implements ExplorationCallbacks {
         map.revealAround(getPlayerGridPos());
         permanentProgress.save();
         mode = GameplayMode.EXPLORE_IDLE;
-        setPendingMessage("Sandstorm... You returned to camp center.");
+        setPendingMessage(GameMessages.SANDSTORM_RETURN);
         bossAvailableThisCycle = false;
     }
 
-    public void onCombatEnd(String result) {
-        Tile tile = map.getTile(getPlayerGridPos());
-        switch (result) {
-            case "victory" -> {
-                tile.setCycleCleared(true);
-                map.markCycleModified(tile.getPosition());
-                playerStats.addExperience(20);
-                setPendingMessage("Battle won!");
-                if (travel.hasActivePlan()) {
-                    travel.resume();
-                } else {
-                    mode = GameplayMode.EXPLORE_IDLE;
-                }
-            }
-            case "boss_victory" -> {
-                permanentProgress.setGameWon(true);
-                permanentProgress.save();
-                mode = GameplayMode.VICTORY;
-            }
-            case "defeat" -> triggerStorm();
-            default -> mode = GameplayMode.EXPLORE_IDLE;
-        }
+    public void onCombatEnd(CombatOutcome outcome) {
+        combatOutcomes.apply(outcome);
     }
 
     public void updateRunning(float delta) {

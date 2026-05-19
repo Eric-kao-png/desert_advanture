@@ -20,7 +20,7 @@ public class GameMap {
     private final int minCoord;
     private final int maxCoord;
     private final Tile[][] tiles;
-    private final Set<String> permanentlyExplored = new HashSet<>();
+    private final Set<GridPos> permanentlyExplored = new HashSet<>();
     private final Set<GridPos> cycleModifiedTiles = new HashSet<>();
 
     public GameMap(int size) {
@@ -95,7 +95,7 @@ public class GameMap {
     }
 
     public void markExplored(GridPos pos) {
-        permanentlyExplored.add(pos.x + "," + pos.y);
+        permanentlyExplored.add(pos);
     }
 
     public void revealAround(GridPos center) {
@@ -109,7 +109,7 @@ public class GameMap {
     }
 
     public boolean isPermanentlyExplored(GridPos pos) {
-        return permanentlyExplored.contains(pos.x + "," + pos.y);
+        return permanentlyExplored.contains(pos);
     }
 
     public void markCycleModified(GridPos pos) {
@@ -129,7 +129,7 @@ public class GameMap {
     }
 
     public int distanceBand(GridPos pos) {
-        return (Math.abs(pos.x) + Math.abs(pos.y)) / 3;
+        return (Math.abs(pos.x) + Math.abs(pos.y)) / GameConfig.MAP_DISTANCE_BAND_DIVISOR;
     }
 
     private int toIndex(int worldCoord) {

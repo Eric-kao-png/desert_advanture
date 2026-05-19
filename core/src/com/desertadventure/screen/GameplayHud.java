@@ -25,17 +25,20 @@ public class GameplayHud {
         font.setColor(Color.WHITE);
 
         float top = GameConfig.VIEW_HEIGHT;
+        float left = GameConfig.HUD_LEFT_MARGIN;
         font.draw(batch, String.format("HP: %.0f/%.0f",
-                session.getPlayerStats().getHp(), session.getPlayerStats().getMaxHp()), 16, top - 16);
+                session.getPlayerStats().getHp(), session.getPlayerStats().getMaxHp()), left, top - 16);
         font.draw(batch, String.format("Steps: %.1f/%.1f",
-                session.getStepBudget().getRemainingSteps(), session.getStepBudget().getStepBudget()), 16, top - 40);
+                session.getStepBudget().getRemainingSteps(), session.getStepBudget().getStepBudget()),
+                left, top - 16 - GameConfig.HUD_LINE_STEP);
         font.draw(batch, String.format("Required Events: %d/%d",
                 session.getEventTracker().getCompletedCount(), session.getEventTracker().getRequiredCount()),
-                16, top - 64);
+                left, top - 16 - GameConfig.HUD_LINE_STEP * 2);
 
         GridPos tile = session.getDisplayGridPos();
-        font.draw(batch, String.format("Tile: %s", tile), 16, top - 88);
-        font.draw(batch, String.format("Distance from origin: %.1f", session.getDistanceFromOrigin()), 16, top - 112);
+        font.draw(batch, String.format("Tile: %s", tile), left, top - 16 - GameConfig.HUD_LINE_STEP * 3);
+        font.draw(batch, String.format("Distance from origin: %.1f", session.getDistanceFromOrigin()),
+                left, top - 16 - GameConfig.HUD_LINE_STEP * 4);
 
         drawModeHint(batch, session, mode);
         drawMessageFeed(batch, session.getMessageFeed());
@@ -43,20 +46,23 @@ public class GameplayHud {
 
     private void drawModeHint(SpriteBatch batch, GameSession session, GameplayMode mode) {
         switch (mode) {
-            case EXPLORE_IDLE -> font.draw(batch, "[M] Map", 16, 40);
-            case MAP_OVERLAY -> font.draw(batch, "Click destination | Arrows: pan | [Esc] Cancel", 16, 40);
-            case RUNNING -> font.draw(batch, "Moving... | [M] Map", 16, 40);
+            case EXPLORE_IDLE -> font.draw(batch, "[M] Map", GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
+            case MAP_OVERLAY -> font.draw(batch, "Click destination | Arrows: pan | [Esc] Cancel",
+                    GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
+            case RUNNING -> font.draw(batch, "Moving... | [M] Map",
+                    GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
             case COMBAT, BOSS_COMBAT -> {
-                font.draw(batch, "WASD: Move | J: Attack K: Skill L: Ultimate", 16, 40);
+                font.draw(batch, "WASD: Move | J: Attack K: Skill L: Ultimate",
+                        GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
                 CombatEntity boss = findBoss(session);
                 if (boss != null) {
                     font.draw(batch, String.format("Boss HP: %.0f/%.0f", boss.getHp(), boss.getMaxHp()),
-                            GameConfig.VIEW_WIDTH - 280, GameConfig.VIEW_HEIGHT - 16);
+                            GameConfig.VIEW_WIDTH - GameConfig.BOSS_HUD_RIGHT_OFFSET, GameConfig.VIEW_HEIGHT - 16);
                 }
             }
             case STORM -> {
                 font.setColor(0.2f, 0.15f, 0.05f, 1f);
-                drawCentered(batch, "Sandstorm!", GameConfig.VIEW_HEIGHT * 0.55f);
+                drawCentered(batch, "Sandstorm!", GameConfig.VIEW_HEIGHT * GameConfig.STORM_TITLE_Y_RATIO);
                 font.setColor(Color.WHITE);
             }
             default -> {

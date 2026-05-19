@@ -1,6 +1,7 @@
 package com.desertadventure.combat.system;
 
 import com.badlogic.gdx.math.Rectangle;
+import com.desertadventure.combat.CombatOutcome;
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.player.PlayerStats;
@@ -19,7 +20,7 @@ public class CombatController {
     private float ultimateCooldown;
     private float arenaWidth;
     private float groundY;
-    private Consumer<String> onCombatEnd;
+    private Consumer<CombatOutcome> onCombatEnd;
     private boolean combatEnded;
 
     public CombatController(PlayerStats playerStats) {
@@ -30,7 +31,7 @@ public class CombatController {
         return player != null && !combatEnded;
     }
 
-    public void startCombat(int distanceBand, boolean boss, float arenaWidth, float groundY, Consumer<String> onEnd) {
+    public void startCombat(int distanceBand, boolean boss, float arenaWidth, float groundY, Consumer<CombatOutcome> onEnd) {
         this.bossFight = boss;
         this.arenaWidth = arenaWidth;
         this.groundY = groundY;
@@ -38,17 +39,17 @@ public class CombatController {
         enemies.clear();
         combatEnded = false;
 
-        float playerX = arenaWidth * 0.3f;
+        float playerX = arenaWidth * GameConfig.COMBAT_PLAYER_X_RATIO;
         player = new CombatEntity(CombatEntity.Kind.PLAYER, playerX, groundY,
                 playerStats.getMaxHp(), playerStats.getAttack(), playerStats.getMoveSpeed());
         playerStats.setHp(playerStats.getMaxHp());
 
-        float enemyHp = 30f + distanceBand * 10f;
+        float enemyHp = GameConfig.ENEMY_BASE_HP + distanceBand * GameConfig.ENEMY_HP_PER_DISTANCE_BAND;
         int enemyAttack = 0;
-        float enemyX = arenaWidth * 0.72f;
+        float enemyX = arenaWidth * GameConfig.COMBAT_ENEMY_X_RATIO;
         if (boss) {
-            enemyHp = 300f + distanceBand * 40f;
-            enemyX = arenaWidth * 0.78f;
+            enemyHp = GameConfig.BOSS_BASE_HP + distanceBand * GameConfig.BOSS_HP_PER_DISTANCE_BAND;
+            enemyX = arenaWidth * GameConfig.COMBAT_BOSS_X_RATIO;
             enemies.add(new CombatEntity(CombatEntity.Kind.BOSS, enemyX, groundY,
                     enemyHp, enemyAttack, GameConfig.BOSS_SPEED));
         } else {
@@ -95,15 +96,15 @@ public class CombatController {
         enemies.removeIf(e -> !e.isAlive());
 
         if (!player.isAlive()) {
-            endCombat("defeat");
+            endCombat(CombatOutcome.DEFEAT);
             return;
         }
         if (enemies.isEmpty()) {
-            endCombat(bossFight ? "boss_victory" : "victory");
+            endCombat(bossFight ? CombatOutcome.BOSS_VICTORY : CombatOutcome.VICTORY);
         }
     }
 
-    private void endCombat(String result) {
+    private void endCombat(CombatOutcome result) {
         if (combatEnded) {
             return;
         }
@@ -129,7 +130,7 @@ public class CombatController {
             return;
         }
         Rectangle hitbox = player.getForwardAttackHitbox(GameConfig.SKILL_RANGE, player.getHeight());
-        if (damageEnemiesInHitbox(hitbox, playerStats.getAttack() + 15)) {
+        if (damageEnemiesInHitbox(hitbox, playerStats.getAttack() + GameConfig.SKILL_ATTACK_BONUS)) {
             skillCooldown = GameConfig.SKILL_COOLDOWN;
         }
     }
@@ -139,7 +140,7 @@ public class CombatController {
             return;
         }
         Rectangle hitbox = player.getForwardAttackHitbox(GameConfig.ULTIMATE_RANGE, player.getHeight());
-        if (damageEnemiesInHitbox(hitbox, playerStats.getAttack() + 50)) {
+        if (damageEnemiesInHitbox(hitbox, playerStats.getAttack() + GameConfig.ULTIMATE_ATTACK_BONUS)) {
             ultimateCooldown = GameConfig.ULTIMATE_COOLDOWN;
         }
     }

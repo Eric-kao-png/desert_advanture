@@ -34,8 +34,7 @@ public class GameplayInputHandler {
             return;
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)
-                && (mode == GameplayMode.EXPLORE_IDLE || mode == GameplayMode.RUNNING)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M) && mode.canOpenMap()) {
             session.openMapOverlay();
         }
 
@@ -59,7 +58,7 @@ public class GameplayInputHandler {
     }
 
     public void updateCombatInput(float delta) {
-        if (session.getMode() != GameplayMode.COMBAT && session.getMode() != GameplayMode.BOSS_COMBAT) {
+        if (!session.getMode().isCombat()) {
             return;
         }
         float move = 0f;
