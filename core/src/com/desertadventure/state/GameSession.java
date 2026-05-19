@@ -112,6 +112,9 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public void openMapOverlay() {
+        if (mode == GameplayMode.RUNNING) {
+            travel.stopForMap();
+        }
         mapViewState.centerOn(getPlayerGridPos(), map);
         mode = GameplayMode.MAP_OVERLAY;
     }

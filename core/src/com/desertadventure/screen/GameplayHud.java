@@ -45,7 +45,7 @@ public class GameplayHud {
         switch (mode) {
             case EXPLORE_IDLE -> font.draw(batch, "[M] Map", 16, 40);
             case MAP_OVERLAY -> font.draw(batch, "Click destination | Arrows: pan | [Esc] Cancel", 16, 40);
-            case RUNNING -> font.draw(batch, "Moving...", 16, 40);
+            case RUNNING -> font.draw(batch, "Moving... | [M] Map", 16, 40);
             case COMBAT, BOSS_COMBAT -> {
                 font.draw(batch, "WASD: Move | J: Attack K: Skill L: Ultimate", 16, 40);
                 CombatEntity boss = findBoss(session);

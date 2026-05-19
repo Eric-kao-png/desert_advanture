@@ -55,8 +55,8 @@ public class GameplayScreen extends ScreenAdapter {
                 GameConfig.SKY_BASE_COLOR.b, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        update(delta);
         input.handle();
+        update(delta);
         draw(delta);
     }
 

@@ -34,7 +34,8 @@ public class GameplayInputHandler {
             return;
         }
 
-        if (mode == GameplayMode.EXPLORE_IDLE && Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)
+                && (mode == GameplayMode.EXPLORE_IDLE || mode == GameplayMode.RUNNING)) {
             session.openMapOverlay();
         }
 

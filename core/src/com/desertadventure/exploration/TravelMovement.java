@@ -80,6 +80,27 @@ public class TravelMovement {
         session.getMap().revealAround(session.getPlayerGridPos());
     }
 
+    /** Stops in-progress travel for the map overlay; keeps rounded grid position, clears the plan. */
+    public void stopForMap() {
+        if (activePlan == null) {
+            return;
+        }
+        PathRunner runner = pathRunner;
+        if (runner.isRunning()) {
+            float segmentTravel = runner.getProgress() * runner.getTotalDistance();
+            float targetConsumed = stepBaseline + segmentTravel;
+            float deltaCost = targetConsumed - stepsApplied;
+            if (deltaCost > 1e-5f) {
+                session.getStepBudget().consumeSteps(deltaCost);
+                stepsApplied = targetConsumed;
+            }
+            session.setPlayerGridPos(Math.round(runner.getCurrentX()), Math.round(runner.getCurrentY()));
+            runner.cancel();
+        }
+        clearPlan();
+        session.getMap().revealAround(session.getPlayerGridPos());
+    }
+
     public void resume() {
         if (activePlan == null) {
             session.setMode(GameplayMode.EXPLORE_IDLE);
