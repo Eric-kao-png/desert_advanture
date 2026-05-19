@@ -28,6 +28,7 @@ GameplayScreen
 | 檔案 | 職責 |
 |------|------|
 | `presentation/GameplayRenderer.java` | 門面：組合捲動、繪製順序、探索前景（玩家方塊、頂部 HUD 底） |
+| `presentation/SkyBackdrop.java` | 米黃全屏底 + 固定太陽（不隨捲動） |
 | `presentation/ParallaxBackground.java` | 三張視差圖 + 地板 `TextureRegion` 的水平拼貼 |
 | `presentation/BackgroundHouseSpawner.java` | 房屋列表、捲動座標、移動中／重填生成 |
 | `presentation/sprites/DesertSpriteAtlas.java` | 從 JSON 裁切地板與房屋 sprite |
@@ -41,6 +42,7 @@ GameplayScreen
 
 `GameplayRenderer.drawParallaxBackground` **必須**在已 `SpriteBatch.begin()` 的狀態下呼叫。順序固定為：
 
+0. **sky** — 全螢幕米黃底色（`GameConfig.SKY_BASE_COLOR`）+ 固定太陽 `sprites/Sun.png`（`SkyBackdrop`）
 1. **back** — `backgrounds/parallax_back.png`
 2. **houses** — `desert_house_1/2/3`（`BackgroundHouseSpawner`）
 3. **middle** — `backgrounds/parallax_middle.png`
@@ -80,7 +82,29 @@ GameplayScreen
 
 ## 4. 設定常數（`GameConfig`）
 
-### 4.1 視差速度
+### 4.1 天空底色與太陽
+
+| 常數 | 值 | 用途 |
+|------|-----|------|
+| `SKY_BASE_COLOR` | RGB ≈ `(245, 230, 199)` | 全屏米黃；`GameplayScreen` GL clear 同色 |
+| `SUN_TEXTURE_PATH` | `sprites/Sun.png` | 32×32 原圖 |
+| `SUN_DISPLAY_SIZE` | `112` | 螢幕繪製邊長 |
+| `SUN_X` / `SUN_Y` | 左上 + `SUN_VERTICAL_OFFSET`（**-190**） | 太陽左下角座標，**不捲動** |
+
+視差層若天空區域不透明，太陽會被遮住；可調資源透明度或將 `sky.draw` 改到 `drawBack` 之後。
+
+### 4.2 視差垂直偏移
+
+| 常數 | 值 | 用途 |
+|------|-----|------|
+| `PARALLAX_VERTICAL_OFFSET` | `-40` | 各層共用基準 |
+| `PARALLAX_BACK_EXTRA_OFFSET` | `-150` | 遠景 back（合計 Y = **-190**） |
+| `PARALLAX_MIDDLE_EXTRA_OFFSET` | `-40` | 中景 middle 與房屋（合計 **-80**） |
+| `PARALLAX_FORWARD_EXTRA_OFFSET` | `-30` | 僅 forward 層（forward 合計 Y = **-70**） |
+
+地板、玩家不受視差偏移影響；太陽使用獨立的 `SUN_VERTICAL_OFFSET`。
+
+### 4.3 視差速度
 
 基準：`SCROLL_SPEED = 200`（像素／秒，邏輯單位與螢幕座標一致）。
 
@@ -96,7 +120,7 @@ scrollProps    += base * HOUSE_PROP_PARALLAX_MULT // (0.25+0.55)/2 = 0.4
 
 後景最慢、前景最快，製造深度感。房屋速度取 back 與 middle 之間。
 
-### 4.2 房屋生成
+### 4.4 房屋生成
 
 | 常數 | 值 | 用途 |
 |------|-----|------|
@@ -108,7 +132,7 @@ scrollProps    += base * HOUSE_PROP_PARALLAX_MULT // (0.25+0.55)/2 = 0.4
 | `HOUSE_PROP_MIN_Y` / `MAX_Y` | `340` / `390` | 房屋 **底邊** 的螢幕 Y（LibGDX 左下原點） |
 | `HOUSE_PROP_DISPLAY_HEIGHT` | `112` | 繪製高度；寬度依 sprite 寬高比 |
 
-### 4.3 探索前景
+### 4.5 探索前景
 
 | 常數 | 位置 | 值 |
 |------|------|-----|
@@ -137,7 +161,7 @@ scrollProps    += base * HOUSE_PROP_PARALLAX_MULT // (0.25+0.55)/2 = 0.4
 1. `scale = screenH / texture.getHeight()` — 高度撐滿視窗  
 2. `tileW = texture.getWidth() * scale` — 單塊拼貼寬度  
 3. `offset = scroll % tileW`（負數時 `+= tileW` 正規化）  
-4. 從 `x = -offset` 開始，步進 `tileW` 直到蓋滿 `screenW`
+4. 從 `x = -offset` 開始，步進 `tileW` 直到蓋滿 `screenW`；繪製 Y 依層為 base、base+middle extra、或 base+forward extra
 
 `scroll` 為該層累積的**虛擬世界 X**（只增不減，除非未來手動重置）。數值越大，圖樣越往左移（捲動方向為「場景向左」）。
 

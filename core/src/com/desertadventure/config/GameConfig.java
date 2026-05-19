@@ -1,8 +1,23 @@
 package com.desertadventure.config;
 
+import com.badlogic.gdx.graphics.Color;
+
 public final class GameConfig {
     public static final int VIEW_WIDTH = 1280;
     public static final int VIEW_HEIGHT = 720;
+
+    /** Warm beige sky behind parallax; also used for GL clear. */
+    public static final Color SKY_BASE_COLOR = new Color(0.96f, 0.90f, 0.78f, 1f);
+    public static final String SUN_TEXTURE_PATH = "sprites/Sun.png";
+    /** Drawn size for 32×32 sun sprite (screen space). */
+    public static final float SUN_DISPLAY_SIZE = 112f;
+    /** Sun bottom-left corner (fixed, does not scroll). */
+    public static final float SUN_MARGIN_LEFT = 64f;
+    public static final float SUN_MARGIN_TOP = 48f;
+    /** Downward shift for sun (LibGDX Y; negative = lower on screen). */
+    public static final float SUN_VERTICAL_OFFSET = -190f;
+    public static final float SUN_X = SUN_MARGIN_LEFT;
+    public static final float SUN_Y = VIEW_HEIGHT - SUN_MARGIN_TOP - SUN_DISPLAY_SIZE + SUN_VERTICAL_OFFSET;
 
     public static final int BASE_STEP_BUDGET = 12;
     public static final float TILE_TRAVEL_SECONDS = 0.4f;
@@ -11,6 +26,14 @@ public final class GameConfig {
     public static final float PARALLAX_BACK_MULT = 0.25f;
     public static final float PARALLAX_MIDDLE_MULT = 0.55f;
     public static final float PARALLAX_FORWARD_MULT = 1f;
+    /** Base vertical shift shared by parallax layers (LibGDX Y; negative = lower on screen). */
+    public static final float PARALLAX_VERTICAL_OFFSET = -40f;
+    /** Extra shift for back parallax (added to {@link #PARALLAX_VERTICAL_OFFSET}). */
+    public static final float PARALLAX_BACK_EXTRA_OFFSET = -150f;
+    /** Extra shift for middle parallax and house spawn Y (added to {@link #PARALLAX_VERTICAL_OFFSET}). */
+    public static final float PARALLAX_MIDDLE_EXTRA_OFFSET = -40f;
+    /** Extra shift for forward parallax only (added to {@link #PARALLAX_VERTICAL_OFFSET}). */
+    public static final float PARALLAX_FORWARD_EXTRA_OFFSET = -30f;
     /** Parallax speed for house props (drawn between back and middle layers). */
     public static final float HOUSE_PROP_PARALLAX_MULT = (PARALLAX_BACK_MULT + PARALLAX_MIDDLE_MULT) * 0.5f;
     /** Chance [0,1] to spawn when a spawn attempt is made. */
@@ -24,9 +47,9 @@ public final class GameConfig {
     public static final int HOUSE_REPOPULATE_ATTEMPTS = 4;
     /** Horizontal jitter added to spawn scroll position while running. */
     public static final float HOUSE_SPAWN_JITTER = 200f;
-    /** Screen Y range for house bases (bottom of sprite); narrow band = less height variation. */
-    public static final float HOUSE_PROP_MIN_Y = 340f;
-    public static final float HOUSE_PROP_MAX_Y = 390f;
+    /** Screen Y range for house bases (bottom of sprite); includes parallax vertical offsets. */
+    public static final float HOUSE_PROP_MIN_Y = 340f + PARALLAX_VERTICAL_OFFSET + PARALLAX_MIDDLE_EXTRA_OFFSET;
+    public static final float HOUSE_PROP_MAX_Y = 390f + PARALLAX_VERTICAL_OFFSET + PARALLAX_MIDDLE_EXTRA_OFFSET;
     /** Drawn height for house sprites (width follows aspect ratio). */
     public static final float HOUSE_PROP_DISPLAY_HEIGHT = 112f;
 

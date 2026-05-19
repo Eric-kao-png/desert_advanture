@@ -53,7 +53,8 @@ public class GameplayScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.1f, 0.1f, 0.12f, 1f);
+        Gdx.gl.glClearColor(GameConfig.SKY_BASE_COLOR.r, GameConfig.SKY_BASE_COLOR.g,
+                GameConfig.SKY_BASE_COLOR.b, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         update(delta);

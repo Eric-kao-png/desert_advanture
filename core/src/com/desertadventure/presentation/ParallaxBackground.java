@@ -48,15 +48,18 @@ public class ParallaxBackground implements com.badlogic.gdx.utils.Disposable {
     }
 
     public void drawBack(SpriteBatch batch, float screenW, float screenH) {
-        drawTiled(batch, back, scrollBack, screenW, screenH);
+        float drawY = GameConfig.PARALLAX_VERTICAL_OFFSET + GameConfig.PARALLAX_BACK_EXTRA_OFFSET;
+        drawTiled(batch, back, scrollBack, screenW, screenH, drawY);
     }
 
     public void drawMiddle(SpriteBatch batch, float screenW, float screenH) {
-        drawTiled(batch, middle, scrollMiddle, screenW, screenH);
+        float drawY = GameConfig.PARALLAX_VERTICAL_OFFSET + GameConfig.PARALLAX_MIDDLE_EXTRA_OFFSET;
+        drawTiled(batch, middle, scrollMiddle, screenW, screenH, drawY);
     }
 
     public void drawForward(SpriteBatch batch, float screenW, float screenH) {
-        drawTiled(batch, forward, scrollForward, screenW, screenH);
+        float drawY = GameConfig.PARALLAX_VERTICAL_OFFSET + GameConfig.PARALLAX_FORWARD_EXTRA_OFFSET;
+        drawTiled(batch, forward, scrollForward, screenW, screenH, drawY);
     }
 
     public void drawFloor(SpriteBatch batch, float screenW, float groundY) {
@@ -71,7 +74,8 @@ public class ParallaxBackground implements com.badlogic.gdx.utils.Disposable {
         }
     }
 
-    private static void drawTiled(SpriteBatch batch, Texture texture, float scroll, float screenW, float screenH) {
+    private static void drawTiled(SpriteBatch batch, Texture texture, float scroll,
+                                  float screenW, float screenH, float drawY) {
         float scale = screenH / texture.getHeight();
         float tileW = texture.getWidth() * scale;
         float offset = scroll % tileW;
@@ -79,7 +83,7 @@ public class ParallaxBackground implements com.badlogic.gdx.utils.Disposable {
             offset += tileW;
         }
         for (float x = -offset; x < screenW; x += tileW) {
-            batch.draw(texture, x, 0f, tileW, screenH);
+            batch.draw(texture, x, drawY, tileW, screenH);
         }
     }
 

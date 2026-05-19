@@ -20,6 +20,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final Matrix4 screenProjection = new Matrix4();
     private final DesertSpriteAtlas desertSprites;
+    private final SkyBackdrop sky;
     private final ParallaxBackground parallax;
     private final BackgroundHouseSpawner houses;
     private final MapOverlayRenderer mapOverlay;
@@ -27,6 +28,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
     public GameplayRenderer() {
         screenProjection.setToOrtho2D(0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT);
         desertSprites = new DesertSpriteAtlas();
+        sky = new SkyBackdrop();
         parallax = new ParallaxBackground(desertSprites.get(DesertSpriteAtlas.FLOOR_TILE));
         houses = new BackgroundHouseSpawner(desertSprites);
         mapOverlay = new MapOverlayRenderer();
@@ -35,6 +37,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
     @Override
     public void dispose() {
         shapes.dispose();
+        sky.dispose();
         parallax.dispose();
         desertSprites.dispose();
         mapOverlay.dispose();
@@ -49,13 +52,14 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         houses.repopulate(screenW);
     }
 
-    /** back → houses → middle → forward → floor. Batch must already be begun. */
+    /** sky → sun → back → houses → middle → forward → floor. Batch must already be begun. */
     public void drawParallaxBackground(SpriteBatch batch, boolean running, float delta) {
         float w = GameConfig.VIEW_WIDTH;
         float h = GameConfig.VIEW_HEIGHT;
         parallax.scroll(delta, running);
         houses.scroll(delta, running);
         batch.setProjectionMatrix(screenProjection);
+        sky.draw(batch, w, h);
         parallax.drawBack(batch, w, h);
         houses.draw(batch, w);
         parallax.drawMiddle(batch, w, h);
