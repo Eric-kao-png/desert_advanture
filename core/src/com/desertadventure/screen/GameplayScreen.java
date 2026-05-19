@@ -154,6 +154,7 @@ public class GameplayScreen extends ScreenAdapter {
     private void draw(float delta) {
         GameplayMode mode = session.getMode();
         float groundY = 120f;
+        SpriteBatch batch = game.getBatch();
         renderer.setProjectionMatrix(gameViewport.getProjectionMatrix());
 
         if (mode == GameplayMode.MAP_OVERLAY) {
@@ -162,34 +163,42 @@ public class GameplayScreen extends ScreenAdapter {
 
         switch (mode) {
             case MAP_OVERLAY -> {
-                renderer.renderExplore(session, false);
+                drawExploreScene(batch, false, delta);
                 MapOverlayLayout layout = session.createMapOverlayLayout();
                 renderer.renderMapOverlay(session, layout, mapInput.getHoveredGridPos());
             }
             case COMBAT, BOSS_COMBAT -> {
                 ensureCombatInitialized(mode);
-                renderer.renderExplore(session, false);
+                batch.begin();
+                renderer.drawParallaxBackground(batch, false, delta);
+                batch.end();
                 CombatEntity combatPlayer = session.getCombatController().getPlayer();
                 if (combatPlayer != null) {
                     List<CombatEntity> entities = new ArrayList<>();
                     entities.add(combatPlayer);
                     entities.addAll(session.getCombatController().getEnemies());
-                    renderer.renderCombat(entities, GameConfig.VIEW_WIDTH, groundY,
-                            session.getCombatController().isBossFight());
+                    renderer.renderCombatEntities(entities);
                 }
             }
             case STORM -> {
-                renderer.renderExplore(session, false);
+                drawExploreScene(batch, false, delta);
                 renderer.renderStorm(session.getStormTimer() / GameConfig.STORM_FADE_SECONDS);
             }
             case VICTORY -> {
                 game.setScreen(new VictoryScreen(game));
                 return;
             }
-            default -> renderer.renderExplore(session, mode == GameplayMode.RUNNING);
+            default -> drawExploreScene(batch, mode == GameplayMode.RUNNING, delta);
         }
 
         drawHud();
+    }
+
+    private void drawExploreScene(SpriteBatch batch, boolean running, float delta) {
+        batch.begin();
+        renderer.drawParallaxBackground(batch, running, delta);
+        batch.end();
+        renderer.renderExploreForeground(session, running);
     }
 
     private void drawHud() {
@@ -314,7 +323,9 @@ public class GameplayScreen extends ScreenAdapter {
 
     @Override
     public void dispose() {
-        renderer.dispose();
+        if (renderer != null) {
+            renderer.dispose();
+        }
         if (font != null) {
             font.dispose();
         }

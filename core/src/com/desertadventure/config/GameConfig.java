@@ -7,6 +7,10 @@ public final class GameConfig {
     public static final int BASE_STEP_BUDGET = 12;
     public static final float TILE_TRAVEL_SECONDS = 0.4f;
     public static final float SCROLL_SPEED = 200f;
+    /** Parallax multipliers vs SCROLL_SPEED while moving (back slowest, forward fastest). */
+    public static final float PARALLAX_BACK_MULT = 0.25f;
+    public static final float PARALLAX_MIDDLE_MULT = 0.55f;
+    public static final float PARALLAX_FORWARD_MULT = 1f;
 
     public static final int REQUIRED_EVENT_COUNT = 3;
     public static final int MAP_SIZE = 501;

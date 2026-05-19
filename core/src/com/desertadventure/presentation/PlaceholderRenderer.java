@@ -1,6 +1,11 @@
 package com.desertadventure.presentation;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.desertadventure.combat.model.CombatEntity;
@@ -15,16 +20,79 @@ import com.desertadventure.state.GameSession;
 import java.util.List;
 
 public class PlaceholderRenderer {
+    private static final String BG_BACK = "backgrounds/DesBg_Back.png";
+    private static final String BG_MIDDLE = "backgrounds/DesBg_Middle.png";
+    private static final String BG_FORWARD = "backgrounds/DesBg_Forward.png";
+    private static final String DESERT_ATLAS = "backgrounds/Desert.png";
+    /**
+     * Floor tile in Desert.png (image origin bottom-left).
+     * Rect from (0, 128) to (32, 64) → x=0..32, y=64..128, size 32×64.
+     */
+    private static final int FLOOR_BL_LEFT = 0;
+    private static final int FLOOR_BL_BOTTOM = 64;
+    private static final int FLOOR_BL_RIGHT = 32;
+    private static final int FLOOR_BL_TOP = 128;
+    private static final float EXPLORE_GROUND_Y = 120f;
+
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final Matrix4 screenProjection = new Matrix4();
-    private float parallaxOffset;
+    private final Texture bgBack;
+    private final Texture bgMiddle;
+    private final Texture bgForward;
+    private final Texture desertAtlas;
+    private final Texture floorTexture;
+    private final TextureRegion floorTile;
+    private float scrollBack;
+    private float scrollMiddle;
+    private float scrollForward;
 
     public PlaceholderRenderer() {
         screenProjection.setToOrtho2D(0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT);
+        bgBack = loadBackground(BG_BACK);
+        bgMiddle = loadBackground(BG_MIDDLE);
+        bgForward = loadBackground(BG_FORWARD);
+        desertAtlas = loadPixelArt(DESERT_ATLAS);
+        floorTexture = extractFloorTileTexture();
+        floorTile = new TextureRegion(floorTexture);
+    }
+
+    /**
+     * Crops using bottom-left image coords; Pixmap uses top-left, so we convert y.
+     */
+    private static Texture extractFloorTileTexture() {
+        Pixmap atlas = new Pixmap(Gdx.files.internal(DESERT_ATLAS));
+        int w = FLOOR_BL_RIGHT - FLOOR_BL_LEFT;
+        int h = FLOOR_BL_TOP - FLOOR_BL_BOTTOM;
+        int srcX = FLOOR_BL_LEFT;
+        int srcY = atlas.getHeight() - FLOOR_BL_TOP;
+        Pixmap slice = new Pixmap(w, h, atlas.getFormat());
+        slice.drawPixmap(atlas, 0, 0, srcX, srcY, w, h);
+        atlas.dispose();
+        Texture texture = new Texture(slice);
+        slice.dispose();
+        texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        return texture;
+    }
+
+    private static Texture loadBackground(String path) {
+        Texture texture = new Texture(Gdx.files.internal(path));
+        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        return texture;
+    }
+
+    private static Texture loadPixelArt(String path) {
+        Texture texture = new Texture(Gdx.files.internal(path));
+        texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        return texture;
     }
 
     public void dispose() {
         shapes.dispose();
+        bgBack.dispose();
+        bgMiddle.dispose();
+        bgForward.dispose();
+        desertAtlas.dispose();
+        floorTexture.dispose();
     }
 
     public void setProjectionMatrix(Matrix4 projection) {
@@ -36,13 +104,60 @@ public class PlaceholderRenderer {
         shapes.begin(ShapeRenderer.ShapeType.Filled);
     }
 
-    public void renderExplore(GameSession session, boolean running) {
+    /**
+     * Draws tiled parallax desert layers (back → middle → forward). Call with {@link SpriteBatch#begin()} active.
+     */
+    public void drawParallaxBackground(SpriteBatch batch, boolean running, float delta) {
+        if (running) {
+            float base = GameConfig.SCROLL_SPEED * delta;
+            scrollForward += base * GameConfig.PARALLAX_FORWARD_MULT;
+            scrollMiddle += base * GameConfig.PARALLAX_MIDDLE_MULT;
+            scrollBack += base * GameConfig.PARALLAX_BACK_MULT;
+        }
+
         float w = GameConfig.VIEW_WIDTH;
         float h = GameConfig.VIEW_HEIGHT;
-        float groundY = 120f;
+        batch.setProjectionMatrix(screenProjection);
+        drawTiledLayer(batch, bgBack, scrollBack, w, h);
+        drawTiledLayer(batch, bgMiddle, scrollMiddle, w, h);
+        drawTiledLayer(batch, bgForward, scrollForward, w, h);
+        drawTiledFloor(batch, scrollForward, w, EXPLORE_GROUND_Y);
+    }
 
-        Tile tile = session.getCurrentTile();
-        drawBackground(tile, w, h, groundY, running);
+    private void drawTiledFloor(SpriteBatch batch, float scroll, float screenW, float groundY) {
+        float tileH = groundY;
+        int floorW = FLOOR_BL_RIGHT - FLOOR_BL_LEFT;
+        int floorH = FLOOR_BL_TOP - FLOOR_BL_BOTTOM;
+        float tileW = tileH * (floorW / (float) floorH);
+        float offset = scroll % tileW;
+        if (offset < 0f) {
+            offset += tileW;
+        }
+        float x = -offset;
+        while (x < screenW) {
+            batch.draw(floorTile, x, 0f, tileW, tileH);
+            x += tileW;
+        }
+    }
+
+    private static void drawTiledLayer(SpriteBatch batch, Texture texture, float scroll, float screenW, float screenH) {
+        float scale = screenH / texture.getHeight();
+        float tileW = texture.getWidth() * scale;
+        float offset = scroll % tileW;
+        if (offset < 0f) {
+            offset += tileW;
+        }
+        float x = -offset;
+        while (x < screenW) {
+            batch.draw(texture, x, 0f, tileW, screenH);
+            x += tileW;
+        }
+    }
+
+    public void renderExploreForeground(GameSession session, boolean running) {
+        float w = GameConfig.VIEW_WIDTH;
+        float h = GameConfig.VIEW_HEIGHT;
+        float groundY = EXPLORE_GROUND_Y;
 
         float playerX = w * 0.35f;
         float playerY = groundY;
@@ -51,12 +166,9 @@ public class PlaceholderRenderer {
         drawHudPanel(0, h - 60, w, 60, new Color(0f, 0f, 0f, 0.35f));
     }
 
-    public void renderCombat(List<CombatEntity> entities, float arenaWidth, float groundY, boolean bossFight) {
+    /** Draws combat entities only; parallax background must be drawn separately. */
+    public void renderCombatEntities(List<CombatEntity> entities) {
         beginShapes();
-        shapes.setColor(0.85f, 0.7f, 0.45f, 1f);
-        shapes.rect(0, 0, arenaWidth, groundY);
-        shapes.setColor(0.55f, 0.75f, 0.95f, 1f);
-        shapes.rect(0, groundY, arenaWidth, GameConfig.VIEW_HEIGHT - groundY);
         for (CombatEntity entity : entities) {
             if (!entity.isAlive() && entity.getKind() != CombatEntity.Kind.PLAYER) {
                 continue;
@@ -125,31 +237,6 @@ public class PlaceholderRenderer {
                 new Color(0.9f, 0.75f, 0.35f, alpha * 0.85f));
     }
 
-    private void drawBackground(Tile tile, float w, float h, float groundY, boolean running) {
-        if (running) {
-            parallaxOffset -= GameConfig.SCROLL_SPEED * 0.016f;
-            if (parallaxOffset < -200f) {
-                parallaxOffset = 0f;
-            }
-        }
-
-        Color sky = skyForTile(tile.getType());
-        Color sand = sandForTile(tile.getType());
-
-        beginShapes();
-        shapes.setColor(sky);
-        shapes.rect(0, groundY, w, h - groundY);
-        shapes.setColor(sand);
-        shapes.rect(0, 0, w, groundY);
-
-        shapes.setColor(sand.r * 0.85f, sand.g * 0.85f, sand.b * 0.85f, 1f);
-        for (int i = 0; i < 5; i++) {
-            float duneX = (i * 250f + parallaxOffset) % (w + 100f) - 50f;
-            shapes.triangle(duneX, groundY, duneX + 120f, groundY + 40f, duneX + 240f, groundY);
-        }
-        shapes.end();
-    }
-
     private void drawPlayer(float x, float y, boolean running, boolean idle) {
         beginShapes();
         shapes.setColor(0.2f, 0.5f, 0.95f, 1f);
@@ -178,22 +265,6 @@ public class PlaceholderRenderer {
             case EVENT -> new Color(0.95f, 0.85f, 0.2f, 1f);
             case COMBAT -> new Color(0.9f, 0.3f, 0.3f, 1f);
             case BOSS_SUMMON -> new Color(0.6f, 0.2f, 0.9f, 1f);
-        };
-    }
-
-    private Color skyForTile(TileType type) {
-        return switch (type) {
-            case COMBAT, BOSS_SUMMON -> new Color(0.5f, 0.55f, 0.7f, 1f);
-            case EVENT -> new Color(0.55f, 0.7f, 0.95f, 1f);
-            default -> new Color(0.45f, 0.65f, 0.95f, 1f);
-        };
-    }
-
-    private Color sandForTile(TileType type) {
-        return switch (type) {
-            case ITEM -> new Color(0.9f, 0.8f, 0.45f, 1f);
-            case BLOCKED -> new Color(0.65f, 0.55f, 0.4f, 1f);
-            default -> new Color(0.85f, 0.72f, 0.42f, 1f);
         };
     }
 
