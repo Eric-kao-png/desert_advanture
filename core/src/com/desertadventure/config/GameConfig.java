@@ -99,14 +99,17 @@ public final class GameConfig {
     public static final double PLAYER_BOB_FREQUENCY = 0.02;
     public static final float STORM_OVERLAY_ALPHA_SCALE = 0.85f;
     public static final float MAP_OVERLAY_DIM_ALPHA = 0.65f;
-    public static final float CHARACTER_PANEL_WIDTH = 520f;
-    public static final float CHARACTER_PANEL_HEIGHT = 540f;
+    public static final float CHARACTER_PANEL_WIDTH = 920f;
+    public static final float CHARACTER_PANEL_HEIGHT = 520f;
     public static final float CHARACTER_PANEL_LINE_HEIGHT = 32f;
-    public static final float CHARACTER_PANEL_PADDING = 28f;
+    public static final float CHARACTER_PANEL_PADDING = 24f;
+    public static final float CHARACTER_PANEL_COLUMN_GAP = 16f;
     public static final float CHARACTER_PANEL_BG_ALPHA = 0.92f;
-    public static final float CHARACTER_STATS_BLOCK_HEIGHT = 248f;
+    public static final float CHARACTER_STAT_BAR_HEIGHT = 20f;
+    public static final float CHARACTER_STAT_BAR_SECTION_GAP = 20f;
     public static final int INVENTORY_SLOT_COUNT = 12;
-    public static final int INVENTORY_GRID_COLS = 4;
+    /** Backpack grid in the left column (3×4). */
+    public static final int INVENTORY_GRID_COLS = 3;
     public static final float INVENTORY_SLOT_SIZE = 64f;
     public static final float INVENTORY_SLOT_GAP = 10f;
     public static final float INVENTORY_DETAIL_WIDTH = 360f;

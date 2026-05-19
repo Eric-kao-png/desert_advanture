@@ -16,8 +16,17 @@ import com.desertadventure.screen.CharacterOverlayInput;
 import com.desertadventure.screen.CharacterOverlayLayout;
 import com.desertadventure.state.GameSession;
 
-/** Character stats, backpack grid, and item detail popup. */
+/** Three-column character panel: backpack, portrait placeholder, stats. */
 public class CharacterOverlayRenderer {
+    private static final Color COLUMN_DIVIDER = new Color(0.35f, 0.32f, 0.28f, 0.9f);
+    private static final Color PORTRAIT_FILL = new Color(0.09f, 0.08f, 0.07f, 0.85f);
+    private static final Color PORTRAIT_BORDER = new Color(0.45f, 0.4f, 0.34f, 1f);
+    private static final Color BAR_BORDER = new Color(0.5f, 0.45f, 0.38f, 1f);
+    private static final Color HP_BAR_BG = new Color(0.22f, 0.1f, 0.1f, 0.95f);
+    private static final Color HP_BAR_FILL = new Color(0.82f, 0.22f, 0.2f, 1f);
+    private static final Color STAMINA_BAR_BG = new Color(0.14f, 0.16f, 0.1f, 0.95f);
+    private static final Color STAMINA_BAR_FILL = new Color(0.78f, 0.72f, 0.28f, 1f);
+
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final ItemSpriteRegistry itemSprites = new ItemSpriteRegistry();
     private final GlyphLayout glyphLayout = new GlyphLayout();
@@ -38,46 +47,14 @@ public class CharacterOverlayRenderer {
         boolean showDetail = shouldShowDetail(session, input);
 
         drawBaseShapes(layout, input);
+        drawStatBars(session, layout);
 
-        float pad = GameConfig.CHARACTER_PANEL_PADDING;
         float lineH = GameConfig.CHARACTER_PANEL_LINE_HEIGHT;
-        float panelX = layout.getPanelX();
-        float panelY = layout.getPanelY();
-        float panelH = layout.getPanelH();
-        float textX = panelX + pad;
-        float y = panelY + panelH - pad;
-
         batch.begin();
-        font.setColor(Color.WHITE);
-        font.draw(batch, GameMessages.CHARACTER_PANEL_TITLE, textX, y);
-        y -= lineH * 1.15f;
-
-        font.setColor(0.85f, 0.75f, 0.55f, 1f);
-        font.draw(batch, GameMessages.STAT_SECTION_HEALTH, textX, y);
-        y -= lineH;
-        font.setColor(Color.WHITE);
-        font.draw(batch, formatHp(session), textX + 12f, y);
-        y -= lineH * 0.95f;
-
-        font.setColor(0.85f, 0.75f, 0.55f, 1f);
-        font.draw(batch, GameMessages.STAT_SECTION_COMBAT, textX, y);
-        y -= lineH;
-        font.setColor(Color.WHITE);
-        font.draw(batch, formatAttack(session), textX + 12f, y);
-        y -= lineH * 0.95f;
-
-        font.setColor(0.85f, 0.75f, 0.55f, 1f);
-        font.draw(batch, GameMessages.STAT_SECTION_EXPLORATION, textX, y);
-        y -= lineH;
-        font.setColor(Color.WHITE);
-        font.draw(batch, formatStamina(session), textX + 12f, y);
-        y -= lineH * 1.1f;
-
-        font.setColor(0.85f, 0.75f, 0.55f, 1f);
-        font.draw(batch, GameMessages.INVENTORY_SECTION, textX, y);
-
-        drawSlotIcons(batch, layout, session);
-        font.setColor(Color.WHITE);
+        drawTitle(batch, font, layout);
+        drawInventorySection(batch, font, layout, session);
+        drawPortraitPlaceholder(batch, font, layout);
+        drawStatsSection(batch, font, session, layout, lineH);
         batch.end();
 
         if (showDetail) {
@@ -89,6 +66,92 @@ public class CharacterOverlayRenderer {
         }
     }
 
+    private void drawTitle(SpriteBatch batch, BitmapFont font, CharacterOverlayLayout layout) {
+        glyphLayout.setText(font, GameMessages.CHARACTER_PANEL_TITLE);
+        float titleX = layout.getPanelX() + (layout.getPanelW() - glyphLayout.width) / 2f;
+        font.setColor(Color.WHITE);
+        font.draw(batch, GameMessages.CHARACTER_PANEL_TITLE, titleX, layout.getTitleY());
+    }
+
+    private void drawInventorySection(
+            SpriteBatch batch,
+            BitmapFont font,
+            CharacterOverlayLayout layout,
+            GameSession session) {
+        font.setColor(0.85f, 0.75f, 0.55f, 1f);
+        font.draw(batch, GameMessages.INVENTORY_SECTION,
+                layout.getInventoryTitleX(), layout.getInventoryTitleY());
+        drawSlotIcons(batch, layout, session);
+    }
+
+    private void drawPortraitPlaceholder(SpriteBatch batch, BitmapFont font, CharacterOverlayLayout layout) {
+        glyphLayout.setText(font, GameMessages.CHARACTER_PORTRAIT_PLACEHOLDER);
+        float textX = layout.getPortraitX() + (layout.getPortraitW() - glyphLayout.width) / 2f;
+        float textY = layout.getPortraitY() + layout.getPortraitH() / 2f;
+        font.setColor(0.45f, 0.42f, 0.38f, 1f);
+        font.draw(batch, GameMessages.CHARACTER_PORTRAIT_PLACEHOLDER, textX, textY);
+    }
+
+    private void drawStatBars(GameSession session, CharacterOverlayLayout layout) {
+        var stats = session.getPlayerStats();
+        var steps = session.getStepBudget();
+
+        float barX = layout.getStatBarX();
+        float barW = layout.getStatBarW();
+        float barH = layout.getStatBarH();
+
+        float hpRatio = stats.getMaxHp() > 0f ? stats.getHp() / stats.getMaxHp() : 0f;
+        StatBarDrawer.draw(shapes, barX, layout.getHpBarBottom(), barW, barH,
+                hpRatio, HP_BAR_BG, HP_BAR_FILL, BAR_BORDER);
+
+        float maxSteps = steps.getStepBudget();
+        float staminaRatio = maxSteps > 0f ? steps.getRemainingSteps() / maxSteps : 0f;
+        StatBarDrawer.draw(shapes, barX, layout.getStaminaBarBottom(), barW, barH,
+                staminaRatio, STAMINA_BAR_BG, STAMINA_BAR_FILL, BAR_BORDER);
+    }
+
+    private void drawStatsSection(
+            SpriteBatch batch,
+            BitmapFont font,
+            GameSession session,
+            CharacterOverlayLayout layout,
+            float lineH) {
+        float textX = layout.getStatsTextX();
+        var stats = session.getPlayerStats();
+        var steps = session.getStepBudget();
+
+        font.setColor(0.85f, 0.75f, 0.55f, 1f);
+        font.draw(batch, GameMessages.STAT_SECTION_HEALTH, textX, layout.getStatsTopY());
+        drawBarValueLabel(batch, font, layout.getStatBarX(), layout.getStatBarW(),
+                layout.getHpBarBottom(), layout.getStatBarH(),
+                String.format("%.0f / %.0f", stats.getHp(), stats.getMaxHp()));
+
+        font.draw(batch, GameMessages.STAT_SECTION_COMBAT, textX, layout.getCombatSectionY());
+        font.setColor(Color.WHITE);
+        font.draw(batch, formatAttack(session), textX + 8f, layout.getCombatSectionY() - lineH);
+
+        font.setColor(0.85f, 0.75f, 0.55f, 1f);
+        font.draw(batch, GameMessages.STAT_SECTION_EXPLORATION, textX, layout.getExplorationSectionY());
+        drawBarValueLabel(batch, font, layout.getStatBarX(), layout.getStatBarW(),
+                layout.getStaminaBarBottom(), layout.getStatBarH(),
+                String.format("%.1f / %.1f", steps.getRemainingSteps(), steps.getStepBudget()));
+    }
+
+    private void drawBarValueLabel(
+            SpriteBatch batch,
+            BitmapFont font,
+            float barX,
+            float barW,
+            float barBottom,
+            float barHeight,
+            String text) {
+        glyphLayout.setText(font, text);
+        float textX = barX + barW - glyphLayout.width - 6f;
+        float textY = barBottom + (barHeight + glyphLayout.height) / 2f;
+        font.setColor(0.95f, 0.95f, 0.95f, 1f);
+        font.draw(batch, text, textX, textY);
+    }
+
     private void drawBaseShapes(CharacterOverlayLayout layout, CharacterOverlayInput input) {
         ShapeDrawer.fillRect(shapes, 0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT,
                 new Color(0f, 0f, 0f, GameConfig.MAP_OVERLAY_DIM_ALPHA));
@@ -97,10 +160,29 @@ public class CharacterOverlayRenderer {
                 layout.getPanelW(), layout.getPanelH(),
                 new Color(0.12f, 0.11f, 0.1f, GameConfig.CHARACTER_PANEL_BG_ALPHA));
 
+        drawColumnDividers(layout);
+        drawPortraitFrame(layout);
         drawSlotFrames(layout, input);
     }
 
-    /** Dims the panel, then draws the detail card and buttons on top of stats / grid. */
+    private void drawColumnDividers(CharacterOverlayLayout layout) {
+        float top = layout.getHeaderBottom() - GameConfig.CHARACTER_PANEL_LINE_HEIGHT * 0.35f;
+        float bottom = layout.getContentBottom();
+        float h = top - bottom;
+        float w = 2f;
+        float x1 = layout.getCenterColX() - GameConfig.CHARACTER_PANEL_COLUMN_GAP / 2f - w / 2f;
+        float x2 = layout.getRightColX() - GameConfig.CHARACTER_PANEL_COLUMN_GAP / 2f - w / 2f;
+        ShapeDrawer.fillRect(shapes, x1, bottom, w, h, COLUMN_DIVIDER);
+        ShapeDrawer.fillRect(shapes, x2, bottom, w, h, COLUMN_DIVIDER);
+    }
+
+    private void drawPortraitFrame(CharacterOverlayLayout layout) {
+        ShapeDrawer.fillRect(shapes, layout.getPortraitX(), layout.getPortraitY(),
+                layout.getPortraitW(), layout.getPortraitH(), PORTRAIT_FILL);
+        ShapeDrawer.strokeRect(shapes, layout.getPortraitX(), layout.getPortraitY(),
+                layout.getPortraitW(), layout.getPortraitH(), PORTRAIT_BORDER, 2f);
+    }
+
     private void drawDetailOverlay(CharacterOverlayLayout layout, CharacterOverlayInput input) {
         ShapeDrawer.fillRect(shapes, layout.getPanelX(), layout.getPanelY(),
                 layout.getPanelW(), layout.getPanelH(),
@@ -220,18 +302,7 @@ public class CharacterOverlayRenderer {
         itemSprites.dispose();
     }
 
-    private static String formatHp(GameSession session) {
-        var stats = session.getPlayerStats();
-        return String.format("%s %.0f / %.0f", GameMessages.STAT_HP, stats.getHp(), stats.getMaxHp());
-    }
-
     private static String formatAttack(GameSession session) {
         return String.format("%s %d", GameMessages.STAT_ATTACK, session.getPlayerStats().getAttack());
-    }
-
-    private static String formatStamina(GameSession session) {
-        var steps = session.getStepBudget();
-        return String.format("%s %.1f / %.1f",
-                GameMessages.STAT_STAMINA, steps.getRemainingSteps(), steps.getStepBudget());
     }
 }

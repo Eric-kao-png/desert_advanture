@@ -2,18 +2,40 @@ package com.desertadventure.screen;
 
 import com.desertadventure.config.GameConfig;
 
-/** Hit areas for character panel, backpack grid, and item detail popup. */
+/** Three-column character panel: backpack (left), portrait (center), stats (right). */
 public class CharacterOverlayLayout {
     private final float panelX;
     private final float panelY;
     private final float panelW;
     private final float panelH;
+    private final float leftColX;
+    private final float centerColX;
+    private final float rightColX;
+    private final float columnW;
+    private final float contentBottom;
+    private final float headerBottom;
     private final float gridLeft;
     private final float gridTop;
     private final float slotSize;
     private final float slotGap;
     private final int cols;
     private final int slotCount;
+    private final float portraitX;
+    private final float portraitY;
+    private final float portraitW;
+    private final float portraitH;
+    private final float statsTextX;
+    private final float statsTopY;
+    private final float statBarX;
+    private final float statBarW;
+    private final float statBarH;
+    private final float hpBarBottom;
+    private final float combatSectionY;
+    private final float explorationSectionY;
+    private final float staminaBarBottom;
+    private final float inventoryTitleX;
+    private final float inventoryTitleY;
+    private final float titleY;
     private final float detailX;
     private final float detailY;
     private final float detailW;
@@ -30,15 +52,46 @@ public class CharacterOverlayLayout {
         panelH = GameConfig.CHARACTER_PANEL_HEIGHT;
         panelX = (GameConfig.VIEW_WIDTH - panelW) / 2f;
         panelY = (GameConfig.VIEW_HEIGHT - panelH) / 2f;
+
+        float pad = GameConfig.CHARACTER_PANEL_PADDING;
+        float colGap = GameConfig.CHARACTER_PANEL_COLUMN_GAP;
+        float contentW = panelW - pad * 2f;
+        columnW = (contentW - colGap * 2f) / 3f;
+
+        leftColX = panelX + pad;
+        centerColX = leftColX + columnW + colGap;
+        rightColX = centerColX + columnW + colGap;
+        contentBottom = panelY + pad;
+
+        float lineH = GameConfig.CHARACTER_PANEL_LINE_HEIGHT;
+        titleY = panelY + panelH - pad;
+        headerBottom = titleY - lineH * 1.15f;
+        inventoryTitleX = leftColX;
+        inventoryTitleY = headerBottom - lineH * 0.25f;
+        statsTextX = rightColX;
+        statsTopY = headerBottom - lineH * 0.25f;
+
+        statBarH = GameConfig.CHARACTER_STAT_BAR_HEIGHT;
+        statBarW = columnW - 12f;
+        statBarX = statsTextX;
+        hpBarBottom = statsTopY - lineH * 0.85f - statBarH;
+        combatSectionY = hpBarBottom - GameConfig.CHARACTER_STAT_BAR_SECTION_GAP;
+        explorationSectionY = combatSectionY - lineH * 1.95f;
+        staminaBarBottom = explorationSectionY - lineH * 0.85f - statBarH;
+
         slotSize = GameConfig.INVENTORY_SLOT_SIZE;
         slotGap = GameConfig.INVENTORY_SLOT_GAP;
         cols = GameConfig.INVENTORY_GRID_COLS;
         slotCount = GameConfig.INVENTORY_SLOT_COUNT;
 
         float gridW = cols * slotSize + (cols - 1) * slotGap;
-        gridLeft = panelX + (panelW - gridW) / 2f;
-        gridTop = panelY + panelH - GameConfig.CHARACTER_PANEL_PADDING - GameConfig.CHARACTER_STATS_BLOCK_HEIGHT
-                - GameConfig.CHARACTER_PANEL_LINE_HEIGHT * 1.1f;
+        gridLeft = leftColX + (columnW - gridW) / 2f;
+        gridTop = inventoryTitleY - lineH * 1.05f;
+
+        portraitX = centerColX;
+        portraitY = contentBottom;
+        portraitW = columnW;
+        portraitH = headerBottom - lineH * 0.35f - contentBottom;
 
         detailW = GameConfig.INVENTORY_DETAIL_WIDTH;
         detailH = GameConfig.INVENTORY_DETAIL_HEIGHT;
@@ -71,6 +124,94 @@ public class CharacterOverlayLayout {
 
     public float getPanelH() {
         return panelH;
+    }
+
+    public float getTitleY() {
+        return titleY;
+    }
+
+    public float getLeftColX() {
+        return leftColX;
+    }
+
+    public float getCenterColX() {
+        return centerColX;
+    }
+
+    public float getRightColX() {
+        return rightColX;
+    }
+
+    public float getColumnW() {
+        return columnW;
+    }
+
+    public float getContentBottom() {
+        return contentBottom;
+    }
+
+    public float getHeaderBottom() {
+        return headerBottom;
+    }
+
+    public float getPortraitX() {
+        return portraitX;
+    }
+
+    public float getPortraitY() {
+        return portraitY;
+    }
+
+    public float getPortraitW() {
+        return portraitW;
+    }
+
+    public float getPortraitH() {
+        return portraitH;
+    }
+
+    public float getStatsTextX() {
+        return statsTextX;
+    }
+
+    public float getStatsTopY() {
+        return statsTopY;
+    }
+
+    public float getStatBarX() {
+        return statBarX;
+    }
+
+    public float getStatBarW() {
+        return statBarW;
+    }
+
+    public float getStatBarH() {
+        return statBarH;
+    }
+
+    public float getHpBarBottom() {
+        return hpBarBottom;
+    }
+
+    public float getCombatSectionY() {
+        return combatSectionY;
+    }
+
+    public float getExplorationSectionY() {
+        return explorationSectionY;
+    }
+
+    public float getStaminaBarBottom() {
+        return staminaBarBottom;
+    }
+
+    public float getInventoryTitleX() {
+        return inventoryTitleX;
+    }
+
+    public float getInventoryTitleY() {
+        return inventoryTitleY;
     }
 
     public int getSlotCount() {
