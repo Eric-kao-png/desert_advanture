@@ -34,12 +34,28 @@ public class GameplayInputHandler {
             return;
         }
 
+        if (mode == GameplayMode.CHARACTER_OVERLAY) {
+            handleCharacterOverlay();
+            return;
+        }
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.M) && mode.canOpenMap()) {
             session.openMapOverlay();
         }
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.C) && mode.canOpenCharacter()) {
+            session.openCharacterOverlay();
+        }
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             game.setScreen(new MainMenuScreen(game));
+        }
+    }
+
+    private void handleCharacterOverlay() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
+                || Gdx.input.isKeyJustPressed(Input.Keys.C)) {
+            session.closeCharacterOverlay();
         }
     }
 

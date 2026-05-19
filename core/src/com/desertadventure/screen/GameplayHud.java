@@ -24,6 +24,15 @@ public class GameplayHud {
     public void draw(SpriteBatch batch, GameSession session, GameplayMode mode) {
         font.setColor(Color.WHITE);
 
+        if (mode != GameplayMode.CHARACTER_OVERLAY) {
+            drawStatusLines(batch, session);
+        }
+
+        drawModeHint(batch, session, mode);
+        drawMessageFeed(batch, session.getMessageFeed());
+    }
+
+    private void drawStatusLines(SpriteBatch batch, GameSession session) {
         float top = GameConfig.VIEW_HEIGHT;
         float left = GameConfig.HUD_LEFT_MARGIN;
         font.draw(batch, String.format("HP: %.0f/%.0f",
@@ -39,17 +48,17 @@ public class GameplayHud {
         font.draw(batch, String.format("Tile: %s", tile), left, top - 16 - GameConfig.HUD_LINE_STEP * 3);
         font.draw(batch, String.format("Distance from origin: %.1f", session.getDistanceFromOrigin()),
                 left, top - 16 - GameConfig.HUD_LINE_STEP * 4);
-
-        drawModeHint(batch, session, mode);
-        drawMessageFeed(batch, session.getMessageFeed());
     }
 
     private void drawModeHint(SpriteBatch batch, GameSession session, GameplayMode mode) {
         switch (mode) {
-            case EXPLORE_IDLE -> font.draw(batch, "[M] Map", GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
+            case EXPLORE_IDLE -> font.draw(batch, "[M] Map  [C] Character",
+                    GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
             case MAP_OVERLAY -> font.draw(batch, "Click destination | Arrows: pan | [Esc] Cancel",
                     GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
-            case RUNNING -> font.draw(batch, "Moving... | [M] Map",
+            case CHARACTER_OVERLAY -> font.draw(batch, "[Esc] or [C] Close",
+                    GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
+            case RUNNING -> font.draw(batch, "Moving... | [M] Map  [C] Character",
                     GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
             case COMBAT, BOSS_COMBAT -> {
                 font.draw(batch, "WASD: Move | J: Attack K: Skill L: Ultimate",

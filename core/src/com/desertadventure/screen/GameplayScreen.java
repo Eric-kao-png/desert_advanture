@@ -36,7 +36,7 @@ public class GameplayScreen extends ScreenAdapter {
         hud = new GameplayHud(font);
         input = new GameplayInputHandler(game, session, gameViewport, mapInput);
         modeUpdater = new GameplayModeUpdater(session, input, renderer, combatState);
-        sceneDrawer = new GameplaySceneDrawer(game, session, renderer, gameViewport, input, hud, modeUpdater);
+        sceneDrawer = new GameplaySceneDrawer(game, session, renderer, gameViewport, input, hud, font, modeUpdater);
         gameViewport.update();
         session.startNewGame();
         renderer.repopulateHouseProps(GameConfig.VIEW_WIDTH);

@@ -153,6 +153,19 @@ public class GameSession implements ExplorationCallbacks {
         mapTravel.openOverlay();
     }
 
+    public void openCharacterOverlay() {
+        if (mode == GameplayMode.RUNNING) {
+            travel.stopForMap();
+        }
+        mode = GameplayMode.CHARACTER_OVERLAY;
+    }
+
+    public void closeCharacterOverlay() {
+        if (mode == GameplayMode.CHARACTER_OVERLAY) {
+            mode = GameplayMode.EXPLORE_IDLE;
+        }
+    }
+
     public void panMapView(int dx, int dy) {
         mapViewState.pan(dx, dy, map);
     }

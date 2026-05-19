@@ -9,6 +9,14 @@ public final class GameMessages {
     public static final String BATTLE_WON = "Battle won!";
     public static final String SANDSTORM_RETURN = "Sandstorm... You returned to camp center.";
 
+    public static final String CHARACTER_PANEL_TITLE = "Character";
+    public static final String STAT_SECTION_HEALTH = "Health";
+    public static final String STAT_SECTION_COMBAT = "Combat";
+    public static final String STAT_SECTION_EXPLORATION = "Exploration";
+    public static final String STAT_HP = "  Current / Max HP";
+    public static final String STAT_ATTACK = "  Attack";
+    public static final String STAT_STAMINA = "  Stamina (remaining / max)";
+
     private GameMessages() {
     }
 

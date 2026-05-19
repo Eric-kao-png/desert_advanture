@@ -99,6 +99,11 @@ public final class GameConfig {
     public static final double PLAYER_BOB_FREQUENCY = 0.02;
     public static final float STORM_OVERLAY_ALPHA_SCALE = 0.85f;
     public static final float MAP_OVERLAY_DIM_ALPHA = 0.65f;
+    public static final float CHARACTER_PANEL_WIDTH = 440f;
+    public static final float CHARACTER_PANEL_HEIGHT = 300f;
+    public static final float CHARACTER_PANEL_LINE_HEIGHT = 32f;
+    public static final float CHARACTER_PANEL_PADDING = 28f;
+    public static final float CHARACTER_PANEL_BG_ALPHA = 0.92f;
     public static final float MAP_CELL_INSET = 1f;
     public static final float MAP_PLAYER_MARKER_INSET = 2f;
     public static final float MAP_PLAYER_MARKER_SHRINK = 5f;

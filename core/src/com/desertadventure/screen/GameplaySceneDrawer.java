@@ -1,5 +1,6 @@
 package com.desertadventure.screen;
 
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.desertadventure.DesertAdventure;
 import com.desertadventure.combat.model.CombatEntity;
@@ -20,6 +21,7 @@ final class GameplaySceneDrawer {
     private final GameViewport viewport;
     private final GameplayInputHandler input;
     private final GameplayHud hud;
+    private final BitmapFont uiFont;
     private final GameplayModeUpdater modeUpdater;
 
     GameplaySceneDrawer(
@@ -29,6 +31,7 @@ final class GameplaySceneDrawer {
             GameViewport viewport,
             GameplayInputHandler input,
             GameplayHud hud,
+            BitmapFont uiFont,
             GameplayModeUpdater modeUpdater) {
         this.game = game;
         this.session = session;
@@ -36,6 +39,7 @@ final class GameplaySceneDrawer {
         this.viewport = viewport;
         this.input = input;
         this.hud = hud;
+        this.uiFont = uiFont;
         this.modeUpdater = modeUpdater;
     }
 
@@ -50,6 +54,7 @@ final class GameplaySceneDrawer {
 
         switch (mode) {
             case MAP_OVERLAY -> drawMapOverlay(batch, delta);
+            case CHARACTER_OVERLAY -> drawCharacterOverlay(batch, delta);
             case COMBAT, BOSS_COMBAT -> drawCombat(batch, delta, mode);
             case STORM -> drawStorm(batch, delta);
             case VICTORY -> game.setScreen(new VictoryScreen(game));
@@ -69,6 +74,11 @@ final class GameplaySceneDrawer {
         drawExplore(batch, false, delta);
         MapOverlayLayout layout = session.createMapOverlayLayout();
         renderer.renderMapOverlay(session, layout, input.getHoveredGridPos());
+    }
+
+    private void drawCharacterOverlay(SpriteBatch batch, float delta) {
+        drawExplore(batch, false, delta);
+        renderer.renderCharacterOverlay(batch, session, uiFont);
     }
 
     private void drawCombat(SpriteBatch batch, float delta, GameplayMode mode) {

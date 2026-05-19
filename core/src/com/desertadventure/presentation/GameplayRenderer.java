@@ -1,6 +1,7 @@
 package com.desertadventure.presentation;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
@@ -22,6 +23,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
     private final ParallaxBackground parallax;
     private final BackgroundHouseSpawner houses;
     private final MapOverlayRenderer mapOverlay;
+    private final CharacterOverlayRenderer characterOverlay;
 
     public GameplayRenderer() {
         screenProjection.setToOrtho2D(0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT);
@@ -30,6 +32,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         parallax = new ParallaxBackground(desertSprites.get(DesertSpriteAtlas.FLOOR_TILE));
         houses = new BackgroundHouseSpawner(desertSprites);
         mapOverlay = new MapOverlayRenderer();
+        characterOverlay = new CharacterOverlayRenderer();
     }
 
     @Override
@@ -39,11 +42,13 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         parallax.dispose();
         desertSprites.dispose();
         mapOverlay.dispose();
+        characterOverlay.dispose();
     }
 
     public void setProjectionMatrix(Matrix4 projection) {
         screenProjection.set(projection);
         mapOverlay.setProjection(projection);
+        characterOverlay.setProjection(projection);
     }
 
     public void repopulateHouseProps(float screenW) {
@@ -89,6 +94,10 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
 
     public void renderMapOverlay(GameSession session, MapOverlayLayout layout, GridPos hoverCell) {
         mapOverlay.render(session, layout, hoverCell);
+    }
+
+    public void renderCharacterOverlay(SpriteBatch batch, GameSession session, BitmapFont font) {
+        characterOverlay.render(batch, session, font);
     }
 
     public void renderStorm(float progress) {
