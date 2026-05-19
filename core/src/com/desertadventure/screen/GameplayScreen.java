@@ -15,7 +15,7 @@ import com.desertadventure.map.model.GridPos;
 import com.desertadventure.map.view.MapOverlayInput;
 import com.desertadventure.map.view.MapOverlayLayout;
 import com.desertadventure.presentation.GameViewport;
-import com.desertadventure.presentation.PlaceholderRenderer;
+import com.desertadventure.presentation.GameplayRenderer;
 import com.desertadventure.state.GameSession;
 import com.desertadventure.state.GameplayMode;
 
@@ -25,7 +25,7 @@ import java.util.List;
 public class GameplayScreen extends ScreenAdapter {
     private final DesertAdventure game;
     private final GameSession session = new GameSession();
-    private final PlaceholderRenderer renderer = new PlaceholderRenderer();
+    private final GameplayRenderer renderer = new GameplayRenderer();
     private final GameViewport gameViewport = new GameViewport();
     private final MapOverlayInput mapInput = new MapOverlayInput();
     private BitmapFont font;

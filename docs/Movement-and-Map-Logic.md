@@ -77,7 +77,6 @@ Exploration uses a large square grid world (**501×501** cells) with world coord
 | `RUNNING` | `PathRunner` animating; `updateRunning` consumes steps + encounters |
 | `COMBAT` / `BOSS_COMBAT` | Movement paused; `activeMovePlan` may remain for resume |
 | `STORM` | Step budget exhausted; cycle reset after fade |
-| `TILE_INTERACTION` | Enum present but **unused** |
 | `VICTORY` | Boss defeated |
 
 ---
@@ -260,6 +259,8 @@ COMBAT / BOSS_COMBAT:
 | `MapOverlayLayout.java` | Screen ↔ grid, +Y up |
 | `MapOverlayInput.java` | Hover cell |
 | `GameplayScreen.java` | Input, HUD, update loop |
+| `GameplayRenderer.java` | Parallax, floor tiles, map overlay, combat shapes |
+| `DesertSpriteAtlas.java` | Loads `data/desert_sprite_sheet.json` → sprite regions |
 | `GameConfig.java` | Tunables |
 
 Paths under `core/src/com/desertadventure/`.
@@ -291,5 +292,4 @@ Paths under `core/src/com/desertadventure/`.
 - Path is **straight Euclidean** through cell centers, not A* (obstacles block the whole line)
 - Step cost = `plan.distance` (Euclidean), not Manhattan or per-cell count
 - Bresenham list vs float lerp rounding may differ slightly for encounter timing; encounters use **rounded display cell** on the line list
-- `GameplayMode.TILE_INTERACTION` is unused — consider removing or wiring UI
 - Combat uses `distanceBand` from **player grid** at fight start, not float path position

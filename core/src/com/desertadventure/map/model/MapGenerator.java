@@ -41,10 +41,11 @@ public final class MapGenerator {
     }
 
     private static void placeKeyLocations(GameMap map) {
-        setEvent(map, -55, 0, "event_1");
-        setEvent(map, 0, 55, "event_2");
-        setEvent(map, 55, 0, "event_3");
-        setTile(map, 0, -70, TileType.BOSS_SUMMON);
+        // Pulled in near spawn for easier testing (was ±55 / -70).
+        setEvent(map, -12, 0, "event_1");
+        setEvent(map, 0, 12, "event_2");
+        setEvent(map, 12, 0, "event_3");
+        setTile(map, 0, -15, TileType.BOSS_SUMMON);
     }
 
     private static void setEvent(GameMap map, int x, int y, String eventId) {

@@ -1,0 +1,13 @@
+{
+  "texture": "sprites/desert_sheet.png",
+  "origin": "bottom-left",
+  "sprites": [
+    {
+      "name": "floor_tile",
+      "left": 0,
+      "bottom": 64,
+      "right": 32,
+      "top": 128
+    }
+  ]
+}

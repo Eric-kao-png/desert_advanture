@@ -42,16 +42,6 @@ public class GameMap {
         return size;
     }
 
-    /** @deprecated use {@link #getSize()} — kept for view-window math that expects extent count */
-    public int getWidth() {
-        return size;
-    }
-
-    /** @deprecated use {@link #getSize()} */
-    public int getHeight() {
-        return size;
-    }
-
     public int getMinCoord() {
         return minCoord;
     }

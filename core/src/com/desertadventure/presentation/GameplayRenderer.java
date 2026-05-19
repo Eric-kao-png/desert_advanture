@@ -2,7 +2,6 @@ package com.desertadventure.presentation;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -15,23 +14,18 @@ import com.desertadventure.map.model.GridPos;
 import com.desertadventure.map.model.Tile;
 import com.desertadventure.map.model.TileType;
 import com.desertadventure.map.view.MapOverlayLayout;
+import com.desertadventure.presentation.sprites.DesertSpriteAtlas;
 import com.desertadventure.state.GameSession;
 
 import java.util.List;
 
-public class PlaceholderRenderer {
-    private static final String BG_BACK = "backgrounds/DesBg_Back.png";
-    private static final String BG_MIDDLE = "backgrounds/DesBg_Middle.png";
-    private static final String BG_FORWARD = "backgrounds/DesBg_Forward.png";
-    private static final String DESERT_ATLAS = "backgrounds/Desert.png";
-    /**
-     * Floor tile in Desert.png (image origin bottom-left).
-     * Rect from (0, 128) to (32, 64) → x=0..32, y=64..128, size 32×64.
-     */
-    private static final int FLOOR_BL_LEFT = 0;
-    private static final int FLOOR_BL_BOTTOM = 64;
-    private static final int FLOOR_BL_RIGHT = 32;
-    private static final int FLOOR_BL_TOP = 128;
+/**
+ * Renders gameplay visuals: parallax backgrounds, tiled floor, map overlay, combat entities.
+ */
+public class GameplayRenderer {
+    private static final String PARALLAX_BACK = "backgrounds/parallax_back.png";
+    private static final String PARALLAX_MIDDLE = "backgrounds/parallax_middle.png";
+    private static final String PARALLAX_FORWARD = "backgrounds/parallax_forward.png";
     private static final float EXPLORE_GROUND_Y = 120f;
 
     private final ShapeRenderer shapes = new ShapeRenderer();
@@ -39,39 +33,19 @@ public class PlaceholderRenderer {
     private final Texture bgBack;
     private final Texture bgMiddle;
     private final Texture bgForward;
-    private final Texture desertAtlas;
-    private final Texture floorTexture;
+    private final DesertSpriteAtlas desertSprites;
     private final TextureRegion floorTile;
     private float scrollBack;
     private float scrollMiddle;
     private float scrollForward;
 
-    public PlaceholderRenderer() {
+    public GameplayRenderer() {
         screenProjection.setToOrtho2D(0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT);
-        bgBack = loadBackground(BG_BACK);
-        bgMiddle = loadBackground(BG_MIDDLE);
-        bgForward = loadBackground(BG_FORWARD);
-        desertAtlas = loadPixelArt(DESERT_ATLAS);
-        floorTexture = extractFloorTileTexture();
-        floorTile = new TextureRegion(floorTexture);
-    }
-
-    /**
-     * Crops using bottom-left image coords; Pixmap uses top-left, so we convert y.
-     */
-    private static Texture extractFloorTileTexture() {
-        Pixmap atlas = new Pixmap(Gdx.files.internal(DESERT_ATLAS));
-        int w = FLOOR_BL_RIGHT - FLOOR_BL_LEFT;
-        int h = FLOOR_BL_TOP - FLOOR_BL_BOTTOM;
-        int srcX = FLOOR_BL_LEFT;
-        int srcY = atlas.getHeight() - FLOOR_BL_TOP;
-        Pixmap slice = new Pixmap(w, h, atlas.getFormat());
-        slice.drawPixmap(atlas, 0, 0, srcX, srcY, w, h);
-        atlas.dispose();
-        Texture texture = new Texture(slice);
-        slice.dispose();
-        texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        return texture;
+        bgBack = loadBackground(PARALLAX_BACK);
+        bgMiddle = loadBackground(PARALLAX_MIDDLE);
+        bgForward = loadBackground(PARALLAX_FORWARD);
+        desertSprites = new DesertSpriteAtlas();
+        floorTile = desertSprites.get(DesertSpriteAtlas.FLOOR_TILE);
     }
 
     private static Texture loadBackground(String path) {
@@ -80,19 +54,12 @@ public class PlaceholderRenderer {
         return texture;
     }
 
-    private static Texture loadPixelArt(String path) {
-        Texture texture = new Texture(Gdx.files.internal(path));
-        texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        return texture;
-    }
-
     public void dispose() {
         shapes.dispose();
         bgBack.dispose();
         bgMiddle.dispose();
         bgForward.dispose();
-        desertAtlas.dispose();
-        floorTexture.dispose();
+        desertSprites.dispose();
     }
 
     public void setProjectionMatrix(Matrix4 projection) {
@@ -126,9 +93,7 @@ public class PlaceholderRenderer {
 
     private void drawTiledFloor(SpriteBatch batch, float scroll, float screenW, float groundY) {
         float tileH = groundY;
-        int floorW = FLOOR_BL_RIGHT - FLOOR_BL_LEFT;
-        int floorH = FLOOR_BL_TOP - FLOOR_BL_BOTTOM;
-        float tileW = tileH * (floorW / (float) floorH);
+        float tileW = tileH * (floorTile.getRegionWidth() / (float) floorTile.getRegionHeight());
         float offset = scroll % tileW;
         if (offset < 0f) {
             offset += tileW;
