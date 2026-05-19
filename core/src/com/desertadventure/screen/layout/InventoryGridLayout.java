@@ -1,6 +1,7 @@
 package com.desertadventure.screen.layout;
 
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.util.RectHitTest;
 
 /** Slot positions for the backpack grid in the left column. */
 public final class InventoryGridLayout {
@@ -37,8 +38,7 @@ public final class InventoryGridLayout {
         for (int i = 0; i < slotCount; i++) {
             float left = slotLeft(i);
             float bottom = slotBottom(i);
-            if (worldX >= left && worldX <= left + slotSize
-                    && worldY >= bottom && worldY <= bottom + slotSize) {
+            if (RectHitTest.contains(worldX, worldY, left, bottom, slotSize, slotSize)) {
                 return i;
             }
         }

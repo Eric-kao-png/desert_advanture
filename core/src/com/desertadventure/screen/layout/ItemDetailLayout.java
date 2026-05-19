@@ -1,6 +1,7 @@
 package com.desertadventure.screen.layout;
 
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.util.RectHitTest;
 
 /** Item detail popup and action buttons. */
 public final class ItemDetailLayout {
@@ -34,8 +35,7 @@ public final class ItemDetailLayout {
     }
 
     public boolean contains(float worldX, float worldY) {
-        return worldX >= detailX && worldX <= detailX + detailW
-                && worldY >= detailY && worldY <= detailY + detailH;
+        return RectHitTest.contains(worldX, worldY, detailX, detailY, detailW, detailH);
     }
 
     public boolean useButtonContains(float worldX, float worldY) {
@@ -46,7 +46,23 @@ public final class ItemDetailLayout {
         return containsButton(worldX, worldY, closeButtonX, closeButtonY);
     }
 
+    public float spriteCenterX() {
+        return detailX + detailW / 2f;
+    }
+
+    public float spriteBottom() {
+        return detailY + detailH - GameConfig.CHARACTER_DETAIL_SPRITE_BOTTOM_OFFSET;
+    }
+
+    public float nameY() {
+        return detailY + detailH - GameConfig.CHARACTER_DETAIL_NAME_Y_OFFSET;
+    }
+
+    public float descY() {
+        return detailY + detailH - GameConfig.CHARACTER_DETAIL_DESC_Y_OFFSET;
+    }
+
     private boolean containsButton(float worldX, float worldY, float x, float y) {
-        return worldX >= x && worldX <= x + buttonW && worldY >= y && worldY <= y + buttonH;
+        return RectHitTest.contains(worldX, worldY, x, y, buttonW, buttonH);
     }
 }

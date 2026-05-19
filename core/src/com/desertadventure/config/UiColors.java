@@ -34,9 +34,16 @@ public final class UiColors {
     public static final Color BUTTON_FILL_HOVERED = new Color(0.45f, 0.4f, 0.28f, 1f);
     public static final Color BUTTON_BORDER = new Color(0.7f, 0.62f, 0.4f, 1f);
 
-    public static final Color EXPLORE_PLAYER = new Color(0.2f, 0.5f, 0.95f, 1f);
+    public static final Color PLAYER_BODY = new Color(0.2f, 0.5f, 0.95f, 1f);
+    public static final Color EXPLORE_PLAYER = PLAYER_BODY;
     public static final Color STORM_TINT = new Color(0.9f, 0.75f, 0.35f, 1f);
     public static final Color HUD_TOP_BAR = new Color(0f, 0f, 0f, GameConfig.HUD_TOP_BAR_ALPHA);
+    public static final Color HUD_STORM_TITLE = new Color(0.2f, 0.15f, 0.05f, 1f);
+    public static final Color MENU_SKY_CLEAR = new Color(0.75f, 0.6f, 0.35f, 1f);
+    public static final Color MENU_SKY_BAND = new Color(0.45f, 0.65f, 0.95f, 1f);
+    public static final Color MENU_GROUND_BAND = new Color(0.85f, 0.72f, 0.42f, 1f);
+    public static final Color VICTORY_CLEAR = new Color(0.2f, 0.15f, 0.35f, 1f);
+    public static final Color VICTORY_BADGE = new Color(0.95f, 0.85f, 0.3f, 1f);
 
     private UiColors() {
     }

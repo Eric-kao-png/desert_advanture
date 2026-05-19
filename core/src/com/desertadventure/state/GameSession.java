@@ -131,6 +131,7 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public void openMapOverlay() {
+        pauseTravelIfRunning();
         mapTravel.openOverlay();
     }
 
@@ -141,10 +142,14 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public void openCharacterOverlay() {
+        pauseTravelIfRunning();
+        mode = GameplayMode.CHARACTER_OVERLAY;
+    }
+
+    private void pauseTravelIfRunning() {
         if (mode == GameplayMode.RUNNING) {
             travel.stopForMap();
         }
-        mode = GameplayMode.CHARACTER_OVERLAY;
     }
 
     public void closeCharacterOverlay() {

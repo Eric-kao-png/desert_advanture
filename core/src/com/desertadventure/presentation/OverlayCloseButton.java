@@ -1,12 +1,14 @@
 package com.desertadventure.presentation;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.presentation.sprites.TextureLoader;
+import com.desertadventure.util.RectHitTest;
+
+import com.badlogic.gdx.graphics.Texture;
 
 /** Shared top-right dismiss control for fullscreen overlays. */
 public final class OverlayCloseButton implements Disposable {
@@ -16,9 +18,9 @@ public final class OverlayCloseButton implements Disposable {
     private final TextureRegion pressed;
 
     public OverlayCloseButton() {
-        normal = loadRegion(GameConfig.OVERLAY_CLOSE_TEXTURE);
-        hovered = loadRegion(GameConfig.OVERLAY_CLOSE_TEXTURE_HOVERED);
-        pressed = loadRegion(GameConfig.OVERLAY_CLOSE_TEXTURE_PRESSED);
+        normal = region(GameConfig.OVERLAY_CLOSE_TEXTURE);
+        hovered = region(GameConfig.OVERLAY_CLOSE_TEXTURE_HOVERED);
+        pressed = region(GameConfig.OVERLAY_CLOSE_TEXTURE_PRESSED);
     }
 
     public static float x() {
@@ -34,10 +36,7 @@ public final class OverlayCloseButton implements Disposable {
     }
 
     public static boolean contains(float worldX, float worldY) {
-        float bx = x();
-        float by = y();
-        float s = size();
-        return worldX >= bx && worldX <= bx + s && worldY >= by && worldY <= by + s;
+        return RectHitTest.contains(worldX, worldY, x(), y(), size(), size());
     }
 
     public void draw(SpriteBatch batch, boolean hovered, boolean pressed) {
@@ -53,9 +52,8 @@ public final class OverlayCloseButton implements Disposable {
         textures.clear();
     }
 
-    private TextureRegion loadRegion(String internalPath) {
-        Texture texture = new Texture(Gdx.files.internal(internalPath));
-        texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+    private TextureRegion region(String internalPath) {
+        Texture texture = TextureLoader.loadNearest(internalPath);
         textures.add(texture);
         return new TextureRegion(texture);
     }

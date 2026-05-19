@@ -12,6 +12,8 @@ import com.desertadventure.exploration.StepBudgetService;
 import com.desertadventure.player.PlayerStats;
 import com.desertadventure.presentation.StatBarDrawer;
 import com.desertadventure.screen.CharacterOverlayLayout;
+import com.desertadventure.screen.layout.CharacterPanelGeometry;
+import com.desertadventure.screen.layout.CharacterStatsLayout;
 import com.desertadventure.state.GameSession;
 
 /** Right-column stat bars and labels. */
@@ -21,49 +23,52 @@ public final class CharacterStatsView {
     public void drawBars(ShapeRenderer shapes, GameSession session, CharacterOverlayLayout layout) {
         PlayerStats stats = session.getPlayerStats();
         StepBudgetService steps = session.getStepBudget();
-        float barX = layout.getStatBarX();
-        float barW = layout.getStatBarW();
-        float barH = layout.getStatBarH();
+        CharacterStatsLayout s = layout.stats();
 
         float hpRatio = stats.getMaxHp() > 0f ? stats.getHp() / stats.getMaxHp() : 0f;
-        StatBarDrawer.draw(shapes, barX, layout.getHpBarBottom(), barW, barH,
+        StatBarDrawer.draw(shapes, s.statBarX, s.hpBarBottom, s.statBarW, s.statBarH,
                 hpRatio, UiColors.HP_BAR_BG, UiColors.HP_BAR_FILL, UiColors.BAR_BORDER);
 
         float maxSteps = steps.getStepBudget();
         float staminaRatio = maxSteps > 0f ? steps.getRemainingSteps() / maxSteps : 0f;
-        StatBarDrawer.draw(shapes, barX, layout.getStaminaBarBottom(), barW, barH,
+        StatBarDrawer.draw(shapes, s.statBarX, s.staminaBarBottom, s.statBarW, s.statBarH,
                 staminaRatio, UiColors.STAMINA_BAR_BG, UiColors.STAMINA_BAR_FILL, UiColors.BAR_BORDER);
     }
 
     public void drawLabels(SpriteBatch batch, BitmapFont font, GameSession session, CharacterOverlayLayout layout) {
         float lineH = GameConfig.CHARACTER_PANEL_LINE_HEIGHT;
-        float textX = layout.getStatsTextX();
+        CharacterStatsLayout s = layout.stats();
         PlayerStats stats = session.getPlayerStats();
         StepBudgetService steps = session.getStepBudget();
 
         font.setColor(UiColors.SECTION_LABEL);
-        font.draw(batch, GameMessages.STAT_SECTION_HEALTH, textX, layout.getStatsTopY());
-        drawBarValue(batch, font, layout.getStatBarX(), layout.getStatBarW(),
-                layout.getHpBarBottom(), layout.getStatBarH(),
+        font.draw(batch, GameMessages.STAT_SECTION_HEALTH, s.statsTextX, s.statsTopY);
+        drawBarValue(batch, font, s.statBarX, s.statBarW, s.hpBarBottom, s.statBarH,
                 String.format("%.0f / %.0f", stats.getHp(), stats.getMaxHp()));
 
         font.setColor(UiColors.SECTION_LABEL);
-        font.draw(batch, GameMessages.STAT_SECTION_COMBAT, textX, layout.getCombatSectionY());
+        font.draw(batch, GameMessages.STAT_SECTION_COMBAT, s.statsTextX, s.combatSectionY);
         font.setColor(Color.WHITE);
         font.draw(batch, String.format("%s %d", GameMessages.STAT_ATTACK, stats.getAttack()),
-                textX + 8f, layout.getCombatSectionY() - lineH);
+                s.statsTextX + 8f, s.combatSectionY - lineH);
 
         font.setColor(UiColors.SECTION_LABEL);
-        font.draw(batch, GameMessages.STAT_SECTION_EXPLORATION, textX, layout.getExplorationSectionY());
-        drawBarValue(batch, font, layout.getStatBarX(), layout.getStatBarW(),
-                layout.getStaminaBarBottom(), layout.getStatBarH(),
+        font.draw(batch, GameMessages.STAT_SECTION_EXPLORATION, s.statsTextX, s.explorationSectionY);
+        drawBarValue(batch, font, s.statBarX, s.statBarW, s.staminaBarBottom, s.statBarH,
                 String.format("%.1f / %.1f", steps.getRemainingSteps(), steps.getStepBudget()));
     }
 
     public void drawPortraitPlaceholder(SpriteBatch batch, BitmapFont font, CharacterOverlayLayout layout) {
+        CharacterPanelGeometry panel = layout.panel();
+        float lineH = GameConfig.CHARACTER_PANEL_LINE_HEIGHT;
+        float portraitX = panel.centerColX;
+        float portraitY = panel.contentBottom;
+        float portraitW = panel.columnW;
+        float portraitH = panel.headerBottom - lineH * GameConfig.CHARACTER_PORTRAIT_TOP_MULT - panel.contentBottom;
+
         glyphLayout.setText(font, GameMessages.CHARACTER_PORTRAIT_PLACEHOLDER);
-        float textX = layout.getPortraitX() + (layout.getPortraitW() - glyphLayout.width) / 2f;
-        float textY = layout.getPortraitY() + layout.getPortraitH() / 2f;
+        float textX = portraitX + (portraitW - glyphLayout.width) / 2f;
+        float textY = portraitY + portraitH / 2f;
         font.setColor(UiColors.MUTED_TEXT);
         font.draw(batch, GameMessages.CHARACTER_PORTRAIT_PLACEHOLDER, textX, textY);
     }

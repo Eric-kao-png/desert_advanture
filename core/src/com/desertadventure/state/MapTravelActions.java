@@ -37,9 +37,6 @@ public final class MapTravelActions {
     }
 
     public void openOverlay() {
-        if (mode.get() == GameplayMode.RUNNING) {
-            travel.stopForMap();
-        }
         mapViewState.centerOn(player.get(), map);
         mode.set(GameplayMode.MAP_OVERLAY);
     }

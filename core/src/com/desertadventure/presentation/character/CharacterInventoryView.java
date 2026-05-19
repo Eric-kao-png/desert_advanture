@@ -14,6 +14,7 @@ import com.desertadventure.presentation.ShapeDrawer;
 import com.desertadventure.presentation.sprites.ItemSpriteRegistry;
 import com.desertadventure.screen.CharacterOverlayInput;
 import com.desertadventure.screen.CharacterOverlayLayout;
+import com.desertadventure.screen.layout.InventoryGridLayout;
 
 /** Backpack grid frames, icons, and drag ghost. */
 public final class CharacterInventoryView {
@@ -24,15 +25,16 @@ public final class CharacterInventoryView {
     }
 
     public void drawFrames(ShapeRenderer shapes, CharacterOverlayLayout layout, CharacterOverlayInput input) {
-        float slotSize = layout.slotSize();
+        InventoryGridLayout grid = layout.grid();
+        float slotSize = grid.slotSize;
         float inset = GameConfig.CHARACTER_SLOT_INSET;
-        for (int i = 0; i < layout.getSlotCount(); i++) {
-            float left = layout.slotLeft(i);
-            float bottom = layout.slotBottom(i);
+        for (int i = 0; i < grid.slotCount; i++) {
+            float left = grid.slotLeft(i);
+            float bottom = grid.slotBottom(i);
             ShapeDrawer.fillRect(shapes, left + inset, bottom + inset,
                     slotSize - inset * 2f, slotSize - inset * 2f, UiColors.SLOT_INNER_FILL);
             ShapeDrawer.strokeRect(shapes, left, bottom, slotSize, slotSize,
-                    borderColor(layout, input, i), GameConfig.CHARACTER_SLOT_BORDER_WIDTH);
+                    borderColor(grid, input, i), GameConfig.CHARACTER_SLOT_BORDER_WIDTH);
         }
     }
 
@@ -43,13 +45,13 @@ public final class CharacterInventoryView {
             Inventory inventory,
             CharacterOverlayInput input,
             float animTime) {
+        InventoryGridLayout grid = layout.grid();
         font.setColor(UiColors.SECTION_LABEL);
-        font.draw(batch, GameMessages.INVENTORY_SECTION,
-                layout.getInventoryTitleX(), layout.getInventoryTitleY());
+        font.draw(batch, GameMessages.INVENTORY_SECTION, layout.inventoryTitleX, layout.inventoryTitleY);
 
-        float slotDrawSize = layout.slotSize() * GameConfig.INVENTORY_SLOT_ICON_SCALE;
+        float slotDrawSize = grid.slotSize * GameConfig.INVENTORY_SLOT_ICON_SCALE;
         batch.setColor(Color.WHITE);
-        for (int i = 0; i < layout.getSlotCount(); i++) {
+        for (int i = 0; i < grid.slotCount; i++) {
             if (input.isDragging() && i == input.getDragSourceSlot()) {
                 continue;
             }
@@ -57,20 +59,20 @@ public final class CharacterInventoryView {
             if (type == null) {
                 continue;
             }
-            drawIcon(batch, layout, type, i, slotDrawSize, 1f, animTime);
+            drawIcon(batch, grid, type, i, slotDrawSize, animTime);
         }
-        drawDragGhost(batch, layout, input, animTime);
+        drawDragGhost(batch, grid, input, animTime);
     }
 
     private void drawDragGhost(
             SpriteBatch batch,
-            CharacterOverlayLayout layout,
+            InventoryGridLayout grid,
             CharacterOverlayInput input,
             float animTime) {
         if (!input.isDragging() || input.getDragItem() == null) {
             return;
         }
-        float size = layout.slotSize() * GameConfig.INVENTORY_DRAG_ICON_SCALE;
+        float size = grid.slotSize * GameConfig.INVENTORY_DRAG_ICON_SCALE;
         float iconX = input.getDragX() - size / 2f;
         float iconY = input.getDragY() - size / 2f;
         TextureRegion frame = itemSprites.getFrame(input.getDragItem(), animTime);
@@ -81,23 +83,20 @@ public final class CharacterInventoryView {
 
     private void drawIcon(
             SpriteBatch batch,
-            CharacterOverlayLayout layout,
+            InventoryGridLayout grid,
             ItemType type,
             int slotIndex,
             float drawSize,
-            float alpha,
             float animTime) {
-        float left = layout.slotLeft(slotIndex);
-        float bottom = layout.slotBottom(slotIndex);
-        float iconX = left + (layout.slotSize() - drawSize) / 2f;
-        float iconY = bottom + (layout.slotSize() - drawSize) / 2f;
+        float left = grid.slotLeft(slotIndex);
+        float bottom = grid.slotBottom(slotIndex);
+        float iconX = left + (grid.slotSize - drawSize) / 2f;
+        float iconY = bottom + (grid.slotSize - drawSize) / 2f;
         TextureRegion frame = itemSprites.getFrame(type, animTime);
-        batch.setColor(1f, 1f, 1f, alpha);
         batch.draw(frame, iconX, iconY, drawSize, drawSize);
-        batch.setColor(Color.WHITE);
     }
 
-    private static Color borderColor(CharacterOverlayLayout layout, CharacterOverlayInput input, int slot) {
+    private static Color borderColor(InventoryGridLayout grid, CharacterOverlayInput input, int slot) {
         if (input.isDragging() && slot == input.getHoveredSlot() && slot != input.getDragSourceSlot()) {
             return UiColors.SLOT_BORDER_DROP_TARGET;
         }

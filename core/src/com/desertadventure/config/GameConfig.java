@@ -66,6 +66,8 @@ public final class GameConfig {
     public static final int MAP_SIZE = 501;
     /** Visible tiles per side on the map overlay (world is MAP_SIZE x MAP_SIZE). */
     public static final int MAP_VIEW_TILES = 51;
+    /** Pixel width/height of the visible map grid on the overlay. */
+    public static final float MAP_OVERLAY_VIEW_PIXEL_SIZE = 560f;
     public static final int MAP_PAN_STEP = 8;
     public static final long MAP_GENERATOR_SEED = 42L;
     public static final int MAP_BLOCKED_DENSITY_PERCENT = 4;
@@ -209,6 +211,24 @@ public final class GameConfig {
     public static final float PLAYER_LEVEL_EXP_MULTIPLIER = 1.4f;
 
     public static final float STORM_FADE_SECONDS = 2f;
+
+    // --- Menu screens ---
+    public static final float MENU_TITLE_FONT_SCALE = 1.5f;
+    public static final float MENU_BODY_FONT_SCALE = 1f;
+    public static final float MENU_TITLE_Y_RATIO = 0.68f;
+    public static final float MENU_SUBTITLE_Y_RATIO = 0.58f;
+    public static final float MENU_PROMPT_Y_RATIO = 0.35f;
+    public static final float MENU_HINT_Y_RATIO = 0.28f;
+    public static final float MENU_GROUND_HEIGHT_RATIO = 0.4f;
+    public static final float MENU_SKY_BAND_HEIGHT_RATIO = 0.6f;
+
+    public static final float VICTORY_TITLE_FONT_SCALE = 1.8f;
+    public static final float VICTORY_BODY_FONT_SCALE = 1.1f;
+    public static final float VICTORY_TITLE_Y_RATIO = 0.7f;
+    public static final float VICTORY_SUBTITLE_Y_RATIO = 0.45f;
+    public static final float VICTORY_PROMPT_Y_RATIO = 0.3f;
+    public static final float VICTORY_BADGE_Y_RATIO = 0.55f;
+    public static final float VICTORY_BADGE_RADIUS = 80f;
 
     private GameConfig() {
     }

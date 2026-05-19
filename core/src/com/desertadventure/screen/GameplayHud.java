@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.config.GameMessages;
+import com.desertadventure.config.UiColors;
 import com.desertadventure.map.model.GridPos;
 import com.desertadventure.state.GameSession;
 import com.desertadventure.state.GameplayMode;
@@ -68,7 +69,7 @@ public class GameplayHud {
                 }
             }
             case STORM -> {
-                font.setColor(0.2f, 0.15f, 0.05f, 1f);
+                font.setColor(UiColors.HUD_STORM_TITLE);
                 drawCentered(batch, GameMessages.HUD_STORM_TITLE,
                         GameConfig.VIEW_HEIGHT * GameConfig.STORM_TITLE_Y_RATIO);
                 font.setColor(Color.WHITE);

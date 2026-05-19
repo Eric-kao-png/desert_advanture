@@ -104,8 +104,8 @@ public class CharacterOverlayInput {
             return;
         }
         hoveredSlot = layout.slotAt(worldX, worldY);
-        hoveredUse = layout.useButtonContains(worldX, worldY);
-        hoveredClose = layout.closeButtonContains(worldX, worldY);
+        hoveredUse = layout.detail().useButtonContains(worldX, worldY);
+        hoveredClose = layout.detail().closeButtonContains(worldX, worldY);
     }
 
     public int getHoveredSlot() {

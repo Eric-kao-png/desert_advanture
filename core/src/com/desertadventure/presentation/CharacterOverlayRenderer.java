@@ -82,9 +82,9 @@ public class CharacterOverlayRenderer {
 
     private void drawTitle(SpriteBatch batch, BitmapFont font, CharacterOverlayLayout layout) {
         glyphLayout.setText(font, GameMessages.CHARACTER_PANEL_TITLE);
-        float titleX = layout.getPanelX() + (layout.getPanelW() - glyphLayout.width) / 2f;
+        float titleX = layout.panel().panelX + (layout.panel().panelW - glyphLayout.width) / 2f;
         font.setColor(Color.WHITE);
-        font.draw(batch, GameMessages.CHARACTER_PANEL_TITLE, titleX, layout.getTitleY());
+        font.draw(batch, GameMessages.CHARACTER_PANEL_TITLE, titleX, layout.panel().titleY);
     }
 
     private boolean shouldShowDetail(GameSession session, CharacterOverlayInput input) {

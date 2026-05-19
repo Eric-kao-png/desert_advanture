@@ -22,7 +22,7 @@ public final class MapOverlayLayout {
         this.viewTiles = GameConfig.MAP_VIEW_TILES;
         this.viewOriginX = clampOrigin(viewOriginX, map.getMinCoord(), map.getMaxViewOriginX());
         this.viewOriginY = clampOrigin(viewOriginY, map.getMinCoord(), map.getMaxViewOriginY());
-        this.cellSize = 560f / viewTiles;
+        this.cellSize = GameConfig.MAP_OVERLAY_VIEW_PIXEL_SIZE / viewTiles;
         this.offsetX = (GameConfig.VIEW_WIDTH - viewTiles * cellSize) / 2f;
         this.offsetY = (GameConfig.VIEW_HEIGHT - viewTiles * cellSize) / 2f;
     }

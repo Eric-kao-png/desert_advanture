@@ -1,10 +1,10 @@
 package com.desertadventure.presentation;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.presentation.sprites.TextureLoader;
 
 /** Three-layer parallax background plus tiled floor. */
 public class ParallaxBackground implements com.badlogic.gdx.utils.Disposable {
@@ -28,9 +28,7 @@ public class ParallaxBackground implements com.badlogic.gdx.utils.Disposable {
     }
 
     private static Texture load(String path) {
-        Texture texture = new Texture(Gdx.files.internal(path));
-        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        return texture;
+        return TextureLoader.loadLinear(path);
     }
 
     public void scroll(float delta, boolean running) {

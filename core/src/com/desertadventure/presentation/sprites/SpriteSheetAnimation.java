@@ -1,6 +1,5 @@
 package com.desertadventure.presentation.sprites;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
@@ -13,8 +12,7 @@ public final class SpriteSheetAnimation implements Disposable {
     private final float frameDuration;
 
     public SpriteSheetAnimation(String internalPath, int frameWidth, int frameHeight, float framesPerSecond) {
-        texture = new Texture(Gdx.files.internal(internalPath));
-        texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        texture = TextureLoader.loadNearest(internalPath);
         int frameCount = texture.getWidth() / frameWidth;
         if (frameCount <= 0 || texture.getHeight() < frameHeight) {
             throw new IllegalArgumentException("Invalid sprite sheet: " + internalPath);

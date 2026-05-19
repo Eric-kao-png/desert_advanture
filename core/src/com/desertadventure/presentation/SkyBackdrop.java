@@ -1,12 +1,12 @@
 package com.desertadventure.presentation;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.presentation.sprites.TextureLoader;
 
 /** Fixed sky fill and sun; drawn before scrolling parallax layers. */
 public class SkyBackdrop implements com.badlogic.gdx.utils.Disposable {
@@ -22,8 +22,7 @@ public class SkyBackdrop implements com.badlogic.gdx.utils.Disposable {
         pm.dispose();
         pixel.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
 
-        sunTexture = new Texture(Gdx.files.internal(GameConfig.SUN_TEXTURE_PATH));
-        sunTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        sunTexture = TextureLoader.loadLinear(GameConfig.SUN_TEXTURE_PATH);
         sun = new TextureRegion(sunTexture);
     }
 

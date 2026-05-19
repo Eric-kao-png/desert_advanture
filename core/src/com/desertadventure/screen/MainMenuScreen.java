@@ -1,16 +1,17 @@
 package com.desertadventure.screen;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.desertadventure.DesertAdventure;
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.config.GameInputBindings;
+import com.desertadventure.config.UiColors;
+import com.desertadventure.screen.ui.CenteredTextDrawer;
 
 public class MainMenuScreen extends ScreenAdapter {
     private final DesertAdventure game;
@@ -24,39 +25,37 @@ public class MainMenuScreen extends ScreenAdapter {
     @Override
     public void show() {
         font = new BitmapFont();
-        font.getData().setScale(1.5f);
+        font.getData().setScale(GameConfig.MENU_TITLE_FONT_SCALE);
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.75f, 0.6f, 0.35f, 1f);
+        Gdx.gl.glClearColor(UiColors.MENU_SKY_CLEAR.r, UiColors.MENU_SKY_CLEAR.g, UiColors.MENU_SKY_CLEAR.b, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        float groundTop = GameConfig.VIEW_HEIGHT * GameConfig.MENU_GROUND_HEIGHT_RATIO;
         shapes.begin(ShapeRenderer.ShapeType.Filled);
-        shapes.setColor(0.45f, 0.65f, 0.95f, 1f);
-        shapes.rect(0, GameConfig.VIEW_HEIGHT * 0.4f, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT * 0.6f);
-        shapes.setColor(0.85f, 0.72f, 0.42f, 1f);
-        shapes.rect(0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT * 0.4f);
+        shapes.setColor(UiColors.MENU_SKY_BAND);
+        shapes.rect(0, groundTop, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT * GameConfig.MENU_SKY_BAND_HEIGHT_RATIO);
+        shapes.setColor(UiColors.MENU_GROUND_BAND);
+        shapes.rect(0, 0, GameConfig.VIEW_WIDTH, groundTop);
         shapes.end();
 
         SpriteBatch batch = game.getBatch();
         batch.begin();
         font.setColor(Color.WHITE);
-        drawCentered(batch, "Desert Adventure", GameConfig.VIEW_HEIGHT * 0.68f);
-        font.getData().setScale(1f);
-        drawCentered(batch, "Survive the sandstorm. Reach the guardian.", GameConfig.VIEW_HEIGHT * 0.58f);
-        drawCentered(batch, "Press Enter to Start", GameConfig.VIEW_HEIGHT * 0.35f);
-        drawCentered(batch, "M: Map | WASD: Move | J/K/L: Attack/Skill/Ultimate", GameConfig.VIEW_HEIGHT * 0.28f);
+        CenteredTextDrawer.draw(batch, font, "Desert Adventure", GameConfig.VIEW_HEIGHT * GameConfig.MENU_TITLE_Y_RATIO);
+        font.getData().setScale(GameConfig.MENU_BODY_FONT_SCALE);
+        CenteredTextDrawer.draw(batch, font, "Survive the sandstorm. Reach the guardian.",
+                GameConfig.VIEW_HEIGHT * GameConfig.MENU_SUBTITLE_Y_RATIO);
+        CenteredTextDrawer.draw(batch, font, "Press Enter to Start", GameConfig.VIEW_HEIGHT * GameConfig.MENU_PROMPT_Y_RATIO);
+        CenteredTextDrawer.draw(batch, font, "M: Map | N: Inventory | WASD: Move | J/K/L: Attack/Skill/Ultimate",
+                GameConfig.VIEW_HEIGHT * GameConfig.MENU_HINT_Y_RATIO);
         batch.end();
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        if (GameInputBindings.justConfirmed()) {
             game.setScreen(new GameplayScreen(game));
         }
-    }
-
-    private void drawCentered(SpriteBatch batch, String text, float y) {
-        GlyphLayout layout = new GlyphLayout(font, text);
-        font.draw(batch, text, (GameConfig.VIEW_WIDTH - layout.width) / 2f, y);
     }
 
     @Override
