@@ -17,7 +17,10 @@ import com.desertadventure.map.view.MapOverlayLayout;
 import com.desertadventure.presentation.sprites.DesertSpriteAtlas;
 import com.desertadventure.state.GameSession;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Renders gameplay visuals: parallax backgrounds, tiled floor, map overlay, combat entities.
@@ -35,9 +38,14 @@ public class GameplayRenderer {
     private final Texture bgForward;
     private final DesertSpriteAtlas desertSprites;
     private final TextureRegion floorTile;
+    private final TextureRegion[] houseSprites;
+    private final List<BackgroundHouseProp> houseProps = new ArrayList<>();
     private float scrollBack;
     private float scrollMiddle;
     private float scrollForward;
+    private float scrollProps;
+    private float distanceSinceLastSpawn;
+    private float nextSpawnGap;
 
     public GameplayRenderer() {
         screenProjection.setToOrtho2D(0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT);
@@ -46,6 +54,23 @@ public class GameplayRenderer {
         bgForward = loadBackground(PARALLAX_FORWARD);
         desertSprites = new DesertSpriteAtlas();
         floorTile = desertSprites.get(DesertSpriteAtlas.FLOOR_TILE);
+        houseSprites = new TextureRegion[DesertSpriteAtlas.DESERT_HOUSES.length];
+        for (int i = 0; i < DesertSpriteAtlas.DESERT_HOUSES.length; i++) {
+            houseSprites[i] = desertSprites.get(DesertSpriteAtlas.DESERT_HOUSES[i]);
+        }
+        resetSpawnPacing();
+    }
+
+    private static final class BackgroundHouseProp {
+        final float scrollX;
+        final int houseIndex;
+        final float baseY;
+
+        BackgroundHouseProp(float scrollX, int houseIndex, float baseY) {
+            this.scrollX = scrollX;
+            this.houseIndex = houseIndex;
+            this.baseY = baseY;
+        }
     }
 
     private static Texture loadBackground(String path) {
@@ -66,13 +91,41 @@ public class GameplayRenderer {
         screenProjection.set(projection);
     }
 
+    /**
+     * Clears houses and places a few random spawns (game start / sandstorm).
+     */
+    public void repopulateHouseProps(float screenW) {
+        houseProps.clear();
+        scrollProps = 0f;
+        resetSpawnPacing();
+        ThreadLocalRandom rng = ThreadLocalRandom.current();
+        float margin = 180f;
+        float maxX = Math.max(margin, screenW - margin);
+        for (int i = 0; i < GameConfig.HOUSE_REPOPULATE_ATTEMPTS; i++) {
+            float scrollX = margin + rng.nextFloat() * (maxX - margin);
+            trySpawnHouse(scrollX);
+        }
+    }
+
+    private void resetSpawnPacing() {
+        distanceSinceLastSpawn = 0f;
+        nextSpawnGap = randomSpawnGap();
+    }
+
+    private static float randomSpawnGap() {
+        ThreadLocalRandom rng = ThreadLocalRandom.current();
+        return GameConfig.HOUSE_SPAWN_GAP_MIN
+                + rng.nextFloat() * (GameConfig.HOUSE_SPAWN_GAP_MAX - GameConfig.HOUSE_SPAWN_GAP_MIN);
+    }
+
     private void beginShapes() {
         shapes.setProjectionMatrix(screenProjection);
         shapes.begin(ShapeRenderer.ShapeType.Filled);
     }
 
     /**
-     * Draws tiled parallax desert layers (back → middle → forward). Call with {@link SpriteBatch#begin()} active.
+     * Draws parallax layers: back → houses → middle → forward → floor.
+     * Call with {@link SpriteBatch#begin()} active.
      */
     public void drawParallaxBackground(SpriteBatch batch, boolean running, float delta) {
         if (running) {
@@ -80,15 +133,91 @@ public class GameplayRenderer {
             scrollForward += base * GameConfig.PARALLAX_FORWARD_MULT;
             scrollMiddle += base * GameConfig.PARALLAX_MIDDLE_MULT;
             scrollBack += base * GameConfig.PARALLAX_BACK_MULT;
+            scrollProps += base * GameConfig.HOUSE_PROP_PARALLAX_MULT;
         }
 
         float w = GameConfig.VIEW_WIDTH;
         float h = GameConfig.VIEW_HEIGHT;
+        if (running) {
+            updateHouseSpawnsWhileRunning(delta);
+        }
         batch.setProjectionMatrix(screenProjection);
         drawTiledLayer(batch, bgBack, scrollBack, w, h);
+        drawHouseProps(batch, w);
         drawTiledLayer(batch, bgMiddle, scrollMiddle, w, h);
         drawTiledLayer(batch, bgForward, scrollForward, w, h);
         drawTiledFloor(batch, scrollForward, w, EXPLORE_GROUND_Y);
+    }
+
+    private void updateHouseSpawnsWhileRunning(float delta) {
+        float scrollDelta = GameConfig.SCROLL_SPEED * delta * GameConfig.HOUSE_PROP_PARALLAX_MULT;
+        distanceSinceLastSpawn += scrollDelta;
+        if (distanceSinceLastSpawn < nextSpawnGap) {
+            return;
+        }
+        distanceSinceLastSpawn = 0f;
+        nextSpawnGap = randomSpawnGap();
+        ThreadLocalRandom rng = ThreadLocalRandom.current();
+        float scrollX = scrollProps + rng.nextFloat() * GameConfig.HOUSE_SPAWN_JITTER;
+        trySpawnHouse(scrollX);
+    }
+
+    /**
+     * @return true if a house was added
+     */
+    private boolean trySpawnHouse(float scrollX) {
+        ThreadLocalRandom rng = ThreadLocalRandom.current();
+        if (rng.nextFloat() > GameConfig.HOUSE_SPAWN_CHANCE) {
+            return false;
+        }
+        int houseIndex = rng.nextInt(houseSprites.length);
+        float drawW = houseDrawWidth(houseIndex);
+        float screenX = scrollX - scrollProps;
+        if (countOverlapping(screenX, drawW) >= GameConfig.HOUSE_OVERLAP_MAX) {
+            return false;
+        }
+        float baseY = GameConfig.HOUSE_PROP_MIN_Y
+                + rng.nextFloat() * (GameConfig.HOUSE_PROP_MAX_Y - GameConfig.HOUSE_PROP_MIN_Y);
+        houseProps.add(new BackgroundHouseProp(scrollX, houseIndex, baseY));
+        return true;
+    }
+
+    private float houseDrawWidth(int houseIndex) {
+        TextureRegion region = houseSprites[houseIndex];
+        float drawH = GameConfig.HOUSE_PROP_DISPLAY_HEIGHT;
+        return drawH * (region.getRegionWidth() / (float) region.getRegionHeight());
+    }
+
+    private int countOverlapping(float screenLeft, float screenRight) {
+        int count = 0;
+        for (BackgroundHouseProp prop : houseProps) {
+            float otherLeft = prop.scrollX - scrollProps;
+            float otherRight = otherLeft + houseDrawWidth(prop.houseIndex);
+            if (screenRight > otherLeft && screenLeft < otherRight) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private void drawHouseProps(SpriteBatch batch, float screenW) {
+        float maxWidth = GameConfig.HOUSE_PROP_DISPLAY_HEIGHT * 2f;
+        Iterator<BackgroundHouseProp> it = houseProps.iterator();
+        while (it.hasNext()) {
+            BackgroundHouseProp prop = it.next();
+            float screenX = prop.scrollX - scrollProps;
+            float drawW = houseDrawWidth(prop.houseIndex);
+            if (screenX < -maxWidth) {
+                it.remove();
+                continue;
+            }
+            if (screenX > screenW + maxWidth) {
+                continue;
+            }
+            TextureRegion region = houseSprites[prop.houseIndex];
+            float drawH = GameConfig.HOUSE_PROP_DISPLAY_HEIGHT;
+            batch.draw(region, screenX, prop.baseY, drawW, drawH);
+        }
     }
 
     private void drawTiledFloor(SpriteBatch batch, float scroll, float screenW, float groundY) {

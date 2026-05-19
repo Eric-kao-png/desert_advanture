@@ -43,6 +43,7 @@ public class GameplayScreen extends ScreenAdapter {
         font.getData().setScale(1.1f);
         gameViewport.update();
         session.startNewGame();
+        renderer.repopulateHouseProps(GameConfig.VIEW_WIDTH);
     }
 
     @Override
@@ -63,6 +64,7 @@ public class GameplayScreen extends ScreenAdapter {
     private void update(float delta) {
         GameplayMode mode = session.getMode();
         detectCombatEntry(mode);
+        detectSandstormEntry(mode);
         ensureCombatInitialized(mode);
 
         if (messageTimer > 0f) {
@@ -96,6 +98,8 @@ public class GameplayScreen extends ScreenAdapter {
         if (session.getPendingMessage() != null && messageTimer <= 0f) {
             messageTimer = 4f;
         }
+
+        lastMode = mode;
     }
 
     private void detectCombatEntry(GameplayMode mode) {
@@ -104,7 +108,12 @@ public class GameplayScreen extends ScreenAdapter {
         if (enteringCombat) {
             combatInitialized = false;
         }
-        lastMode = mode;
+    }
+
+    private void detectSandstormEntry(GameplayMode mode) {
+        if (mode == GameplayMode.STORM && lastMode != GameplayMode.STORM) {
+            renderer.repopulateHouseProps(GameConfig.VIEW_WIDTH);
+        }
     }
 
     private void ensureCombatInitialized(GameplayMode mode) {

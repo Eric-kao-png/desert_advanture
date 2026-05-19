@@ -8,6 +8,27 @@
       "bottom": 64,
       "right": 32,
       "top": 128
+    },
+    {
+      "name": "desert_house_1",
+      "left": 160,
+      "bottom": 64,
+      "right": 224,
+      "top": 128
+    },
+    {
+      "name": "desert_house_2",
+      "left": 288,
+      "bottom": 64,
+      "right": 320,
+      "top": 128
+    },
+    {
+      "name": "desert_house_3",
+      "left": 320,
+      "bottom": 64,
+      "right": 384,
+      "top": 128
     }
   ]
 }

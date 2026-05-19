@@ -19,6 +19,12 @@ import java.util.Map;
  */
 public class DesertSpriteAtlas implements Disposable {
     public static final String FLOOR_TILE = "floor_tile";
+    public static final String DESERT_HOUSE_1 = "desert_house_1";
+    public static final String DESERT_HOUSE_2 = "desert_house_2";
+    public static final String DESERT_HOUSE_3 = "desert_house_3";
+    public static final String[] DESERT_HOUSES = {
+            DESERT_HOUSE_1, DESERT_HOUSE_2, DESERT_HOUSE_3
+    };
 
     private static final String DATA_PATH = "data/desert_sprite_sheet.json";
 
