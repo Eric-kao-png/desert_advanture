@@ -82,11 +82,12 @@ public final class CombatCardRenderer {
             if (card == null) {
                 continue;
             }
-            if (selected != null && selected == entry.instanceId) {
+            if (selected != null && selected == entry.instanceId && combat.canAssignCard(card)) {
                 shapes.setColor(CARD_SELECTED);
                 shapes.rect(entry.x - 3f, entry.y - 3f, layout.cardW + 6f, layout.cardH + 6f);
             }
-            drawCardShape(entry.x, entry.y, layout.cardW, layout.cardH, colorFor(card.getType()));
+            Color fill = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_FILL : colorFor(card.getType());
+            drawCardShape(entry.x, entry.y, layout.cardW, layout.cardH, fill);
         }
         shapes.end();
     }
@@ -122,11 +123,10 @@ public final class CombatCardRenderer {
     }
 
     private void drawHandText(SpriteBatch batch, BitmapFont font, CombatCardLayout layout, CombatController combat) {
-        font.setColor(Color.WHITE);
         for (CombatCardLayout.HandEntry entry : layout.getHandEntries()) {
             ActionCardInstance card = findHandCard(combat, entry.instanceId);
             if (card != null) {
-                drawCardLabel(batch, font, card.getType(), entry.x + 6f, entry.y + layout.cardH - 18f);
+                drawHandCardLabel(batch, font, card, entry.x + 6f, entry.y + layout.cardH - 18f);
             }
         }
     }
@@ -157,6 +157,18 @@ public final class CombatCardRenderer {
         }
     }
 
+    private static void drawHandCardLabel(SpriteBatch batch, BitmapFont font, ActionCardInstance card, float x, float y) {
+        ActionCardType type = card.getType();
+        font.setColor(card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_TEXT : Color.WHITE);
+        font.draw(batch, type.getDisplayName(), x, y);
+        font.draw(batch, effectLine(type), x, y - 16f);
+        if (card.isOnCooldown()) {
+            font.draw(batch, "CD: " + card.getCooldownRemaining(), x, y - 32f);
+        } else if (type.getCooldownTurns() > 0) {
+            font.draw(batch, "CD:" + type.getCooldownTurns(), x, y - 32f);
+        }
+    }
+
     private static String effectLine(ActionCardType type) {
         return switch (type.getTarget()) {
             case ENEMY -> type.getPrimaryValue() + " dmg";
@@ -165,7 +177,7 @@ public final class CombatCardRenderer {
     }
 
     private static ActionCardInstance findHandCard(CombatController combat, int instanceId) {
-        for (ActionCardInstance c : combat.getHandCandidates()) {
+        for (ActionCardInstance c : combat.getVisibleHand()) {
             if (c.getInstanceId() == instanceId) {
                 return c;
             }

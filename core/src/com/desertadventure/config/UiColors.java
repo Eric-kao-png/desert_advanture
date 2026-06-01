@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.Color;
 public final class UiColors {
     public static final Color SECTION_LABEL = new Color(0.85f, 0.75f, 0.55f, 1f);
     public static final Color MUTED_TEXT = new Color(0.45f, 0.42f, 0.38f, 1f);
+    public static final Color CARD_ON_COOLDOWN_FILL = new Color(0.2f, 0.2f, 0.22f, 1f);
+    public static final Color CARD_ON_COOLDOWN_TEXT = new Color(0.38f, 0.38f, 0.4f, 1f);
     public static final Color BAR_VALUE_TEXT = new Color(0.95f, 0.95f, 0.95f, 1f);
     public static final Color DETAIL_BODY_TEXT = new Color(0.82f, 0.82f, 0.82f, 1f);
     public static final Color BUTTON_LABEL = new Color(0.9f, 0.9f, 0.9f, 1f);

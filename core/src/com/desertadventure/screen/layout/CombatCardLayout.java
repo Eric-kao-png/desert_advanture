@@ -37,7 +37,7 @@ public final class CombatCardLayout {
 
     public void rebuildHand(CombatController combat) {
         handEntries.clear();
-        List<ActionCardInstance> hand = combat.getHandCandidates();
+        List<ActionCardInstance> hand = combat.getVisibleHand();
         float totalHandW = hand.size() * cardW + Math.max(0, hand.size() - 1) * GameConfig.COMBAT_HAND_GAP;
         float startX = (GameConfig.VIEW_WIDTH - totalHandW) / 2f;
         for (int i = 0; i < hand.size(); i++) {

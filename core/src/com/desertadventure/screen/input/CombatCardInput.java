@@ -68,6 +68,10 @@ public final class CombatCardInput {
 
         int handId = layout.hitHandInstance(worldX, worldY);
         if (handId >= 0) {
+            var card = combat.findCard(handId);
+            if (card == null || !combat.canAssignCard(card)) {
+                return;
+            }
             Integer selected = combat.getSelectedInstanceId();
             if (selected != null && selected == handId) {
                 combat.setSelectedInstanceId(null);

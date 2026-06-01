@@ -145,22 +145,44 @@ public class CombatController {
         return slotIndex == PLAYER_SLOT_A || slotIndex == PLAYER_SLOT_B;
     }
 
-    public List<ActionCardInstance> getHandCandidates() {
+    /** Cards shown in the hand row (includes cooldown; excludes slot-assigned). */
+    public List<ActionCardInstance> getVisibleHand() {
         List<ActionCardInstance> hand = new ArrayList<>();
         if (deck == null) {
             return hand;
         }
         Set<Integer> assigned = assignedInstanceIds();
         for (ActionCardInstance instance : deck.getInstances()) {
-            if (instance.isOnCooldown()) {
-                continue;
+            if (!assigned.contains(instance.getInstanceId())) {
+                hand.add(instance);
             }
-            if (assigned.contains(instance.getInstanceId())) {
-                continue;
-            }
-            hand.add(instance);
         }
         return hand;
+    }
+
+    public boolean canAssignCard(ActionCardInstance instance) {
+        if (instance == null || instance.isOnCooldown()) {
+            return false;
+        }
+        return !assignedInstanceIds().contains(instance.getInstanceId());
+    }
+
+    /** Assignable hand cards only (not on cooldown, not in a slot). */
+    public List<ActionCardInstance> getHandCandidates() {
+        List<ActionCardInstance> hand = new ArrayList<>();
+        for (ActionCardInstance instance : getVisibleHand()) {
+            if (canAssignCard(instance)) {
+                hand.add(instance);
+            }
+        }
+        return hand;
+    }
+
+    public ActionCardInstance findCard(int instanceId) {
+        if (deck == null) {
+            return null;
+        }
+        return deck.findById(instanceId);
     }
 
     public boolean canConfirmPlanning() {
