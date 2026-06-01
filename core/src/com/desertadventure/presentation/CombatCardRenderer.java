@@ -23,6 +23,11 @@ public final class CombatCardRenderer {
     private static final Color SLOT_BORDER = new Color(0.45f, 0.4f, 0.32f, 1f);
     private static final Color SLOT_ACTIVE = new Color(0.55f, 0.48f, 0.2f, 1f);
     private static final Color CARD_ATTACK = new Color(0.75f, 0.28f, 0.22f, 1f);
+    private static final Color CARD_SHIELD = new Color(0.35f, 0.55f, 0.85f, 1f);
+    private static final Color CARD_FULL_POWER = new Color(0.85f, 0.35f, 0.20f, 1f);
+    private static final Color CARD_LIFE_MAGIC = new Color(0.55f, 0.25f, 0.75f, 1f);
+    private static final Color CARD_THRUST = new Color(0.70f, 0.45f, 0.22f, 1f);
+    private static final Color CARD_POISON = new Color(0.35f, 0.72f, 0.32f, 1f);
     private static final Color CARD_STRONG = new Color(0.85f, 0.4f, 0.15f, 1f);
     private static final Color CARD_HEAL = new Color(0.25f, 0.65f, 0.35f, 1f);
     private static final Color CARD_SELECTED = new Color(1f, 0.92f, 0.5f, 1f);
@@ -347,6 +352,11 @@ public final class CombatCardRenderer {
             case ATTACK -> CARD_ATTACK;
             case STRONG_ATTACK -> CARD_STRONG;
             case HEAL -> CARD_HEAL;
+            case SHIELD -> CARD_SHIELD;
+            case FULL_POWER_ATTACK -> CARD_FULL_POWER;
+            case LIFE_MAGIC -> CARD_LIFE_MAGIC;
+            case THRUST -> CARD_THRUST;
+            case POISON -> CARD_POISON;
         };
     }
 

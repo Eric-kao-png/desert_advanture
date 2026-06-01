@@ -38,21 +38,26 @@ Exploration **action cards** are separate from the **item inventory** (potions/g
 
 ---
 
-## 3. Player Action Cards (v0.2)
+## 3. Player Action Cards (v0.3)
 
 | Card | Category | Effect | Cooldown (turns) |
 |------|----------|--------|------------------|
 | Attack | Offense | 2 damage to enemy | 1 |
 | Strong Attack | Offense | 3 damage to enemy | 2 |
 | Heal | Utility | 4 HP to self | 4 |
+| Shield | Utility | +4 shield (absorbs damage before HP) | 3 |
+| Full Power | Offense | 3 damage; 6 if no Utility card resolved this round | 3 |
+| Life Magic | Utility | Enemy current HP halved (floor) | 5 |
+| Thrust | Offense | 6 damage on combat round 1, else 3 | 3 |
+| Poison | Utility | Poison 2 rounds; 1 damage to enemy at each round end | 2 |
 
-Categories (`ActionCardCategory`): **Offense** (Attack, Strong Attack) and **Utility** (Heal). Shown on card faces and in hover tooltips (`Type: …` via `GameMessages`). Card names stay distinct (e.g. card **Attack** vs category **Offense**).
+Categories (`ActionCardCategory`): **Offense** vs **Utility**. Hand UI: Offense panel (left), Confirm (center), Utility panel (right).
 
-Constants live in `GameConfig` (`CARD_*`). Enemy slots use `ActionCardType.ATTACK` (same damage/cooldown display as player).
+Constants in `GameConfig` (`CARD_*`). Enemy slots use `ActionCardType.ATTACK`.
 
-**Starter deck** (reset on **new game** only): 2× Attack, 1× Strong Attack, 1× Heal.
+**Starter deck** (new game only): 2× Attack, 1× Strong Attack, 1× Heal.
 
-**Victory reward** (normal enemy `CombatOutcome.VICTORY` only, not boss): one random card via `ActionCardRewards.rollVictoryCard()` — 50% Heal, 50% Strong Attack — added to the deck with a `GameMessages` line (`Gained: …`). Boss camp-clear uses `BOSS_VICTORY` and does not grant this loot.
+**Victory reward** (normal fight, not boss): uniform random among Heal, Strong Attack, Shield, Full Power, Life Magic, Thrust, Poison (`ActionCardRewards.VICTORY_LOOT`).
 
 ---
 

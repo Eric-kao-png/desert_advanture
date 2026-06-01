@@ -74,14 +74,15 @@ public class ParallaxBackground implements com.badlogic.gdx.utils.Disposable {
 
     private static void drawTiled(SpriteBatch batch, Texture texture, float scroll,
                                   float screenW, float screenH, float drawY) {
-        float scale = screenH / texture.getHeight();
+        float drawHeight = screenH;
+        float scale = drawHeight / texture.getHeight();
         float tileW = texture.getWidth() * scale;
         float offset = scroll % tileW;
         if (offset < 0f) {
             offset += tileW;
         }
         for (float x = -offset; x < screenW; x += tileW) {
-            batch.draw(texture, x, drawY, tileW, screenH);
+            batch.draw(texture, x, drawY, tileW, drawHeight);
         }
     }
 

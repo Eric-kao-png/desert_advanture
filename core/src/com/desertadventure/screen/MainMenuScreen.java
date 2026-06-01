@@ -49,8 +49,6 @@ public class MainMenuScreen extends ScreenAdapter {
         CenteredTextDrawer.draw(batch, font, "Survive the sandstorm. Reach the guardian.",
                 GameConfig.VIEW_HEIGHT * GameConfig.MENU_SUBTITLE_Y_RATIO);
         CenteredTextDrawer.draw(batch, font, "Press Enter to Start", GameConfig.VIEW_HEIGHT * GameConfig.MENU_PROMPT_Y_RATIO);
-        CenteredTextDrawer.draw(batch, font, "M: Map | N: Inventory | WASD: Move | J/K/L: Attack/Skill/Ultimate",
-                GameConfig.VIEW_HEIGHT * GameConfig.MENU_HINT_Y_RATIO);
         batch.end();
 
         if (GameInputBindings.justConfirmed()) {

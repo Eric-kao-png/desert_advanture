@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.combat.system.CombatController;
+import com.desertadventure.player.PlayerStats;
 import com.desertadventure.screen.layout.CombatCardLayout;
 import com.desertadventure.screen.layout.CombatSceneLayout;
 import com.desertadventure.config.GameConfig;
@@ -83,13 +84,25 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         parallax.drawFloor(batch, GameConfig.VIEW_WIDTH, CombatSceneLayout.groundY(layoutBlend));
     }
 
-    public void renderExploreForeground(GameSession session, boolean running, float layoutBlend) {
-        float w = GameConfig.VIEW_WIDTH;
-        float h = GameConfig.VIEW_HEIGHT;
-        float groundY = CombatSceneLayout.groundY(layoutBlend);
-        drawPlayer(w * GameConfig.EXPLORE_PLAYER_X_RATIO, groundY, running);
-        ShapeDrawer.fillRect(shapes, 0, h - GameConfig.HUD_TOP_BAR_HEIGHT, w, GameConfig.HUD_TOP_BAR_HEIGHT,
-                UiColors.HUD_TOP_BAR);
+    public void renderExploreForeground(
+            GameSession session,
+            boolean running,
+            float layoutBlend,
+            SpriteBatch batch,
+            BitmapFont font) {
+        ExplorePlayerPose pose = explorePlayerPose(running, layoutBlend);
+        drawPlayer(pose);
+        PlayerStats stats = session.getPlayerStats();
+        shapes.setProjectionMatrix(screenProjection);
+        CombatHpBarDrawer.draw(shapes, pose.centerX, pose.bottomY, GameConfig.PLAYER_WIDTH,
+                GameConfig.PLAYER_HEIGHT, stats.getHp(), stats.getMaxHp());
+        batch.setProjectionMatrix(screenProjection);
+        batch.begin();
+        CombatHpBarDrawer.drawHpText(batch, font,
+                CombatHpBarDrawer.layout(pose.centerX, pose.bottomY, GameConfig.PLAYER_WIDTH,
+                        GameConfig.PLAYER_HEIGHT),
+                stats.getHp(), stats.getMaxHp());
+        batch.end();
     }
 
     public void renderCombatHand(
@@ -110,7 +123,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         combatCards.renderSlotsAndControls(combat, layout, batch, font);
     }
 
-    public void renderCombatEntities(List<CombatEntity> entities) {
+    public void renderCombatEntities(List<CombatEntity> entities, SpriteBatch batch, BitmapFont font) {
         shapes.setProjectionMatrix(screenProjection);
         shapes.begin(ShapeRenderer.ShapeType.Filled);
         for (CombatEntity entity : entities) {
@@ -122,6 +135,21 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
                     entity.getWidth(), entity.getHeight());
         }
         shapes.end();
+        for (CombatEntity entity : entities) {
+            if (!entity.isAlive() && entity.getKind() != CombatEntity.Kind.PLAYER) {
+                continue;
+            }
+            CombatHpBarDrawer.draw(shapes, entity);
+        }
+        batch.setProjectionMatrix(screenProjection);
+        batch.begin();
+        for (CombatEntity entity : entities) {
+            if (!entity.isAlive() && entity.getKind() != CombatEntity.Kind.PLAYER) {
+                continue;
+            }
+            CombatHpBarDrawer.drawHpText(batch, font, entity);
+        }
+        batch.end();
     }
 
     public void renderMapOverlay(
@@ -153,17 +181,33 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
                 UiColors.STORM_TINT.cpy().mul(1f, 1f, 1f, alpha * GameConfig.STORM_OVERLAY_ALPHA_SCALE));
     }
 
-    private void drawPlayer(float x, float y, boolean running) {
-        shapes.setProjectionMatrix(screenProjection);
-        shapes.begin(ShapeRenderer.ShapeType.Filled);
-        shapes.setColor(UiColors.EXPLORE_PLAYER);
+    private ExplorePlayerPose explorePlayerPose(boolean running, float layoutBlend) {
+        float centerX = GameConfig.VIEW_WIDTH * GameConfig.EXPLORE_PLAYER_X_RATIO;
+        float groundY = CombatSceneLayout.groundY(layoutBlend);
         float bob = running
                 ? (float) (Math.sin(System.currentTimeMillis() * GameConfig.PLAYER_BOB_FREQUENCY)
                 * GameConfig.PLAYER_BOB_AMPLITUDE)
                 : 0f;
-        shapes.rect(x - GameConfig.PLAYER_WIDTH / 2f, y + bob,
+        return new ExplorePlayerPose(centerX, groundY + bob);
+    }
+
+    private void drawPlayer(ExplorePlayerPose pose) {
+        shapes.setProjectionMatrix(screenProjection);
+        shapes.begin(ShapeRenderer.ShapeType.Filled);
+        shapes.setColor(UiColors.EXPLORE_PLAYER);
+        shapes.rect(pose.centerX - GameConfig.PLAYER_WIDTH / 2f, pose.bottomY,
                 GameConfig.PLAYER_WIDTH, GameConfig.PLAYER_HEIGHT);
         shapes.end();
+    }
+
+    private static final class ExplorePlayerPose {
+        final float centerX;
+        final float bottomY;
+
+        ExplorePlayerPose(float centerX, float bottomY) {
+            this.centerX = centerX;
+            this.bottomY = bottomY;
+        }
     }
 
 }

@@ -14,6 +14,11 @@ public enum GameplayMode {
         return this == COMBAT || this == BOSS_COMBAT;
     }
 
+    /** Parallax explore scene with overhead player HP bar (not combat or victory). */
+    public boolean isExploreScene() {
+        return !isCombat() && this != VICTORY;
+    }
+
     public boolean canOpenMap() {
         return canOpenExplorationOverlay();
     }

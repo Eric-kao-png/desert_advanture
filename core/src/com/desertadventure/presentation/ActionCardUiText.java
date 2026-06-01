@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.desertadventure.combat.card.ActionCardInstance;
+import com.desertadventure.combat.card.ActionCardMechanic;
 import com.desertadventure.combat.card.ActionCardType;
 import com.desertadventure.config.GameMessages;
 import com.desertadventure.config.UiColors;
@@ -113,9 +114,17 @@ public final class ActionCardUiText {
     }
 
     private static String effectLabel(ActionCardType type) {
-        return switch (type.getTarget()) {
-            case ENEMY -> "Damage: " + type.getPrimaryValue();
-            case SELF -> "Heal: " + type.getPrimaryValue();
+        return switch (type.getMechanic()) {
+            case DAMAGE -> "Damage: " + type.getPrimaryValue();
+            case HEAL -> "Heal: " + type.getPrimaryValue();
+            case SHIELD -> "Shield: +" + type.getPrimaryValue();
+            case FULL_POWER_ATTACK -> "Damage: " + type.getPrimaryValue()
+                    + " (or " + type.getSecondaryValue() + " if no Utility)";
+            case HALVE_ENEMY_HP -> "Enemy HP halved";
+            case THRUST -> "Damage: " + type.getSecondaryValue() + " round 1, else "
+                    + type.getPrimaryValue();
+            case POISON -> "Poison: " + type.getPrimaryValue() + " rds, "
+                    + type.getSecondaryValue() + " dmg/round";
         };
     }
 

@@ -28,6 +28,12 @@ public final class UiColors {
     public static final Color BAR_BORDER = new Color(0.5f, 0.45f, 0.38f, 1f);
     public static final Color HP_BAR_BG = new Color(0.22f, 0.1f, 0.1f, 0.95f);
     public static final Color HP_BAR_FILL = new Color(0.82f, 0.22f, 0.2f, 1f);
+    /** Overhead combat HP bar — unified green theme for player, enemy, and boss. */
+    public static final Color COMBAT_HP_BAR_BG = new Color(0.08f, 0.16f, 0.08f, 1f);
+    public static final Color COMBAT_HP_BAR_FILL = new Color(0.32f, 0.88f, 0.28f, 1f);
+    public static final Color COMBAT_HP_BAR_BORDER = new Color(0.55f, 0.85f, 0.5f, 1f);
+    /** Boss uses the same fill as other combat entities. */
+    public static final Color COMBAT_BOSS_HP_BAR_FILL = COMBAT_HP_BAR_FILL;
     public static final Color STAMINA_BAR_BG = new Color(0.14f, 0.16f, 0.1f, 0.95f);
     public static final Color STAMINA_BAR_FILL = new Color(0.78f, 0.72f, 0.28f, 1f);
 
@@ -41,7 +47,6 @@ public final class UiColors {
     public static final Color PLAYER_BODY = new Color(0.2f, 0.5f, 0.95f, 1f);
     public static final Color EXPLORE_PLAYER = PLAYER_BODY;
     public static final Color STORM_TINT = new Color(0.9f, 0.75f, 0.35f, 1f);
-    public static final Color HUD_TOP_BAR = new Color(0f, 0f, 0f, GameConfig.HUD_TOP_BAR_ALPHA);
     public static final Color HUD_STORM_TITLE = new Color(0.2f, 0.15f, 0.05f, 1f);
     public static final Color MENU_SKY_CLEAR = new Color(0.75f, 0.6f, 0.35f, 1f);
     public static final Color MENU_SKY_BAND = new Color(0.45f, 0.65f, 0.95f, 1f);

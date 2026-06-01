@@ -1,9 +1,9 @@
 package com.desertadventure.combat.system;
 
 import com.desertadventure.combat.CombatOutcome;
+import com.desertadventure.combat.card.ActionCardCategory;
 import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardInstance;
-import com.desertadventure.combat.card.ActionCardTarget;
 import com.desertadventure.combat.card.ActionCardType;
 import com.desertadventure.combat.card.CombatPhase;
 import com.desertadventure.combat.model.CombatEntity;
@@ -98,17 +98,22 @@ public class CombatController {
         player = new CombatEntity(CombatEntity.Kind.PLAYER, playerX, groundY,
                 playerStats.getMaxHp(), playerStats.getAttack(), 0f);
         player.setHp(playerStats.getHp());
+        player.clearCombatStatus();
 
         float enemyX = arenaWidth * GameConfig.COMBAT_ENEMY_X_RATIO;
         if (boss) {
             float bossHp = GameConfig.BOSS_BASE_HP + distanceBand * GameConfig.BOSS_HP_PER_DISTANCE_BAND;
             enemyX = arenaWidth * GameConfig.COMBAT_BOSS_X_RATIO;
-            enemies.add(new CombatEntity(CombatEntity.Kind.BOSS, enemyX, groundY, bossHp, 0, 0f));
+            CombatEntity bossEntity = new CombatEntity(CombatEntity.Kind.BOSS, enemyX, groundY, bossHp, 0, 0f);
+            bossEntity.clearCombatStatus();
+            enemies.add(bossEntity);
         } else {
             int minHp = GameConfig.ENEMY_HP_MIN;
             int maxHp = GameConfig.ENEMY_HP_MAX;
             float enemyHp = ThreadLocalRandom.current().nextInt(minHp, maxHp + 1);
-            enemies.add(new CombatEntity(CombatEntity.Kind.ENEMY, enemyX, groundY, enemyHp, 0, 0f));
+            CombatEntity enemy = new CombatEntity(CombatEntity.Kind.ENEMY, enemyX, groundY, enemyHp, 0, 0f);
+            enemy.clearCombatStatus();
+            enemies.add(enemy);
         }
     }
 
@@ -263,7 +268,7 @@ public class CombatController {
             }
         }
         if (checkAndEndCombatIfFinished()) {
-            applyRoundEndCooldowns();
+            applyRoundEndEffects();
             clearAllSlots();
         }
     }
@@ -283,10 +288,59 @@ public class CombatController {
     }
 
     private void applyCardEffect(ActionCardType type) {
-        if (type.getTarget() == ActionCardTarget.ENEMY) {
-            dealDamageToEnemy(type.getPrimaryValue());
-        } else if (type.getTarget() == ActionCardTarget.SELF) {
-            healPlayer(type.getPrimaryValue());
+        switch (type.getMechanic()) {
+            case DAMAGE -> dealDamageToEnemy(type.getPrimaryValue());
+            case HEAL -> healPlayer(type.getPrimaryValue());
+            case SHIELD -> {
+                if (player != null) {
+                    player.addShield(type.getPrimaryValue());
+                }
+            }
+            case FULL_POWER_ATTACK -> {
+                int damage = changeCardResolvedThisRound()
+                        ? GameConfig.CARD_FULL_POWER_DAMAGE_LOW
+                        : GameConfig.CARD_FULL_POWER_DAMAGE_HIGH;
+                dealDamageToEnemy(damage);
+            }
+            case HALVE_ENEMY_HP -> halveEnemyHp();
+            case THRUST -> {
+                int damage = roundNumber == 1
+                        ? GameConfig.CARD_THRUST_DAMAGE_ROUND_ONE
+                        : GameConfig.CARD_THRUST_DAMAGE_OTHER;
+                dealDamageToEnemy(damage);
+            }
+            case POISON -> applyPoisonToEnemies(GameConfig.CARD_POISON_DURATION_TURNS);
+            default -> {
+            }
+        }
+    }
+
+    private boolean changeCardResolvedThisRound() {
+        if (deck == null) {
+            return false;
+        }
+        for (int instanceId : playedThisRound) {
+            ActionCardInstance card = deck.findById(instanceId);
+            if (card != null && card.getType().getCategory() == ActionCardCategory.CHANGE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void halveEnemyHp() {
+        for (CombatEntity enemy : enemies) {
+            if (enemy.isAlive()) {
+                enemy.setHp((float) Math.floor(enemy.getHp() / 2f));
+            }
+        }
+    }
+
+    private void applyPoisonToEnemies(int turns) {
+        for (CombatEntity enemy : enemies) {
+            if (enemy.isAlive()) {
+                enemy.applyPoison(turns);
+            }
         }
     }
 
@@ -315,7 +369,7 @@ public class CombatController {
     }
 
     private void finishRound() {
-        applyRoundEndCooldowns();
+        applyRoundEndEffects();
         clearAllSlots();
 
         if (checkAndEndCombatIfFinished()) {
@@ -328,16 +382,34 @@ public class CombatController {
     }
 
     /**
-     * End-of-round cooldown: full CD on played instances, then one tick on every instance
-     * (including played — the ending round counts as one cooldown turn).
-     * Runs when a round completes normally or combat ends mid-resolve (victory/defeat).
-     * Idempotent within the same round ({@link #roundEndCooldownsApplied}).
+     * End-of-round: poison ticks, cooldowns (played cards get full CD then all instances tick once).
+     * Runs when a round completes normally or combat ends mid-resolve.
      */
-    private void applyRoundEndCooldowns() {
-        if (roundEndCooldownsApplied || deck == null) {
+    private void applyRoundEndEffects() {
+        if (roundEndCooldownsApplied) {
             return;
         }
         roundEndCooldownsApplied = true;
+        applyPoisonTicks();
+        applyRoundEndCooldownsOnly();
+    }
+
+    private void applyPoisonTicks() {
+        float poisonDamage = GameConfig.CARD_POISON_DAMAGE_PER_ROUND;
+        if (player != null) {
+            player.tickPoisonAtRoundEnd(poisonDamage);
+            playerStats.setHp(player.getHp());
+        }
+        for (CombatEntity enemy : enemies) {
+            enemy.tickPoisonAtRoundEnd(poisonDamage);
+        }
+    }
+
+    private void applyRoundEndCooldownsOnly() {
+        if (deck == null) {
+            playedThisRound.clear();
+            return;
+        }
         for (int instanceId : new HashSet<>(playedThisRound)) {
             ActionCardInstance card = deck.findById(instanceId);
             if (card != null) {

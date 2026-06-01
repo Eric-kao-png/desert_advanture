@@ -20,6 +20,8 @@ public class CombatEntity {
     private float contactDamageCooldown;
     private boolean alive = true;
     private float hurtFlash;
+    private int shield;
+    private int poisonTurnsRemaining;
 
     public CombatEntity(Kind kind, float x, float y, float maxHp, int attack, float speed) {
         this.kind = kind;
@@ -114,8 +116,44 @@ public class CombatEntity {
         return new Rectangle(frontX, hitY, depth, hitHeight);
     }
 
+    public int getShield() {
+        return shield;
+    }
+
+    public void addShield(int amount) {
+        if (!alive || amount <= 0) {
+            return;
+        }
+        shield += amount;
+    }
+
+    public int getPoisonTurnsRemaining() {
+        return poisonTurnsRemaining;
+    }
+
+    public void applyPoison(int turns) {
+        if (!alive || turns <= 0) {
+            return;
+        }
+        poisonTurnsRemaining = Math.max(poisonTurnsRemaining, turns);
+    }
+
+    public void clearCombatStatus() {
+        shield = 0;
+        poisonTurnsRemaining = 0;
+    }
+
     public void takeDamage(float amount) {
-        if (!alive) {
+        if (!alive || amount <= 0f) {
+            return;
+        }
+        if (shield > 0) {
+            int absorbed = (int) Math.min(shield, amount);
+            shield -= absorbed;
+            amount -= absorbed;
+        }
+        if (amount <= 0f) {
+            hurtFlash = 0.15f;
             return;
         }
         hp -= amount;
@@ -124,6 +162,28 @@ public class CombatEntity {
             hp = 0f;
             alive = false;
         }
+    }
+
+    /** Poison tick; does not consume shield. */
+    public void takePoisonDamage(float amount) {
+        if (!alive || amount <= 0f) {
+            return;
+        }
+        hp -= amount;
+        hurtFlash = 0.15f;
+        if (hp <= 0f) {
+            hp = 0f;
+            alive = false;
+        }
+    }
+
+    /** One poison tick at round end (damage then duration -1). */
+    public void tickPoisonAtRoundEnd(float damage) {
+        if (!alive || poisonTurnsRemaining <= 0) {
+            return;
+        }
+        takePoisonDamage(damage);
+        poisonTurnsRemaining--;
     }
 
     public void heal(float amount) {

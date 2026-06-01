@@ -115,7 +115,7 @@ final class GameplaySceneDrawer {
         List<CombatEntity> entities = new ArrayList<>();
         entities.add(player);
         entities.addAll(session.getCombatController().getEnemies());
-        renderer.renderCombatEntities(entities);
+        renderer.renderCombatEntities(entities, batch, uiFont);
         renderer.renderCombatHand(session.getCombatController(), layout, batch, uiFont);
         renderer.renderCombatSlotsAndControls(session.getCombatController(), layout, batch, uiFont);
     }
@@ -131,6 +131,6 @@ final class GameplaySceneDrawer {
         renderer.drawParallaxBackground(batch, running, delta, blend);
         renderer.drawParallaxFloor(batch, blend);
         batch.end();
-        renderer.renderExploreForeground(session, running, blend);
+        renderer.renderExploreForeground(session, running, blend, batch, uiFont);
     }
 }

@@ -27,40 +27,43 @@ public class GameplayHud {
         font.setColor(Color.WHITE);
 
         if (mode != GameplayMode.CHARACTER_OVERLAY) {
-            drawStatusLines(batch, session);
+            drawStatusLines(batch, session, mode);
         }
 
-        drawModeHint(batch, session, mode);
+        drawModeOverlay(batch, session, mode);
         drawMessageFeed(batch, session.getMessageFeed());
     }
 
-    private void drawStatusLines(SpriteBatch batch, GameSession session) {
+    private void drawStatusLines(SpriteBatch batch, GameSession session, GameplayMode mode) {
         float top = GameConfig.VIEW_HEIGHT;
         float left = GameConfig.HUD_LEFT_MARGIN;
         float offset = GameConfig.HUD_STATUS_TOP_OFFSET;
-        font.draw(batch, String.format("HP: %.0f/%.0f",
-                session.getPlayerStats().getHp(), session.getPlayerStats().getMaxHp()), left, top - offset);
+        int line = 0;
+        if (!mode.isExploreScene()) {
+            font.draw(batch, String.format("HP: %.0f/%.0f",
+                    session.getPlayerStats().getHp(), session.getPlayerStats().getMaxHp()),
+                    left, top - offset - GameConfig.HUD_LINE_STEP * line);
+            line++;
+        }
         font.draw(batch, String.format("Steps: %.1f/%.1f",
                 session.getStepBudget().getRemainingSteps(), session.getStepBudget().getStepBudget()),
-                left, top - offset - GameConfig.HUD_LINE_STEP);
+                left, top - offset - GameConfig.HUD_LINE_STEP * line);
+        line++;
         font.draw(batch, String.format("Required Events: %d/%d",
                 session.getEventTracker().getCompletedCount(), session.getEventTracker().getRequiredCount()),
-                left, top - offset - GameConfig.HUD_LINE_STEP * 2);
+                left, top - offset - GameConfig.HUD_LINE_STEP * line);
+        line++;
 
         GridPos tile = session.getDisplayGridPos();
-        font.draw(batch, String.format("Tile: %s", tile), left, top - offset - GameConfig.HUD_LINE_STEP * 3);
+        font.draw(batch, String.format("Tile: %s", tile), left, top - offset - GameConfig.HUD_LINE_STEP * line);
+        line++;
         font.draw(batch, String.format("Distance from origin: %.1f", session.getDistanceFromOrigin()),
-                left, top - offset - GameConfig.HUD_LINE_STEP * 4);
+                left, top - offset - GameConfig.HUD_LINE_STEP * line);
     }
 
-    private void drawModeHint(SpriteBatch batch, GameSession session, GameplayMode mode) {
+    private void drawModeOverlay(SpriteBatch batch, GameSession session, GameplayMode mode) {
         switch (mode) {
-            case EXPLORE_IDLE -> drawHint(batch, GameMessages.HUD_EXPLORE_IDLE);
-            case MAP_OVERLAY -> drawHint(batch, GameMessages.HUD_MAP_OVERLAY);
-            case CHARACTER_OVERLAY -> drawHint(batch, GameMessages.HUD_CHARACTER_OVERLAY);
-            case RUNNING -> drawHint(batch, GameMessages.HUD_RUNNING);
             case COMBAT, BOSS_COMBAT -> {
-                drawHint(batch, GameMessages.HUD_COMBAT);
                 CombatEntity enemy = firstLivingEnemy(session);
                 if (enemy != null) {
                     font.draw(batch, String.format("Enemy HP: %.0f/%.0f", enemy.getHp(), enemy.getMaxHp()),
@@ -80,10 +83,6 @@ public class GameplayHud {
             default -> {
             }
         }
-    }
-
-    private void drawHint(SpriteBatch batch, String text) {
-        font.draw(batch, text, GameConfig.HUD_LEFT_MARGIN, GameConfig.HUD_BOTTOM_HINT_Y);
     }
 
     private void drawMessageFeed(SpriteBatch batch, MessageFeed feed) {
