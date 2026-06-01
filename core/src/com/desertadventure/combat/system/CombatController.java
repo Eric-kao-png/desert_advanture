@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 /** Turn-based 1v1 card combat (PLANNING → RESOLVING slots 1–4 → win/loss / next round). */
@@ -40,6 +41,7 @@ public class CombatController {
     private float resolveTimer;
     private final Integer[] slotInstanceIds = new Integer[SLOT_COUNT];
     private final Set<Integer> playedThisRound = new HashSet<>();
+    private boolean roundEndCooldownsApplied;
     private Integer selectedInstanceId;
 
     public CombatController(PlayerStats playerStats) {
@@ -87,6 +89,7 @@ public class CombatController {
         phase = CombatPhase.PLANNING;
         roundNumber = 1;
         playedThisRound.clear();
+        roundEndCooldownsApplied = false;
         clearAllSlots();
         selectedInstanceId = null;
         resolveTimer = 0f;
@@ -96,13 +99,15 @@ public class CombatController {
                 playerStats.getMaxHp(), playerStats.getAttack(), 0f);
         player.setHp(playerStats.getHp());
 
-        float enemyHp = GameConfig.ENEMY_BASE_HP + distanceBand * GameConfig.ENEMY_HP_PER_DISTANCE_BAND;
         float enemyX = arenaWidth * GameConfig.COMBAT_ENEMY_X_RATIO;
         if (boss) {
-            enemyHp = GameConfig.BOSS_BASE_HP + distanceBand * GameConfig.BOSS_HP_PER_DISTANCE_BAND;
+            float bossHp = GameConfig.BOSS_BASE_HP + distanceBand * GameConfig.BOSS_HP_PER_DISTANCE_BAND;
             enemyX = arenaWidth * GameConfig.COMBAT_BOSS_X_RATIO;
-            enemies.add(new CombatEntity(CombatEntity.Kind.BOSS, enemyX, groundY, enemyHp, 0, 0f));
+            enemies.add(new CombatEntity(CombatEntity.Kind.BOSS, enemyX, groundY, bossHp, 0, 0f));
         } else {
+            int minHp = GameConfig.ENEMY_HP_MIN;
+            int maxHp = GameConfig.ENEMY_HP_MAX;
+            float enemyHp = ThreadLocalRandom.current().nextInt(minHp, maxHp + 1);
             enemies.add(new CombatEntity(CombatEntity.Kind.ENEMY, enemyX, groundY, enemyHp, 0, 0f));
         }
     }
@@ -221,6 +226,7 @@ public class CombatController {
         phase = CombatPhase.RESOLVING;
         resolvingSlotIndex = 0;
         resolveTimer = 0f;
+        roundEndCooldownsApplied = false;
     }
 
     public void update(float delta) {
@@ -245,7 +251,7 @@ public class CombatController {
 
     private void resolveSlot(int slotIndex) {
         if (slotIndex == ENEMY_SLOT_A || slotIndex == ENEMY_SLOT_B) {
-            dealDamageToPlayer(GameConfig.ENEMY_CARD_ATTACK_DAMAGE);
+            dealDamageToPlayer(ActionCardType.ATTACK.getPrimaryValue());
         } else {
             Integer instanceId = slotInstanceIds[slotIndex];
             if (instanceId != null) {
@@ -257,7 +263,7 @@ public class CombatController {
             }
         }
         if (checkAndEndCombatIfFinished()) {
-            applyCooldownsForPlayedCards();
+            applyRoundEndCooldowns();
             clearAllSlots();
         }
     }
@@ -309,32 +315,39 @@ public class CombatController {
     }
 
     private void finishRound() {
-        Set<Integer> played = new HashSet<>(playedThisRound);
-        applyCooldownsForPlayedCards();
+        applyRoundEndCooldowns();
         clearAllSlots();
 
         if (checkAndEndCombatIfFinished()) {
             return;
         }
 
-        for (ActionCardInstance instance : deck.getInstances()) {
-            if (!played.contains(instance.getInstanceId())) {
-                instance.tickCooldown();
-            }
-        }
         roundNumber++;
         phase = CombatPhase.PLANNING;
         selectedInstanceId = null;
     }
 
-    private void applyCooldownsForPlayedCards() {
-        for (int instanceId : playedThisRound) {
+    /**
+     * End-of-round cooldown: full CD on played instances, then one tick on every instance
+     * (including played — the ending round counts as one cooldown turn).
+     * Runs when a round completes normally or combat ends mid-resolve (victory/defeat).
+     * Idempotent within the same round ({@link #roundEndCooldownsApplied}).
+     */
+    private void applyRoundEndCooldowns() {
+        if (roundEndCooldownsApplied || deck == null) {
+            return;
+        }
+        roundEndCooldownsApplied = true;
+        for (int instanceId : new HashSet<>(playedThisRound)) {
             ActionCardInstance card = deck.findById(instanceId);
             if (card != null) {
                 card.setCooldownRemaining(card.getType().getCooldownTurns());
             }
         }
         playedThisRound.clear();
+        for (ActionCardInstance instance : deck.getInstances()) {
+            instance.tickCooldown();
+        }
     }
 
     private void clearAllSlots() {

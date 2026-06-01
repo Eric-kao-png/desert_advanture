@@ -6,8 +6,6 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.desertadventure.combat.card.ActionCardInstance;
 import com.desertadventure.combat.card.ActionCardType;
-import com.desertadventure.config.GameConfig;
-
 /** Labels for combat action cards (compact name vs hover detail). */
 public final class ActionCardUiText {
     private static final GlyphLayout GLYPH = new GlyphLayout();
@@ -43,10 +41,11 @@ public final class ActionCardUiText {
     }
 
     public static String[] enemyAttackDetailLines() {
+        ActionCardType attack = ActionCardType.ATTACK;
         return new String[] {
-                "Attack",
-                "Damage: " + GameConfig.ENEMY_CARD_ATTACK_DAMAGE,
-                "Cooldown: 0",
+                attack.getDisplayName(),
+                "Damage: " + attack.getPrimaryValue(),
+                "Cooldown: " + attack.getCooldownTurns(),
         };
     }
 

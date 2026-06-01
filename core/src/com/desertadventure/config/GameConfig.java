@@ -175,19 +175,19 @@ public final class GameConfig {
     public static final float COMBAT_PLAYER_X_RATIO = 0.3f;
     public static final float COMBAT_ENEMY_X_RATIO = 0.72f;
     public static final float COMBAT_BOSS_X_RATIO = 0.78f;
-    public static final float ENEMY_BASE_HP = 8f;
-    public static final float ENEMY_HP_PER_DISTANCE_BAND = 3f;
+    /** Normal enemy HP rolled uniformly in [min, max] at combat start. */
+    public static final int ENEMY_HP_MIN = 1;
+    public static final int ENEMY_HP_MAX = 3;
     public static final float BOSS_BASE_HP = 35f;
     public static final float BOSS_HP_PER_DISTANCE_BAND = 8f;
 
     // --- Turn-based action cards ---
-    public static final int CARD_ATTACK_DAMAGE = 10;
-    public static final int CARD_STRONG_ATTACK_DAMAGE = 15;
-    public static final int CARD_HEAL_AMOUNT = 8;
-    public static final int ENEMY_CARD_ATTACK_DAMAGE = 5;
-    public static final int CARD_ATTACK_COOLDOWN_TURNS = 0;
-    public static final int CARD_STRONG_ATTACK_COOLDOWN_TURNS = 1;
-    public static final int CARD_HEAL_COOLDOWN_TURNS = 2;
+    public static final int CARD_ATTACK_DAMAGE = 2;
+    public static final int CARD_STRONG_ATTACK_DAMAGE = 3;
+    public static final int CARD_HEAL_AMOUNT = 4;
+    public static final int CARD_ATTACK_COOLDOWN_TURNS = 1;
+    public static final int CARD_STRONG_ATTACK_COOLDOWN_TURNS = 2;
+    public static final int CARD_HEAL_COOLDOWN_TURNS = 4;
 
     /** Layout blend endpoints at explore (0) — used when entering combat. */
     public static final float COMBAT_SLOT_WIDTH_EXPLORE = 100f;

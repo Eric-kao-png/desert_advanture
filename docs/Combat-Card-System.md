@@ -12,7 +12,8 @@ Combat is **turn-based** and **1v1** (player vs one enemy or boss). Each **round
 
 1. **PLANNING** — Player assigns 0–2 action cards to slots **1** and **3** (same card *instance* cannot occupy both). Slots **2** and **4** show the enemy’s planned attacks for the round.
 2. **RESOLVING** — Slots resolve in order **1 → 2 → 3 → 4** (brief pause per slot for UI). If HP reaches 0 after any slot, combat ends immediately and remaining slots are skipped.
-3. **Outcome check** — If either side is dead, combat ends; otherwise cooldowns tick and a new **PLANNING** round begins.
+3. **Round-end cooldowns** — Played cards get full cooldown, then **every** instance (including played) ticks down once so the ending round counts as one cooldown turn. Runs when all four slots finish **or** when combat ends early mid-resolve (same as a normal round end).
+4. **Outcome check** — If either side is dead, combat ends; otherwise a new **PLANNING** round begins.
 
 Cards are **not consumed**: after resolving, instances return to the deck with **turn-based cooldown** counters.
 
@@ -25,9 +26,9 @@ Exploration **action cards** are separate from the **item inventory** (potions/g
 | Slot | Owner | Planning |
 |------|--------|----------|
 | 1 | Player | Optional (0–2 cards total across 1 & 3) |
-| 2 | Enemy | Fixed MVP: Attack (5 damage) |
+| 2 | Enemy | Attack (same card type as player) |
 | 3 | Player | Optional |
-| 4 | Enemy | Fixed MVP: Attack (5 damage) |
+| 4 | Enemy | Attack (same card type as player) |
 
 **Rules**
 
@@ -41,11 +42,11 @@ Exploration **action cards** are separate from the **item inventory** (potions/g
 
 | Card | Effect | Cooldown (turns) |
 |------|--------|------------------|
-| Attack | 10 damage to enemy | 0 |
-| Strong Attack | 15 damage to enemy | 1 |
-| Heal | 8 HP to self | 2 |
+| Attack | 2 damage to enemy | 1 |
+| Strong Attack | 3 damage to enemy | 2 |
+| Heal | 4 HP to self | 4 |
 
-Constants live in `GameConfig` (`CARD_*`, `ENEMY_CARD_ATTACK_DAMAGE`).
+Constants live in `GameConfig` (`CARD_*`). Enemy slots use `ActionCardType.ATTACK` (same damage/cooldown display as player).
 
 **Starter deck** (reset on **new game** only): 2× Attack, 1× Strong Attack, 1× Heal.
 
@@ -55,7 +56,7 @@ Constants live in `GameConfig` (`CARD_*`, `ENEMY_CARD_ATTACK_DAMAGE`).
 
 ## 4. Enemy AI (MVP)
 
-Always plays **Attack** in slots 2 and 4 for **5** damage each (`ENEMY_CARD_ATTACK_DAMAGE`).
+Always plays **Attack** in slots 2 and 4 — same `ActionCardType.ATTACK` as the player (currently 2 damage; cooldown shown in UI only, enemies do not use CD).
 
 ---
 
@@ -85,12 +86,11 @@ Always plays **Attack** in slots 2 and 4 for **5** damage each (`ENEMY_CARD_ATTA
 | `ITEM_STAMINA_POTION_RESTORE` | 25 |
 | `ITEM_HEALTH_GEM_BONUS` | 4 |
 | `ITEM_STAMINA_GEM_BONUS` | 15 |
-| `ENEMY_BASE_HP` | 8 |
-| `ENEMY_HP_PER_DISTANCE_BAND` | 3 |
+| `ENEMY_HP_MIN` / `ENEMY_HP_MAX` | 1 / 3 (uniform roll per normal fight) |
 | `BOSS_BASE_HP` | 35 |
 | `BOSS_HP_PER_DISTANCE_BAND` | 8 |
 
-Enemy/boss HP also scales with `GameMap.distanceBand` at combat start.
+Normal enemy HP is random in `[ENEMY_HP_MIN, ENEMY_HP_MAX]` at combat start. Boss HP scales with `GameMap.distanceBand`.
 
 ---
 
