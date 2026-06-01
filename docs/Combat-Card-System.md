@@ -11,7 +11,7 @@ Reference for the 1v1 card combat loop, action deck, balance constants, and inte
 Combat is **turn-based** and **1v1** (player vs one enemy or boss). Each **round**:
 
 1. **PLANNING** — Player assigns 0–2 action cards to slots **1** and **3** (same card *instance* cannot occupy both). Slots **2** and **4** show the enemy’s planned attacks for the round.
-2. **RESOLVING** — Slots resolve in order **1 → 2 → 3 → 4** (brief pause per slot for UI).
+2. **RESOLVING** — Slots resolve in order **1 → 2 → 3 → 4** (brief pause per slot for UI). If HP reaches 0 after any slot, combat ends immediately and remaining slots are skipped.
 3. **Outcome check** — If either side is dead, combat ends; otherwise cooldowns tick and a new **PLANNING** round begins.
 
 Cards are **not consumed**: after resolving, instances return to the deck with **turn-based cooldown** counters.

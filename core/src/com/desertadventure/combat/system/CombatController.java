@@ -232,6 +232,9 @@ public class CombatController {
             return;
         }
         resolveSlot(resolvingSlotIndex);
+        if (combatEnded) {
+            return;
+        }
         resolvingSlotIndex++;
         if (resolvingSlotIndex >= SLOT_COUNT) {
             finishRound();
@@ -243,18 +246,34 @@ public class CombatController {
     private void resolveSlot(int slotIndex) {
         if (slotIndex == ENEMY_SLOT_A || slotIndex == ENEMY_SLOT_B) {
             dealDamageToPlayer(GameConfig.ENEMY_CARD_ATTACK_DAMAGE);
-            return;
+        } else {
+            Integer instanceId = slotInstanceIds[slotIndex];
+            if (instanceId != null) {
+                ActionCardInstance card = deck.findById(instanceId);
+                if (card != null) {
+                    applyCardEffect(card.getType());
+                    playedThisRound.add(instanceId);
+                }
+            }
         }
-        Integer instanceId = slotInstanceIds[slotIndex];
-        if (instanceId == null) {
-            return;
+        if (checkAndEndCombatIfFinished()) {
+            applyCooldownsForPlayedCards();
+            clearAllSlots();
         }
-        ActionCardInstance card = deck.findById(instanceId);
-        if (card == null) {
-            return;
+    }
+
+    /** Returns true if combat ended (player defeated or all enemies defeated). */
+    private boolean checkAndEndCombatIfFinished() {
+        if (player == null || !player.isAlive()) {
+            endCombat(CombatOutcome.DEFEAT);
+            return true;
         }
-        applyCardEffect(card.getType());
-        playedThisRound.add(instanceId);
+        enemies.removeIf(enemy -> !enemy.isAlive());
+        if (enemies.isEmpty()) {
+            endCombat(bossFight ? CombatOutcome.BOSS_VICTORY : CombatOutcome.VICTORY);
+            return true;
+        }
+        return false;
     }
 
     private void applyCardEffect(ActionCardType type) {
@@ -291,22 +310,10 @@ public class CombatController {
 
     private void finishRound() {
         Set<Integer> played = new HashSet<>(playedThisRound);
-        for (int instanceId : played) {
-            ActionCardInstance card = deck.findById(instanceId);
-            if (card != null) {
-                card.setCooldownRemaining(card.getType().getCooldownTurns());
-            }
-        }
-        playedThisRound.clear();
+        applyCooldownsForPlayedCards();
         clearAllSlots();
 
-        if (!player.isAlive()) {
-            endCombat(CombatOutcome.DEFEAT);
-            return;
-        }
-        enemies.removeIf(e -> !e.isAlive());
-        if (enemies.isEmpty()) {
-            endCombat(bossFight ? CombatOutcome.BOSS_VICTORY : CombatOutcome.VICTORY);
+        if (checkAndEndCombatIfFinished()) {
             return;
         }
 
@@ -318,6 +325,16 @@ public class CombatController {
         roundNumber++;
         phase = CombatPhase.PLANNING;
         selectedInstanceId = null;
+    }
+
+    private void applyCooldownsForPlayedCards() {
+        for (int instanceId : playedThisRound) {
+            ActionCardInstance card = deck.findById(instanceId);
+            if (card != null) {
+                card.setCooldownRemaining(card.getType().getCooldownTurns());
+            }
+        }
+        playedThisRound.clear();
     }
 
     private void clearAllSlots() {
