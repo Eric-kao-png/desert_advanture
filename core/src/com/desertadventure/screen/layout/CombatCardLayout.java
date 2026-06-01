@@ -1,5 +1,6 @@
 package com.desertadventure.screen.layout;
 
+import com.desertadventure.combat.card.ActionCardCategory;
 import com.desertadventure.combat.card.ActionCardInstance;
 import com.desertadventure.combat.system.CombatController;
 import com.desertadventure.config.GameConfig;
@@ -7,7 +8,7 @@ import com.desertadventure.config.GameConfig;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Screen layout for combat timeline, hand, and confirm button. */
+/** Screen layout for combat timeline, split hand zones, and centered confirm. */
 public final class CombatCardLayout {
     public final float[] slotX = new float[4];
     public float slotY;
@@ -18,22 +19,17 @@ public final class CombatCardLayout {
     public float cardW;
     public float cardH;
 
-    public float handViewportX;
-    public float handViewportY;
-    public float handViewportW;
-    public float handViewportH;
+    public final HandZonePanel attackPanel = new HandZonePanel(ActionCardCategory.ATTACK);
+    public final HandZonePanel changePanel = new HandZonePanel(ActionCardCategory.CHANGE);
 
     public float confirmX;
     public float confirmY;
     public final float confirmW = GameConfig.COMBAT_CONFIRM_WIDTH;
     public final float confirmH = GameConfig.COMBAT_CONFIRM_HEIGHT;
 
-    private final List<HandEntry> handEntries = new ArrayList<>();
     private int hoveredHandInstanceId = -1;
     private int hoveredSlotIndex = -1;
     private float layoutBlend;
-    private float handScrollX;
-    private float lastHandContentWidth;
 
     public CombatCardLayout() {
         applyBlend(0f);
@@ -53,13 +49,24 @@ public final class CombatCardLayout {
         for (int i = 0; i < 4; i++) {
             slotX[i] = startX + i * (slotW + GameConfig.COMBAT_SLOT_GAP);
         }
-        confirmX = GameConfig.VIEW_WIDTH - confirmW - GameConfig.HUD_LEFT_MARGIN;
+
+        confirmX = (GameConfig.VIEW_WIDTH - confirmW) / 2f;
         confirmY = handY;
 
-        handViewportX = GameConfig.COMBAT_HAND_VIEWPORT_MARGIN_H;
-        handViewportW = confirmX - GameConfig.COMBAT_HAND_VIEWPORT_CONFIRM_GAP - handViewportX;
-        handViewportY = handY - GameConfig.COMBAT_HAND_VIEWPORT_PADDING - GameConfig.COMBAT_HAND_BORDER;
-        handViewportH = cardH + 2f * (GameConfig.COMBAT_HAND_VIEWPORT_PADDING + GameConfig.COMBAT_HAND_BORDER);
+        float panelY = handY - GameConfig.COMBAT_HAND_VIEWPORT_PADDING - GameConfig.COMBAT_HAND_BORDER;
+        float panelH = cardH + 2f * (GameConfig.COMBAT_HAND_VIEWPORT_PADDING + GameConfig.COMBAT_HAND_BORDER);
+        float margin = GameConfig.COMBAT_HAND_VIEWPORT_MARGIN_H;
+        float centerGap = GameConfig.COMBAT_HAND_CENTER_GAP;
+
+        attackPanel.viewportX = margin;
+        attackPanel.viewportW = confirmX - centerGap - attackPanel.viewportX;
+        attackPanel.viewportY = panelY;
+        attackPanel.viewportH = panelH;
+
+        changePanel.viewportX = confirmX + confirmW + centerGap;
+        changePanel.viewportW = GameConfig.VIEW_WIDTH - margin - changePanel.viewportX;
+        changePanel.viewportY = panelY;
+        changePanel.viewportH = panelH;
     }
 
     public float getLayoutBlend() {
@@ -67,75 +74,58 @@ public final class CombatCardLayout {
     }
 
     public void rebuildHand(CombatController combat) {
-        handEntries.clear();
+        attackPanel.entries.clear();
+        changePanel.entries.clear();
         List<ActionCardInstance> hand = combat.getVisibleHand();
-        float contentW = hand.size() * cardW + Math.max(0, hand.size() - 1) * GameConfig.COMBAT_HAND_GAP;
-        lastHandContentWidth = contentW;
-        clampHandScroll();
+        List<ActionCardInstance> attackCards = new ArrayList<>();
+        List<ActionCardInstance> changeCards = new ArrayList<>();
+        for (ActionCardInstance instance : hand) {
+            if (instance.getType().getCategory() == ActionCardCategory.ATTACK) {
+                attackCards.add(instance);
+            } else {
+                changeCards.add(instance);
+            }
+        }
+        layoutZone(attackPanel, attackCards);
+        layoutZone(changePanel, changeCards);
+    }
 
-        float innerW = handInnerWidth();
+    private void layoutZone(HandZonePanel panel, List<ActionCardInstance> cards) {
+        float contentW = cards.size() * cardW + Math.max(0, cards.size() - 1) * GameConfig.COMBAT_HAND_GAP;
+        panel.lastContentWidth = contentW;
+        panel.clampScroll();
+
+        float innerW = panel.innerWidth();
         float startX;
         if (contentW <= innerW) {
-            handScrollX = 0f;
-            startX = handContentStartX() + (innerW - contentW) / 2f;
+            panel.scrollX = 0f;
+            startX = panel.contentStartX() + (innerW - contentW) / 2f;
         } else {
-            startX = handContentStartX() - handScrollX;
+            startX = panel.contentStartX() - panel.scrollX;
         }
-        for (int i = 0; i < hand.size(); i++) {
+        for (int i = 0; i < cards.size(); i++) {
             float x = startX + i * (cardW + GameConfig.COMBAT_HAND_GAP);
-            handEntries.add(new HandEntry(hand.get(i).getInstanceId(), x, handY));
+            panel.entries.add(new HandEntry(cards.get(i).getInstanceId(), x, handY));
         }
-    }
-
-    public float handInnerWidth() {
-        return handViewportW - 2f * (GameConfig.COMBAT_HAND_BORDER + GameConfig.COMBAT_HAND_VIEWPORT_PADDING);
-    }
-
-    public float handContentStartX() {
-        return handViewportX + GameConfig.COMBAT_HAND_BORDER + GameConfig.COMBAT_HAND_VIEWPORT_PADDING;
-    }
-
-    public float handClipX() {
-        return handContentStartX();
-    }
-
-    public float handClipY() {
-        return handY;
-    }
-
-    public float handClipW() {
-        return handInnerWidth();
-    }
-
-    public float handClipH() {
-        return cardH;
-    }
-
-    public float getHandScrollX() {
-        return handScrollX;
-    }
-
-    public void setHandScrollX(float scrollX) {
-        handScrollX = scrollX;
-        clampHandScroll();
-    }
-
-    public void clampHandScroll() {
-        float maxScroll = Math.max(0f, lastHandContentWidth - handInnerWidth());
-        handScrollX = Math.max(0f, Math.min(handScrollX, maxScroll));
     }
 
     public void resetHandScroll() {
-        handScrollX = 0f;
-        lastHandContentWidth = 0f;
+        attackPanel.resetScroll();
+        changePanel.resetScroll();
     }
 
     public boolean containsHandViewport(float worldX, float worldY) {
-        return contains(worldX, worldY, handViewportX, handViewportY, handViewportW, handViewportH);
+        return attackPanel.contains(worldX, worldY) || changePanel.contains(worldX, worldY);
     }
 
-    public List<HandEntry> getHandEntries() {
-        return handEntries;
+    public HandZonePanel panelAt(float worldX, float worldY) {
+        if (attackPanel.contains(worldX, worldY)) {
+            return attackPanel;
+        }
+        if (changePanel.contains(worldX, worldY)) {
+            return changePanel;
+        }
+        return null;
     }
 
     public void updateHover(float worldX, float worldY) {
@@ -175,10 +165,18 @@ public final class CombatCardLayout {
     }
 
     public int hitHandInstance(float worldX, float worldY) {
-        if (!containsHandViewport(worldX, worldY)) {
+        int id = hitHandInPanel(attackPanel, worldX, worldY);
+        if (id >= 0) {
+            return id;
+        }
+        return hitHandInPanel(changePanel, worldX, worldY);
+    }
+
+    private int hitHandInPanel(HandZonePanel panel, float worldX, float worldY) {
+        if (!panel.contains(worldX, worldY)) {
             return -1;
         }
-        for (HandEntry entry : handEntries) {
+        for (HandEntry entry : panel.entries) {
             if (contains(worldX, worldY, entry.x, entry.y, cardW, cardH)) {
                 return entry.instanceId;
             }
@@ -201,6 +199,72 @@ public final class CombatCardLayout {
 
     private static boolean contains(float px, float py, float x, float y, float w, float h) {
         return px >= x && px <= x + w && py >= y && py <= y + h;
+    }
+
+    public static final class HandZonePanel {
+        public final ActionCardCategory category;
+        public float viewportX;
+        public float viewportY;
+        public float viewportW;
+        public float viewportH;
+        private final List<HandEntry> entries = new ArrayList<>();
+        private float scrollX;
+        private float lastContentWidth;
+
+        HandZonePanel(ActionCardCategory category) {
+            this.category = category;
+        }
+
+        public List<HandEntry> getEntries() {
+            return entries;
+        }
+
+        public float getScrollX() {
+            return scrollX;
+        }
+
+        public void setScrollX(float scroll) {
+            scrollX = scroll;
+            clampScroll();
+        }
+
+        public void clampScroll() {
+            float maxScroll = Math.max(0f, lastContentWidth - innerWidth());
+            scrollX = Math.max(0f, Math.min(scrollX, maxScroll));
+        }
+
+        public void resetScroll() {
+            scrollX = 0f;
+            lastContentWidth = 0f;
+        }
+
+        public float innerWidth() {
+            return viewportW - 2f * (GameConfig.COMBAT_HAND_BORDER + GameConfig.COMBAT_HAND_VIEWPORT_PADDING);
+        }
+
+        public float contentStartX() {
+            return viewportX + GameConfig.COMBAT_HAND_BORDER + GameConfig.COMBAT_HAND_VIEWPORT_PADDING;
+        }
+
+        public float clipX() {
+            return contentStartX();
+        }
+
+        public float clipY(float handY, float cardH) {
+            return handY;
+        }
+
+        public float clipW() {
+            return innerWidth();
+        }
+
+        public float clipH(float cardH) {
+            return cardH;
+        }
+
+        public boolean contains(float worldX, float worldY) {
+            return CombatCardLayout.contains(worldX, worldY, viewportX, viewportY, viewportW, viewportH);
+        }
     }
 
     public static final class HandEntry {

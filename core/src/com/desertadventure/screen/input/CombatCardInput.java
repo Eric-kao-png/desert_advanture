@@ -6,6 +6,7 @@ import com.desertadventure.config.GameConfig;
 import com.desertadventure.config.GameInputBindings;
 import com.desertadventure.presentation.GameViewport;
 import com.desertadventure.screen.layout.CombatCardLayout;
+import com.desertadventure.screen.layout.CombatCardLayout.HandZonePanel;
 import com.desertadventure.state.GameSession;
 /** Turn-based combat: hand selection, slot assignment, confirm. */
 public final class CombatCardInput {
@@ -15,6 +16,7 @@ public final class CombatCardInput {
     private boolean handScrollActive;
     private float handScrollPointerStartX;
     private float handScrollAtPointerDown;
+    private HandZonePanel handScrollPanel;
 
     public CombatCardLayout getLayout() {
         return layout;
@@ -69,16 +71,18 @@ public final class CombatCardInput {
 
     private void beginHandScrollGesture(float worldX, float worldY) {
         resetHandScrollGesture();
-        if (!layout.containsHandViewport(worldX, worldY)) {
+        HandZonePanel panel = layout.panelAt(worldX, worldY);
+        if (panel == null) {
             return;
         }
+        handScrollPanel = panel;
         handScrollTracking = true;
         handScrollPointerStartX = worldX;
-        handScrollAtPointerDown = layout.getHandScrollX();
+        handScrollAtPointerDown = panel.getScrollX();
     }
 
     private void updateHandScrollGesture(float worldX) {
-        if (!handScrollTracking) {
+        if (!handScrollTracking || handScrollPanel == null) {
             return;
         }
         float deltaX = worldX - handScrollPointerStartX;
@@ -86,13 +90,14 @@ public final class CombatCardInput {
             handScrollActive = true;
         }
         if (handScrollActive) {
-            layout.setHandScrollX(handScrollAtPointerDown - deltaX);
+            handScrollPanel.setScrollX(handScrollAtPointerDown - deltaX);
         }
     }
 
     private void resetHandScrollGesture() {
         handScrollTracking = false;
         handScrollActive = false;
+        handScrollPanel = null;
     }
 
     private void handleClick(GameSession session, float worldX, float worldY) {

@@ -40,11 +40,13 @@ Exploration **action cards** are separate from the **item inventory** (potions/g
 
 ## 3. Player Action Cards (v0.2)
 
-| Card | Effect | Cooldown (turns) |
-|------|--------|------------------|
-| Attack | 2 damage to enemy | 1 |
-| Strong Attack | 3 damage to enemy | 2 |
-| Heal | 4 HP to self | 4 |
+| Card | Category | Effect | Cooldown (turns) |
+|------|----------|--------|------------------|
+| Attack | Offense | 2 damage to enemy | 1 |
+| Strong Attack | Offense | 3 damage to enemy | 2 |
+| Heal | Utility | 4 HP to self | 4 |
+
+Categories (`ActionCardCategory`): **Offense** (Attack, Strong Attack) and **Utility** (Heal). Shown on card faces and in hover tooltips (`Type: …` via `GameMessages`). Card names stay distinct (e.g. card **Attack** vs category **Offense**).
 
 Constants live in `GameConfig` (`CARD_*`). Enemy slots use `ActionCardType.ATTACK` (same damage/cooldown display as player).
 
@@ -104,14 +106,28 @@ Normal enemy HP is random in `[ENEMY_HP_MIN, ENEMY_HP_MAX]` at combat start. Bos
 | `GameplayMode.COMBAT` / `BOSS_COMBAT` | Mode gating |
 | `GameplayModeUpdater` | Starts combat with deck + distance band |
 | `CombatCardInput` | Pointer + Enter/Space confirm |
-| `CombatCardRenderer` + `CombatCardLayout` | Timeline, hand, confirm |
+| `CombatCardRenderer` + `CombatCardLayout` | Timeline, split hand (offense left / utility right), centered confirm |
 | `GameplaySceneDrawer` | Parallax background, entities left/right, card UI |
 
 Defeat still triggers **sandstorm** (cycle reset). Victory clears the combat tile and resumes travel if a path was active.
 
 ---
 
-## 8. Controls
+## 8. Hand row layout
+
+During **PLANNING**, the bottom hand row is three columns:
+
+| Region | Content |
+|--------|---------|
+| Left panel | Offense-category cards in hand (Attack, Strong Attack) |
+| Center | **Confirm** button |
+| Right panel | Utility-category cards in hand (Heal) |
+
+Each panel has its own bordered viewport, horizontal scroll when cards overflow, and independent scroll gesture. Layout blend (`CombatSceneLayout` + `COMBAT_LAYOUT_BLEND_SECONDS`) still animates slot/hand geometry when entering combat.
+
+---
+
+## 9. Controls
 
 | Input | Action |
 |-------|--------|
@@ -122,11 +138,12 @@ Defeat still triggers **sandstorm** (cycle reset). Victory clears the combat til
 
 ---
 
-## 9. File Index
+## 10. File Index
 
 | Path | Purpose |
 |------|---------|
-| `combat/card/ActionCardType.java` | Card definitions (damage, target, cooldown) |
+| `combat/card/ActionCardCategory.java` | Card category (Offense / Utility) |
+| `combat/card/ActionCardType.java` | Card definitions (damage, target, cooldown, category) |
 | `combat/card/ActionCardDeck.java` | Instance collection |
 | `combat/card/ActionCardRewards.java` | Victory / future loot rolls |
 | `combat/card/ActionCardDeckResetPolicy.java` | Reset policy hook |
@@ -137,6 +154,6 @@ Defeat still triggers **sandstorm** (cycle reset). Victory clears the combat til
 
 ---
 
-## 10. Extending Cards
+## 11. Extending Cards
 
-Add enum values to `ActionCardType` with `ActionCardTarget`, primary value, and cooldown. Resolution is centralized in `CombatController.applyCardEffect`. New enemy behaviors can replace `getEnemyCardForSlot` / `resolveSlot` enemy branch.
+Add enum values to `ActionCardType` with `ActionCardTarget`, `ActionCardCategory`, primary value, and cooldown. Resolution is centralized in `CombatController.applyCardEffect`. New enemy behaviors can replace `getEnemyCardForSlot` / `resolveSlot` enemy branch.

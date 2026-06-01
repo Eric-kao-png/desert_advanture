@@ -6,6 +6,9 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.desertadventure.combat.card.ActionCardInstance;
 import com.desertadventure.combat.card.ActionCardType;
+import com.desertadventure.config.GameMessages;
+import com.desertadventure.config.UiColors;
+
 /** Labels for combat action cards (compact name vs hover detail). */
 public final class ActionCardUiText {
     private static final GlyphLayout GLYPH = new GlyphLayout();
@@ -31,10 +34,35 @@ public final class ActionCardUiText {
         font.draw(batch, name, textX, textY);
     }
 
+    public static void drawCardFaceCentered(
+            SpriteBatch batch,
+            BitmapFont font,
+            ActionCardType type,
+            float cardX,
+            float cardY,
+            float cardW,
+            float cardH,
+            Color nameColor) {
+        String category = type.getCategory().getDisplayName();
+        GLYPH.setText(font, category);
+        font.setColor(UiColors.MUTED_TEXT);
+        float categoryX = cardX + (cardW - GLYPH.width) / 2f;
+        float categoryY = cardY + cardH * 0.62f;
+        font.draw(batch, category, categoryX, categoryY);
+
+        String name = type.getDisplayName();
+        GLYPH.setText(font, name);
+        font.setColor(nameColor);
+        float nameX = cardX + (cardW - GLYPH.width) / 2f;
+        float nameY = cardY + cardH * 0.36f;
+        font.draw(batch, name, nameX, nameY);
+    }
+
     public static String[] detailLines(ActionCardInstance card) {
         ActionCardType type = card.getType();
         return new String[] {
                 type.getDisplayName(),
+                GameMessages.cardCategoryTooltip(type.getCategory()),
                 effectLabel(type),
                 cooldownLabel(card),
         };
@@ -44,6 +72,7 @@ public final class ActionCardUiText {
         ActionCardType attack = ActionCardType.ATTACK;
         return new String[] {
                 attack.getDisplayName(),
+                GameMessages.cardCategoryTooltip(attack.getCategory()),
                 "Damage: " + attack.getPrimaryValue(),
                 "Cooldown: " + attack.getCooldownTurns(),
         };

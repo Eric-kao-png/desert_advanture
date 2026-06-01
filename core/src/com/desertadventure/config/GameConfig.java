@@ -209,8 +209,8 @@ public final class GameConfig {
     public static final float COMBAT_HAND_GAP = 10f;
     /** Hand row viewport: horizontal inset from screen edge. */
     public static final float COMBAT_HAND_VIEWPORT_MARGIN_H = 16f;
-    /** Gap between hand viewport right edge and confirm button. */
-    public static final float COMBAT_HAND_VIEWPORT_CONFIRM_GAP = 12f;
+    /** Gap between each hand zone panel and the centered confirm button. */
+    public static final float COMBAT_HAND_CENTER_GAP = 12f;
     /** Padding inside the hand frame, around cards. */
     public static final float COMBAT_HAND_VIEWPORT_PADDING = 8f;
     /** Border stroke width for the hand viewport frame. */

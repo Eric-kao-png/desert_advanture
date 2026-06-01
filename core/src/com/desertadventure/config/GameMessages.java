@@ -1,7 +1,11 @@
 package com.desertadventure.config;
 
+import com.desertadventure.combat.card.ActionCardCategory;
+
 /** Player-visible feedback strings. */
 public final class GameMessages {
+    public static final String CARD_CATEGORY_ATTACK = "Offense";
+    public static final String CARD_CATEGORY_CHANGE = "Utility";
     public static final String CANNOT_ENTER_TILE = "Cannot enter this tile.";
     public static final String PATH_BLOCKED = "Straight path is blocked.";
     public static final String RUINS_ALREADY_DONE = "Ruins already investigated.";
@@ -39,6 +43,10 @@ public final class GameMessages {
 
     public static String cardGained(String cardName) {
         return "Gained: " + cardName;
+    }
+
+    public static String cardCategoryTooltip(ActionCardCategory category) {
+        return "Type: " + category.getDisplayName();
     }
 
     public static String itemUsed(String itemName) {

@@ -8,32 +8,43 @@ public enum ActionCardType {
             GameConfig.CARD_ATTACK_DAMAGE,
             0,
             ActionCardTarget.ENEMY,
-            GameConfig.CARD_ATTACK_COOLDOWN_TURNS),
+            GameConfig.CARD_ATTACK_COOLDOWN_TURNS,
+            ActionCardCategory.ATTACK),
     STRONG_ATTACK(
             "Strong Attack",
             GameConfig.CARD_STRONG_ATTACK_DAMAGE,
             0,
             ActionCardTarget.ENEMY,
-            GameConfig.CARD_STRONG_ATTACK_COOLDOWN_TURNS),
+            GameConfig.CARD_STRONG_ATTACK_COOLDOWN_TURNS,
+            ActionCardCategory.ATTACK),
     HEAL(
             "Heal",
             GameConfig.CARD_HEAL_AMOUNT,
             0,
             ActionCardTarget.SELF,
-            GameConfig.CARD_HEAL_COOLDOWN_TURNS);
+            GameConfig.CARD_HEAL_COOLDOWN_TURNS,
+            ActionCardCategory.CHANGE);
 
     private final String displayName;
     private final int primaryValue;
     private final int secondaryValue;
     private final ActionCardTarget target;
     private final int cooldownTurns;
+    private final ActionCardCategory category;
 
-    ActionCardType(String displayName, int primaryValue, int secondaryValue, ActionCardTarget target, int cooldownTurns) {
+    ActionCardType(
+            String displayName,
+            int primaryValue,
+            int secondaryValue,
+            ActionCardTarget target,
+            int cooldownTurns,
+            ActionCardCategory category) {
         this.displayName = displayName;
         this.primaryValue = primaryValue;
         this.secondaryValue = secondaryValue;
         this.target = target;
         this.cooldownTurns = cooldownTurns;
+        this.category = category;
     }
 
     public String getDisplayName() {
@@ -54,5 +65,9 @@ public enum ActionCardType {
 
     public int getCooldownTurns() {
         return cooldownTurns;
+    }
+
+    public ActionCardCategory getCategory() {
+        return category;
     }
 }
