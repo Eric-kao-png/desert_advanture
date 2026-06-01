@@ -7,6 +7,7 @@ import com.desertadventure.combat.card.ActionCardInstance;
 import com.desertadventure.combat.card.ActionCardType;
 import com.desertadventure.combat.card.CombatPhase;
 import com.desertadventure.combat.model.CombatEntity;
+import com.desertadventure.combat.model.NegativeStatusType;
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.player.PlayerStats;
 
@@ -309,7 +310,8 @@ public class CombatController {
                         : GameConfig.CARD_THRUST_DAMAGE_OTHER;
                 dealDamageToEnemy(damage);
             }
-            case POISON -> applyPoisonToEnemies(GameConfig.CARD_POISON_DURATION_TURNS);
+            case POISON -> applyNegativeStatusToEnemies(
+                    NegativeStatusType.POISON, GameConfig.CARD_POISON_DURATION_TURNS);
             default -> {
             }
         }
@@ -336,10 +338,10 @@ public class CombatController {
         }
     }
 
-    private void applyPoisonToEnemies(int turns) {
+    private void applyNegativeStatusToEnemies(NegativeStatusType type, int turns) {
         for (CombatEntity enemy : enemies) {
             if (enemy.isAlive()) {
-                enemy.applyPoison(turns);
+                enemy.setNegativeStatus(type, turns);
             }
         }
     }
@@ -382,7 +384,7 @@ public class CombatController {
     }
 
     /**
-     * End-of-round: poison ticks, cooldowns (played cards get full CD then all instances tick once).
+     * End-of-round: status effects, cooldowns (played cards get full CD then all instances tick once).
      * Runs when a round completes normally or combat ends mid-resolve.
      */
     private void applyRoundEndEffects() {
@@ -390,18 +392,18 @@ public class CombatController {
             return;
         }
         roundEndCooldownsApplied = true;
-        applyPoisonTicks();
+        applyRoundEndStatusEffects();
         applyRoundEndCooldownsOnly();
     }
 
-    private void applyPoisonTicks() {
+    private void applyRoundEndStatusEffects() {
         float poisonDamage = GameConfig.CARD_POISON_DAMAGE_PER_ROUND;
         if (player != null) {
-            player.tickPoisonAtRoundEnd(poisonDamage);
+            player.applyRoundEndStatusEffects(poisonDamage);
             playerStats.setHp(player.getHp());
         }
         for (CombatEntity enemy : enemies) {
-            enemy.tickPoisonAtRoundEnd(poisonDamage);
+            enemy.applyRoundEndStatusEffects(poisonDamage);
         }
     }
 

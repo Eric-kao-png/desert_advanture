@@ -140,6 +140,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
                 continue;
             }
             CombatHpBarDrawer.draw(shapes, entity);
+            CombatStatusDrawer.drawPanels(shapes, entity, font);
         }
         batch.setProjectionMatrix(screenProjection);
         batch.begin();
@@ -148,6 +149,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
                 continue;
             }
             CombatHpBarDrawer.drawHpText(batch, font, entity);
+            CombatStatusDrawer.drawText(batch, font, entity);
         }
         batch.end();
     }

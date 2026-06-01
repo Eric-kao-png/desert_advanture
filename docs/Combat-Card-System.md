@@ -12,7 +12,7 @@ Combat is **turn-based** and **1v1** (player vs one enemy or boss). Each **round
 
 1. **PLANNING** — Player assigns 0–2 action cards to slots **1** and **3** (same card *instance* cannot occupy both). Slots **2** and **4** show the enemy’s planned attacks for the round.
 2. **RESOLVING** — Slots resolve in order **1 → 2 → 3 → 4** (brief pause per slot for UI). If HP reaches 0 after any slot, combat ends immediately and remaining slots are skipped.
-3. **Round-end cooldowns** — Played cards get full cooldown, then **every** instance (including played) ticks down once so the ending round counts as one cooldown turn. Runs when all four slots finish **or** when combat ends early mid-resolve (same as a normal round end).
+3. **Round-end status & cooldowns** — Each alive entity resolves status effects (e.g. poison damage), then status turn counters tick down by 1. Played cards get full cooldown, then **every** instance (including played) ticks down once so the ending round counts as one cooldown turn. Runs when all four slots finish **or** when combat ends early mid-resolve (same as a normal round end).
 4. **Outcome check** — If either side is dead, combat ends; otherwise a new **PLANNING** round begins.
 
 Cards are **not consumed**: after resolving, instances return to the deck with **turn-based cooldown** counters.
@@ -49,7 +49,7 @@ Exploration **action cards** are separate from the **item inventory** (potions/g
 | Full Power | Offense | 3 damage; 6 if no Utility card resolved this round | 3 |
 | Life Magic | Utility | Enemy current HP halved (floor) | 5 |
 | Thrust | Offense | 6 damage on combat round 1, else 3 | 3 |
-| Poison | Utility | Poison 2 rounds; 1 damage to enemy at each round end | 2 |
+| Poison | Utility | Applies **negative status** Poison (2 turns); 1 damage to enemy at each round end | 2 |
 
 Categories (`ActionCardCategory`): **Offense** vs **Utility**. Hand UI: Offense panel (left), Confirm (center), Utility panel (right).
 
@@ -61,13 +61,33 @@ Constants in `GameConfig` (`CARD_*`). Enemy slots use `ActionCardType.ATTACK`.
 
 ---
 
-## 4. Enemy AI (MVP)
+## 4. Combat status (positive / negative)
+
+Each `CombatEntity` has **one positive** and **one negative** status slot (`PositiveStatusType` / `NegativeStatusType`). Applying a new status of the same polarity **replaces** the previous one. Shield remains separate (damage absorption points, not a positive status).
+
+| Polarity | Slot | Current types |
+|----------|------|----------------|
+| Positive | 1 | *(none yet — extend `PositiveStatusType`)* |
+| Negative | 1 | `POISON` |
+
+**Round end** (`CombatEntity.applyRoundEndStatusEffects`, called from `CombatController.applyRoundEndEffects` before card cooldowns):
+
+1. If negative is `POISON` and turns &gt; 0 → deal `CARD_POISON_DAMAGE_PER_ROUND` (bypasses shield).
+2. Decrement positive and negative turn counters; clear status when counter reaches 0.
+
+Poison card: `setNegativeStatus(POISON, CARD_POISON_DURATION_TURNS)` on living enemies. Constants: `CARD_POISON_DURATION_TURNS` = 2, `CARD_POISON_DAMAGE_PER_ROUND` = 1.
+
+**Status UI** (`CombatStatusDrawer`, drawn in `GameplayRenderer.renderCombatEntities`): two small panels under the entity’s feet, straddling center X — **left** = positive (`English name + turns`), **right** = negative (e.g. `Poison 2`). Empty slots draw nothing. Layout constants: `COMBAT_STATUS_BELOW_FEET_GAP`, `COMBAT_STATUS_COLUMN_OFFSET`, panel padding/border in `GameConfig`.
+
+---
+
+## 5. Enemy AI (MVP)
 
 Always plays **Attack** in slots 2 and 4 — same `ActionCardType.ATTACK` as the player (currently 2 damage; cooldown shown in UI only, enemies do not use CD).
 
 ---
 
-## 5. Action Card Deck
+## 6. Action Card Deck
 
 - Class: `com.desertadventure.combat.card.ActionCardDeck`
 - Instances: `ActionCardInstance` (`instanceId`, `ActionCardType`, `cooldownRemaining`)
@@ -82,7 +102,7 @@ Always plays **Attack** in slots 2 and 4 — same `ActionCardType.ATTACK` as the
 
 ---
 
-## 6. Balance (`GameConfig`)
+## 7. Balance (`GameConfig`)
 
 | Constant | Value |
 |----------|-------|
@@ -101,7 +121,7 @@ Normal enemy HP is random in `[ENEMY_HP_MIN, ENEMY_HP_MAX]` at combat start. Bos
 
 ---
 
-## 7. Integration
+## 8. Integration
 
 | Piece | Role |
 |-------|------|
@@ -118,7 +138,7 @@ Defeat still triggers **sandstorm** (cycle reset). Victory clears the combat til
 
 ---
 
-## 8. Hand row layout
+## 9. Hand row layout
 
 During **PLANNING**, the bottom hand row is three columns:
 
@@ -132,7 +152,7 @@ Each panel has its own bordered viewport, horizontal scroll when cards overflow,
 
 ---
 
-## 9. Controls
+## 10. Controls
 
 | Input | Action |
 |-------|--------|
@@ -143,10 +163,13 @@ Each panel has its own bordered viewport, horizontal scroll when cards overflow,
 
 ---
 
-## 10. File Index
+## 11. File Index
 
 | Path | Purpose |
 |------|---------|
+| `combat/model/PositiveStatusType.java` | Positive status enum (extensible) |
+| `combat/model/NegativeStatusType.java` | Negative status enum (`POISON`, …) |
+| `combat/model/CombatEntity.java` | Entity HP, shield, status slots, round-end ticks |
 | `combat/card/ActionCardCategory.java` | Card category (Offense / Utility) |
 | `combat/card/ActionCardType.java` | Card definitions (damage, target, cooldown, category) |
 | `combat/card/ActionCardDeck.java` | Instance collection |
@@ -156,9 +179,10 @@ Each panel has its own bordered viewport, horizontal scroll when cards overflow,
 | `screen/input/CombatCardInput.java` | Combat input |
 | `screen/layout/CombatCardLayout.java` | UI geometry |
 | `presentation/CombatCardRenderer.java` | Card/slot drawing |
+| `presentation/CombatStatusDrawer.java` | Foot status panels (positive left, negative right) |
 
 ---
 
-## 11. Extending Cards
+## 12. Extending Cards
 
 Add enum values to `ActionCardType` with `ActionCardTarget`, `ActionCardCategory`, primary value, and cooldown. Resolution is centralized in `CombatController.applyCardEffect`. New enemy behaviors can replace `getEnemyCardForSlot` / `resolveSlot` enemy branch.

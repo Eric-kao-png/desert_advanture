@@ -21,7 +21,10 @@ public class CombatEntity {
     private boolean alive = true;
     private float hurtFlash;
     private int shield;
-    private int poisonTurnsRemaining;
+    private PositiveStatusType positiveType;
+    private int positiveTurnsRemaining;
+    private NegativeStatusType negativeType;
+    private int negativeTurnsRemaining;
 
     public CombatEntity(Kind kind, float x, float y, float maxHp, int attack, float speed) {
         this.kind = kind;
@@ -127,20 +130,46 @@ public class CombatEntity {
         shield += amount;
     }
 
-    public int getPoisonTurnsRemaining() {
-        return poisonTurnsRemaining;
+    public PositiveStatusType getPositiveStatusType() {
+        return positiveType;
     }
 
-    public void applyPoison(int turns) {
-        if (!alive || turns <= 0) {
+    public int getPositiveTurnsRemaining() {
+        return positiveTurnsRemaining;
+    }
+
+    public NegativeStatusType getNegativeStatusType() {
+        return negativeType;
+    }
+
+    public int getNegativeTurnsRemaining() {
+        return negativeTurnsRemaining;
+    }
+
+    /** Replaces any existing positive status. */
+    public void setPositiveStatus(PositiveStatusType type, int turns) {
+        if (!alive || type == null || turns <= 0) {
             return;
         }
-        poisonTurnsRemaining = Math.max(poisonTurnsRemaining, turns);
+        positiveType = type;
+        positiveTurnsRemaining = turns;
+    }
+
+    /** Replaces any existing negative status. */
+    public void setNegativeStatus(NegativeStatusType type, int turns) {
+        if (!alive || type == null || turns <= 0) {
+            return;
+        }
+        negativeType = type;
+        negativeTurnsRemaining = turns;
     }
 
     public void clearCombatStatus() {
         shield = 0;
-        poisonTurnsRemaining = 0;
+        positiveType = null;
+        positiveTurnsRemaining = 0;
+        negativeType = null;
+        negativeTurnsRemaining = 0;
     }
 
     public void takeDamage(float amount) {
@@ -164,8 +193,8 @@ public class CombatEntity {
         }
     }
 
-    /** Poison tick; does not consume shield. */
-    public void takePoisonDamage(float amount) {
+    /** Status tick damage; does not consume shield. */
+    public void takeStatusDamage(float amount) {
         if (!alive || amount <= 0f) {
             return;
         }
@@ -177,13 +206,34 @@ public class CombatEntity {
         }
     }
 
-    /** One poison tick at round end (damage then duration -1). */
-    public void tickPoisonAtRoundEnd(float damage) {
-        if (!alive || poisonTurnsRemaining <= 0) {
+    /**
+     * Round-end status resolution: apply negative effects (e.g. poison damage), then tick durations.
+     */
+    public void applyRoundEndStatusEffects(float poisonDamagePerRound) {
+        if (!alive) {
             return;
         }
-        takePoisonDamage(damage);
-        poisonTurnsRemaining--;
+        if (negativeType == NegativeStatusType.POISON && negativeTurnsRemaining > 0) {
+            takeStatusDamage(poisonDamagePerRound);
+        }
+        tickStatusDurations();
+    }
+
+    private void tickStatusDurations() {
+        if (positiveTurnsRemaining > 0) {
+            positiveTurnsRemaining--;
+            if (positiveTurnsRemaining <= 0) {
+                positiveType = null;
+                positiveTurnsRemaining = 0;
+            }
+        }
+        if (negativeTurnsRemaining > 0) {
+            negativeTurnsRemaining--;
+            if (negativeTurnsRemaining <= 0) {
+                negativeType = null;
+                negativeTurnsRemaining = 0;
+            }
+        }
     }
 
     public void heal(float amount) {

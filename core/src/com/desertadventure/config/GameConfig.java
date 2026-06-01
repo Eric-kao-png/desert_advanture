@@ -192,6 +192,13 @@ public final class GameConfig {
     public static final float COMBAT_HP_BAR_BORDER_WIDTH = 2.5f;
     /** Max HP at or below this uses a single current-HP digit on the bar. */
     public static final float COMBAT_HP_BAR_COMPACT_MAX_HP = 3f;
+    /** Gap from entity feet (bottom Y) down to the bottom of the status panels. */
+    public static final float COMBAT_STATUS_BELOW_FEET_GAP = 4f;
+    /** Horizontal gap between entity center X and the inner edge of each status column. */
+    public static final float COMBAT_STATUS_COLUMN_OFFSET = 6f;
+    public static final float COMBAT_STATUS_PANEL_PADDING_H = 5f;
+    public static final float COMBAT_STATUS_PANEL_PADDING_V = 3f;
+    public static final float COMBAT_STATUS_BORDER_WIDTH = 1.5f;
 
     // --- Turn-based action cards ---
     public static final int CARD_ATTACK_DAMAGE = 2;
