@@ -37,6 +37,10 @@ public final class GameMessages {
         return "Found: " + itemName;
     }
 
+    public static String cardGained(String cardName) {
+        return "Gained: " + cardName;
+    }
+
     public static String itemUsed(String itemName) {
         return "Used: " + itemName;
     }

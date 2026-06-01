@@ -47,7 +47,9 @@ Exploration **action cards** are separate from the **item inventory** (potions/g
 
 Constants live in `GameConfig` (`CARD_*`, `ENEMY_CARD_ATTACK_DAMAGE`).
 
-**Starter deck** (reset on new game and sandstorm): 2× Attack, 1× Strong Attack, 1× Heal.
+**Starter deck** (reset on **new game** only): 2× Attack, 1× Strong Attack, 1× Heal.
+
+**Victory reward** (normal enemy `CombatOutcome.VICTORY` only, not boss): one random card via `ActionCardRewards.rollVictoryCard()` — 50% Heal, 50% Strong Attack — added to the deck with a `GameMessages` line (`Gained: …`). Boss camp-clear uses `BOSS_VICTORY` and does not grant this loot.
 
 ---
 
@@ -61,13 +63,14 @@ Always plays **Attack** in slots 2 and 4 for **5** damage each (`ENEMY_CARD_ATTA
 
 - Class: `com.desertadventure.combat.card.ActionCardDeck`
 - Instances: `ActionCardInstance` (`instanceId`, `ActionCardType`, `cooldownRemaining`)
-- Reset hook: `ActionCardDeckResetPolicy` — default `DefaultActionCardDeckResetPolicy` wipes to starter deck.
-- **Future:** implement a preserve policy to keep cards across sandstorms (interface only today).
+- `addCard(ActionCardType)` — append a new instance (victory loot, future rewards).
+- Reset hook: `ActionCardDeckResetPolicy` — default `DefaultActionCardDeckResetPolicy` wipes to starter deck on **new game** only.
+- Sandstorm (`StormResetService`) does **not** reset the deck; cards persist across defeat cycles until a new run.
 
 **Wired into**
 
-- `GameSession` constructor / `startNewGame`
-- `StormResetService.applyCycleReset` via `GameSession.completeStorm`
+- `GameSession` constructor / `startNewGame` (starter deck)
+- `CombatOutcomeApplier.applyVictory` (random card reward)
 
 ---
 
@@ -96,7 +99,8 @@ Enemy/boss HP also scales with `GameMap.distanceBand` at combat start.
 | Piece | Role |
 |-------|------|
 | `CombatController` | Turn session, slots, resolve, win/loss |
-| `CombatOutcome` / `CombatOutcomeApplier` | Unchanged flow: victory, boss victory, defeat → sandstorm |
+| `CombatOutcome` / `CombatOutcomeApplier` | Victory → XP + random card; boss victory → win screen; defeat → sandstorm (deck kept) |
+| `ActionCardRewards` | Victory loot roll (extensible for future tables) |
 | `GameplayMode.COMBAT` / `BOSS_COMBAT` | Mode gating |
 | `GameplayModeUpdater` | Starts combat with deck + distance band |
 | `CombatCardInput` | Pointer + Enter/Space confirm |
@@ -124,6 +128,7 @@ Defeat still triggers **sandstorm** (cycle reset). Victory clears the combat til
 |------|---------|
 | `combat/card/ActionCardType.java` | Card definitions (damage, target, cooldown) |
 | `combat/card/ActionCardDeck.java` | Instance collection |
+| `combat/card/ActionCardRewards.java` | Victory / future loot rolls |
 | `combat/card/ActionCardDeckResetPolicy.java` | Reset policy hook |
 | `combat/system/CombatController.java` | Turn-based session |
 | `screen/input/CombatCardInput.java` | Combat input |

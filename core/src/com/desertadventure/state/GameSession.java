@@ -56,7 +56,7 @@ public class GameSession implements ExplorationCallbacks {
                 map, mapViewState, travel, messageFeed,
                 GameSessionDelegates.modeAccess(this), GameSessionDelegates.playerPosition(this));
         combatOutcomes = new CombatOutcomeApplier(
-                map, playerStats, permanentProgress, travel, messageFeed,
+                map, playerStats, permanentProgress, travel, messageFeed, actionCardDeck,
                 GameSessionDelegates.modeAccess(this), this::triggerStorm, this::getPlayerGridPos);
         tileContext = new TileInteractionContext(
                 this, map, playerStats, permanentProgress,
@@ -267,7 +267,7 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public void completeStorm() {
-        stormReset.applyCycleReset(map, playerStats, stepBudget, actionCardDeck, actionCardDeckResetPolicy);
+        stormReset.applyCycleReset(map, playerStats, stepBudget);
         resetToSpawn();
         map.revealAround(getPlayerGridPos());
         permanentProgress.save();

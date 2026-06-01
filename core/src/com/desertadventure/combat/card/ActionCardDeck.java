@@ -12,10 +12,10 @@ public final class ActionCardDeck {
     public void resetToDefault() {
         instances.clear();
         nextInstanceId = 1;
-        add(ActionCardType.ATTACK);
-        add(ActionCardType.ATTACK);
-        add(ActionCardType.STRONG_ATTACK);
-        add(ActionCardType.HEAL);
+        addCard(ActionCardType.ATTACK);
+        addCard(ActionCardType.ATTACK);
+        addCard(ActionCardType.STRONG_ATTACK);
+        addCard(ActionCardType.HEAL);
     }
 
     public List<ActionCardInstance> getInstances() {
@@ -37,7 +37,7 @@ public final class ActionCardDeck {
         }
     }
 
-    private void add(ActionCardType type) {
+    public void addCard(ActionCardType type) {
         instances.add(new ActionCardInstance(nextInstanceId++, type));
     }
 }
