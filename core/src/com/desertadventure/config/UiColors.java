@@ -8,6 +8,8 @@ public final class UiColors {
     public static final Color MUTED_TEXT = new Color(0.45f, 0.42f, 0.38f, 1f);
     public static final Color CARD_ON_COOLDOWN_FILL = new Color(0.2f, 0.2f, 0.22f, 1f);
     public static final Color CARD_ON_COOLDOWN_TEXT = new Color(0.38f, 0.38f, 0.4f, 1f);
+    public static final Color CARD_TOOLTIP_FILL = new Color(0.08f, 0.07f, 0.06f, 0.95f);
+    public static final Color CARD_TOOLTIP_BORDER = new Color(0.75f, 0.65f, 0.4f, 1f);
     public static final Color BAR_VALUE_TEXT = new Color(0.95f, 0.95f, 0.95f, 1f);
     public static final Color DETAIL_BODY_TEXT = new Color(0.82f, 0.82f, 0.82f, 1f);
     public static final Color BUTTON_LABEL = new Color(0.9f, 0.9f, 0.9f, 1f);

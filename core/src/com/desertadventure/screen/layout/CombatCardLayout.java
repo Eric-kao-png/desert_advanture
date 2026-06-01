@@ -24,6 +24,8 @@ public final class CombatCardLayout {
     public final float confirmH = GameConfig.COMBAT_CONFIRM_HEIGHT;
 
     private final List<HandEntry> handEntries = new ArrayList<>();
+    private int hoveredHandInstanceId = -1;
+    private int hoveredSlotIndex = -1;
 
     public CombatCardLayout() {
         float totalW = 4 * slotW + 3 * GameConfig.COMBAT_SLOT_GAP;
@@ -48,6 +50,40 @@ public final class CombatCardLayout {
 
     public List<HandEntry> getHandEntries() {
         return handEntries;
+    }
+
+    public void updateHover(float worldX, float worldY) {
+        hoveredHandInstanceId = hitHandInstance(worldX, worldY);
+        hoveredSlotIndex = hitSlot(worldX, worldY);
+    }
+
+    public void clearHover() {
+        hoveredHandInstanceId = -1;
+        hoveredSlotIndex = -1;
+    }
+
+    public int getHoveredHandInstanceId() {
+        return hoveredHandInstanceId;
+    }
+
+    public int getHoveredSlotIndex() {
+        return hoveredSlotIndex;
+    }
+
+    public float innerCardX(int slotIndex) {
+        return slotX[slotIndex] + 8f;
+    }
+
+    public float innerCardY() {
+        return slotY + 10f;
+    }
+
+    public float innerCardW() {
+        return slotW - 16f;
+    }
+
+    public float innerCardH() {
+        return slotH - 20f;
     }
 
     public int hitHandInstance(float worldX, float worldY) {

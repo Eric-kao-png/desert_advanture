@@ -8,7 +8,6 @@ import com.desertadventure.combat.card.ActionCardInstance;
 import com.desertadventure.combat.card.ActionCardType;
 import com.desertadventure.combat.card.CombatPhase;
 import com.desertadventure.combat.system.CombatController;
-import com.desertadventure.config.GameConfig;
 import com.desertadventure.config.UiColors;
 import com.desertadventure.screen.layout.CombatCardLayout;
 
@@ -41,12 +40,13 @@ public final class CombatCardRenderer {
 
         drawSlotShapes(combat, layout, phase, resolvingSlot);
         drawHandShapes(combat, layout);
+        drawTooltipShapes(layout, combat, font);
         drawConfirmShape(layout, combat);
 
         batch.begin();
-        font.setColor(Color.WHITE);
-        drawSlotText(batch, font, layout, combat);
-        drawHandText(batch, font, layout, combat);
+        drawSlotNames(batch, font, layout, combat);
+        drawHandNames(batch, font, layout, combat);
+        drawTooltipTexts(batch, font, layout, combat);
         drawConfirmText(batch, font, layout, combat);
         batch.end();
     }
@@ -62,12 +62,17 @@ public final class CombatCardRenderer {
             shapes.setColor(SLOT_BG);
             shapes.rect(x, y, layout.slotW, layout.slotH);
 
+            float innerX = layout.innerCardX(i);
+            float innerY = layout.innerCardY();
+            float innerW = layout.innerCardW();
+            float innerH = layout.innerCardH();
             if (combat.getEnemyCardForSlot(i) != null) {
-                drawCardShape(x + 8f, y + 10f, layout.slotW - 16f, layout.slotH - 20f, ENEMY_CARD);
+                drawCardShape(innerX, innerY, innerW, innerH, ENEMY_CARD);
             } else {
                 ActionCardInstance card = combat.getSlotCard(i);
                 if (card != null) {
-                    drawCardShape(x + 8f, y + 10f, layout.slotW - 16f, layout.slotH - 20f, colorFor(card.getType()));
+                    Color fill = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_FILL : colorFor(card.getType());
+                    drawCardShape(innerX, innerY, innerW, innerH, fill);
                 }
             }
         }
@@ -92,6 +97,56 @@ public final class CombatCardRenderer {
         shapes.end();
     }
 
+    private void drawTooltipShapes(CombatCardLayout layout, CombatController combat, BitmapFont font) {
+        shapes.begin(ShapeRenderer.ShapeType.Filled);
+        int hoveredHand = layout.getHoveredHandInstanceId();
+        if (hoveredHand >= 0) {
+            for (CombatCardLayout.HandEntry entry : layout.getHandEntries()) {
+                if (entry.instanceId == hoveredHand) {
+                    ActionCardInstance card = combat.findCard(hoveredHand);
+                    if (card != null) {
+                        drawTooltipPanel(font, ActionCardUiText.detailLines(card),
+                                entry.x, entry.y, layout.cardW, layout.cardH);
+                    }
+                    break;
+                }
+            }
+        }
+
+        int hoveredSlot = layout.getHoveredSlotIndex();
+        if (hoveredSlot >= 0) {
+            float innerX = layout.innerCardX(hoveredSlot);
+            float innerY = layout.innerCardY();
+            float innerW = layout.innerCardW();
+            float innerH = layout.innerCardH();
+            if (combat.getEnemyCardForSlot(hoveredSlot) != null) {
+                drawTooltipPanel(font, ActionCardUiText.enemyAttackDetailLines(),
+                        innerX, innerY, innerW, innerH);
+            } else {
+                ActionCardInstance card = combat.getSlotCard(hoveredSlot);
+                if (card != null) {
+                    drawTooltipPanel(font, ActionCardUiText.detailLines(card),
+                            innerX, innerY, innerW, innerH);
+                }
+            }
+        }
+        shapes.end();
+    }
+
+    private void drawTooltipPanel(BitmapFont font, String[] lines, float cardX, float cardY, float cardW, float cardH) {
+        ActionCardUiText.TooltipBounds bounds = ActionCardUiText.measureTooltip(font, lines);
+        float panelX = ActionCardUiText.tooltipPanelXCentered(cardX, cardW, bounds.width());
+        float panelY = ActionCardUiText.tooltipPanelYAbove(cardY, cardH, bounds.height());
+        shapes.setColor(UiColors.CARD_TOOLTIP_FILL);
+        shapes.rect(panelX, panelY, bounds.width(), bounds.height());
+        shapes.setColor(UiColors.CARD_TOOLTIP_BORDER);
+        float t = 2f;
+        shapes.rect(panelX, panelY, bounds.width(), t);
+        shapes.rect(panelX, panelY + bounds.height() - t, bounds.width(), t);
+        shapes.rect(panelX, panelY, t, bounds.height());
+        shapes.rect(panelX + bounds.width() - t, panelY, t, bounds.height());
+    }
+
     private void drawConfirmShape(CombatCardLayout layout, CombatController combat) {
         boolean enabled = combat.canConfirmPlanning();
         shapes.begin(ShapeRenderer.ShapeType.Filled);
@@ -100,38 +155,91 @@ public final class CombatCardRenderer {
         shapes.end();
     }
 
-    private void drawSlotText(SpriteBatch batch, BitmapFont font, CombatCardLayout layout, CombatController combat) {
+    private void drawSlotNames(SpriteBatch batch, BitmapFont font, CombatCardLayout layout, CombatController combat) {
         font.setColor(UiColors.MUTED_TEXT);
         for (int i = 0; i < 4; i++) {
             font.draw(batch, String.valueOf(i + 1), layout.slotX[i] + layout.slotW / 2f - 4f,
                     layout.slotY + layout.slotH + 14f);
+
+            float innerX = layout.innerCardX(i);
+            float innerY = layout.innerCardY();
+            float innerW = layout.innerCardW();
+            float innerH = layout.innerCardH();
             if (combat.getEnemyCardForSlot(i) != null) {
-                font.setColor(Color.WHITE);
-                font.draw(batch, "Attack", layout.slotX[i] + 10f, layout.slotY + layout.slotH - 28f);
-                font.draw(batch, GameConfig.ENEMY_CARD_ATTACK_DAMAGE + " dmg",
-                        layout.slotX[i] + 10f, layout.slotY + layout.slotH - 44f);
-                font.setColor(UiColors.MUTED_TEXT);
+                ActionCardUiText.drawNameCentered(batch, font, "Attack", innerX, innerY, innerW, innerH, Color.WHITE);
             } else {
                 ActionCardInstance card = combat.getSlotCard(i);
                 if (card != null) {
-                    font.setColor(Color.WHITE);
-                    drawCardLabel(batch, font, card.getType(), layout.slotX[i] + 10f, layout.slotY + layout.slotH - 28f);
-                    font.setColor(UiColors.MUTED_TEXT);
+                    Color textColor = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_TEXT : Color.WHITE;
+                    ActionCardUiText.drawNameCentered(batch, font, card.getType().getDisplayName(),
+                            innerX, innerY, innerW, innerH, textColor);
                 }
             }
         }
     }
 
-    private void drawHandText(SpriteBatch batch, BitmapFont font, CombatCardLayout layout, CombatController combat) {
+    private void drawHandNames(SpriteBatch batch, BitmapFont font, CombatCardLayout layout, CombatController combat) {
         for (CombatCardLayout.HandEntry entry : layout.getHandEntries()) {
             ActionCardInstance card = findHandCard(combat, entry.instanceId);
-            if (card != null) {
-                drawHandCardLabel(batch, font, card, entry.x + 6f, entry.y + layout.cardH - 18f);
+            if (card == null) {
+                continue;
+            }
+            Color textColor = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_TEXT : Color.WHITE;
+            ActionCardUiText.drawNameCentered(batch, font, card.getType().getDisplayName(),
+                    entry.x, entry.y, layout.cardW, layout.cardH, textColor);
+        }
+    }
+
+    private void drawTooltipTexts(SpriteBatch batch, BitmapFont font, CombatCardLayout layout, CombatController combat) {
+        int hoveredHand = layout.getHoveredHandInstanceId();
+        if (hoveredHand >= 0) {
+            for (CombatCardLayout.HandEntry entry : layout.getHandEntries()) {
+                if (entry.instanceId == hoveredHand) {
+                    ActionCardInstance card = combat.findCard(hoveredHand);
+                    if (card != null) {
+                        drawTooltipForCard(batch, font, ActionCardUiText.detailLines(card),
+                                entry.x, entry.y, layout.cardW, layout.cardH);
+                    }
+                    break;
+                }
+            }
+        }
+
+        int hoveredSlot = layout.getHoveredSlotIndex();
+        if (hoveredSlot >= 0) {
+            float innerX = layout.innerCardX(hoveredSlot);
+            float innerY = layout.innerCardY();
+            float innerW = layout.innerCardW();
+            float innerH = layout.innerCardH();
+            if (combat.getEnemyCardForSlot(hoveredSlot) != null) {
+                drawTooltipForCard(batch, font, ActionCardUiText.enemyAttackDetailLines(),
+                        innerX, innerY, innerW, innerH);
+            } else {
+                ActionCardInstance card = combat.getSlotCard(hoveredSlot);
+                if (card != null) {
+                    drawTooltipForCard(batch, font, ActionCardUiText.detailLines(card),
+                            innerX, innerY, innerW, innerH);
+                }
             }
         }
     }
 
+    private void drawTooltipForCard(
+            SpriteBatch batch,
+            BitmapFont font,
+            String[] lines,
+            float cardX,
+            float cardY,
+            float cardW,
+            float cardH) {
+        ActionCardUiText.TooltipBounds bounds = ActionCardUiText.measureTooltip(font, lines);
+        float panelX = ActionCardUiText.tooltipPanelXCentered(cardX, cardW, bounds.width());
+        float panelY = ActionCardUiText.tooltipPanelYAbove(cardY, cardH, bounds.height());
+        ActionCardUiText.drawTooltipText(batch, font, lines, panelX, panelY, Color.WHITE);
+    }
+
     private void drawConfirmText(SpriteBatch batch, BitmapFont font, CombatCardLayout layout, CombatController combat) {
+        font.setColor(Color.WHITE);
         String label = combat.getPhase() == CombatPhase.RESOLVING ? "Resolving..." : "Confirm";
         font.draw(batch, label, layout.confirmX + 28f, layout.confirmY + layout.confirmH / 2f + 6f);
     }
@@ -149,39 +257,7 @@ public final class CombatCardRenderer {
         };
     }
 
-    private static void drawCardLabel(SpriteBatch batch, BitmapFont font, ActionCardType type, float x, float y) {
-        font.draw(batch, type.getDisplayName(), x, y);
-        font.draw(batch, effectLine(type), x, y - 16f);
-        if (type.getCooldownTurns() > 0) {
-            font.draw(batch, "CD:" + type.getCooldownTurns(), x, y - 32f);
-        }
-    }
-
-    private static void drawHandCardLabel(SpriteBatch batch, BitmapFont font, ActionCardInstance card, float x, float y) {
-        ActionCardType type = card.getType();
-        font.setColor(card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_TEXT : Color.WHITE);
-        font.draw(batch, type.getDisplayName(), x, y);
-        font.draw(batch, effectLine(type), x, y - 16f);
-        if (card.isOnCooldown()) {
-            font.draw(batch, "CD: " + card.getCooldownRemaining(), x, y - 32f);
-        } else if (type.getCooldownTurns() > 0) {
-            font.draw(batch, "CD:" + type.getCooldownTurns(), x, y - 32f);
-        }
-    }
-
-    private static String effectLine(ActionCardType type) {
-        return switch (type.getTarget()) {
-            case ENEMY -> type.getPrimaryValue() + " dmg";
-            case SELF -> "+" + type.getPrimaryValue() + " HP";
-        };
-    }
-
     private static ActionCardInstance findHandCard(CombatController combat, int instanceId) {
-        for (ActionCardInstance c : combat.getVisibleHand()) {
-            if (c.getInstanceId() == instanceId) {
-                return c;
-            }
-        }
-        return null;
+        return combat.findCard(instanceId);
     }
 }

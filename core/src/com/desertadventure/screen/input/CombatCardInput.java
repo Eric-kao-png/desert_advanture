@@ -17,10 +17,16 @@ public final class CombatCardInput {
 
     public void handle(GameSession session, GameViewport viewport, float delta) {
         if (!session.getMode().isCombat()) {
+            layout.clearHover();
             return;
         }
         var combat = session.getCombatController();
         combat.update(delta);
+
+        float worldX = viewport.pointerWorldX();
+        float worldY = viewport.pointerWorldY();
+        layout.rebuildHand(combat);
+        layout.updateHover(worldX, worldY);
 
         if (combat.getPhase() != CombatPhase.PLANNING) {
             pointerWasDown = Gdx.input.isTouched();
@@ -32,8 +38,6 @@ public final class CombatCardInput {
             return;
         }
 
-        float worldX = viewport.pointerWorldX();
-        float worldY = viewport.pointerWorldY();
         boolean pointerDown = Gdx.input.isTouched();
 
         if (pointerDown && Gdx.input.justTouched()) {
@@ -44,7 +48,6 @@ public final class CombatCardInput {
 
     private void handleClick(GameSession session, float worldX, float worldY) {
         var combat = session.getCombatController();
-        layout.rebuildHand(combat);
 
         if (layout.hitConfirm(worldX, worldY)) {
             combat.confirmPlanning();
