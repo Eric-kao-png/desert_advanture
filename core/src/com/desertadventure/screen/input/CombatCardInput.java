@@ -2,6 +2,7 @@ package com.desertadventure.screen.input;
 
 import com.badlogic.gdx.Gdx;
 import com.desertadventure.combat.card.CombatPhase;
+import com.desertadventure.config.GameConfig;
 import com.desertadventure.config.GameInputBindings;
 import com.desertadventure.presentation.GameViewport;
 import com.desertadventure.screen.layout.CombatCardLayout;
@@ -10,6 +11,10 @@ import com.desertadventure.state.GameSession;
 public final class CombatCardInput {
     private final CombatCardLayout layout = new CombatCardLayout();
     private boolean pointerWasDown;
+    private boolean handScrollTracking;
+    private boolean handScrollActive;
+    private float handScrollPointerStartX;
+    private float handScrollAtPointerDown;
 
     public CombatCardLayout getLayout() {
         return layout;
@@ -18,6 +23,9 @@ public final class CombatCardInput {
     public void handle(GameSession session, GameViewport viewport, float delta) {
         if (!session.getMode().isCombat()) {
             layout.clearHover();
+            layout.resetHandScroll();
+            resetHandScrollGesture();
+            pointerWasDown = false;
             return;
         }
         var combat = session.getCombatController();
@@ -25,11 +33,12 @@ public final class CombatCardInput {
 
         float worldX = viewport.pointerWorldX();
         float worldY = viewport.pointerWorldY();
-        layout.rebuildHand(combat);
-        layout.updateHover(worldX, worldY);
 
         if (combat.getPhase() != CombatPhase.PLANNING) {
             pointerWasDown = Gdx.input.isTouched();
+            resetHandScrollGesture();
+            layout.rebuildHand(combat);
+            layout.updateHover(worldX, worldY);
             return;
         }
 
@@ -40,10 +49,50 @@ public final class CombatCardInput {
 
         boolean pointerDown = Gdx.input.isTouched();
 
-        if (pointerDown && Gdx.input.justTouched()) {
-            handleClick(session, worldX, worldY);
+        if (pointerDown) {
+            if (Gdx.input.justTouched()) {
+                beginHandScrollGesture(worldX, worldY);
+            } else {
+                updateHandScrollGesture(worldX);
+            }
+        } else if (pointerWasDown) {
+            if (!handScrollActive) {
+                handleClick(session, worldX, worldY);
+            }
+            resetHandScrollGesture();
         }
+
         pointerWasDown = pointerDown;
+        layout.rebuildHand(combat);
+        layout.updateHover(worldX, worldY);
+    }
+
+    private void beginHandScrollGesture(float worldX, float worldY) {
+        resetHandScrollGesture();
+        if (!layout.containsHandViewport(worldX, worldY)) {
+            return;
+        }
+        handScrollTracking = true;
+        handScrollPointerStartX = worldX;
+        handScrollAtPointerDown = layout.getHandScrollX();
+    }
+
+    private void updateHandScrollGesture(float worldX) {
+        if (!handScrollTracking) {
+            return;
+        }
+        float deltaX = worldX - handScrollPointerStartX;
+        if (!handScrollActive && Math.abs(deltaX) >= GameConfig.COMBAT_HAND_SCROLL_THRESHOLD) {
+            handScrollActive = true;
+        }
+        if (handScrollActive) {
+            layout.setHandScrollX(handScrollAtPointerDown - deltaX);
+        }
+    }
+
+    private void resetHandScrollGesture() {
+        handScrollTracking = false;
+        handScrollActive = false;
     }
 
     private void handleClick(GameSession session, float worldX, float worldY) {

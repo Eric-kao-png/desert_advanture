@@ -73,6 +73,8 @@ public final class GameConfig {
     public static final int MAP_BLOCKED_DENSITY_PERCENT = 4;
     public static final int MAP_CAMP_CLEAR_RADIUS = 2;
     public static final int MAP_MIN_INTERACTABLE_DISTANCE = 8;
+    /** Place fixed combat tiles near spawn for easy testing; set false for release builds. */
+    public static final boolean MAP_NEAR_SPAWN_TEST_COMBATS = true;
     public static final int MAP_COMBAT_ROLL_THRESHOLD = 12;
     public static final int MAP_ITEM_ROLL_THRESHOLD = 22;
     public static final int MAP_SCATTER_ROLL_DENOMINATOR = 1000;
@@ -94,6 +96,8 @@ public final class GameConfig {
     public static final float STORM_TITLE_Y_RATIO = 0.55f;
 
     public static final float EXPLORE_GROUND_Y = 120f;
+    /** Raised ground line during combat (explore + delta). */
+    public static final float COMBAT_GROUND_Y = 160f;
     public static final float EXPLORE_PLAYER_X_RATIO = 0.35f;
     public static final float HUD_TOP_BAR_HEIGHT = 60f;
     public static final float HUD_TOP_BAR_ALPHA = 0.35f;
@@ -185,17 +189,38 @@ public final class GameConfig {
     public static final int CARD_STRONG_ATTACK_COOLDOWN_TURNS = 1;
     public static final int CARD_HEAL_COOLDOWN_TURNS = 2;
 
-    public static final float COMBAT_SLOT_WIDTH = 100f;
-    public static final float COMBAT_SLOT_HEIGHT = 130f;
-    public static final float COMBAT_SLOT_Y = 280f;
-    public static final float COMBAT_SLOT_GAP = 24f;
-    public static final float COMBAT_HAND_Y = 48f;
-    public static final float COMBAT_CARD_WIDTH = 88f;
-    public static final float COMBAT_CARD_HEIGHT = 110f;
-    public static final float COMBAT_HAND_GAP = 12f;
-    public static final float COMBAT_CONFIRM_WIDTH = 140f;
-    public static final float COMBAT_CONFIRM_HEIGHT = 44f;
+    /** Layout blend endpoints at explore (0) — used when entering combat. */
+    public static final float COMBAT_SLOT_WIDTH_EXPLORE = 100f;
+    public static final float COMBAT_SLOT_HEIGHT_EXPLORE = 130f;
+    public static final float COMBAT_SLOT_Y_EXPLORE = 280f;
+    public static final float COMBAT_HAND_Y_EXPLORE = 48f;
+    public static final float COMBAT_CARD_WIDTH_EXPLORE = 88f;
+    public static final float COMBAT_CARD_HEIGHT_EXPLORE = 110f;
+
+    public static final float COMBAT_SLOT_WIDTH = 84f;
+    public static final float COMBAT_SLOT_HEIGHT = 108f;
+    /** Timeline row between fighters, biased above screen center. */
+    public static final float COMBAT_SLOT_Y = 340f;
+    public static final float COMBAT_SLOT_GAP = 20f;
+    /** Hand row at the bottom, visually under the ground plane. */
+    public static final float COMBAT_HAND_Y = 12f;
+    public static final float COMBAT_CARD_WIDTH = 72f;
+    public static final float COMBAT_CARD_HEIGHT = 90f;
+    public static final float COMBAT_HAND_GAP = 10f;
+    /** Hand row viewport: horizontal inset from screen edge. */
+    public static final float COMBAT_HAND_VIEWPORT_MARGIN_H = 16f;
+    /** Gap between hand viewport right edge and confirm button. */
+    public static final float COMBAT_HAND_VIEWPORT_CONFIRM_GAP = 12f;
+    /** Padding inside the hand frame, around cards. */
+    public static final float COMBAT_HAND_VIEWPORT_PADDING = 8f;
+    /** Border stroke width for the hand viewport frame. */
+    public static final float COMBAT_HAND_BORDER = 2f;
+    /** Min pointer movement (world px) before a hand press becomes scroll. */
+    public static final float COMBAT_HAND_SCROLL_THRESHOLD = 10f;
+    public static final float COMBAT_CONFIRM_WIDTH = 130f;
+    public static final float COMBAT_CONFIRM_HEIGHT = 40f;
     public static final float COMBAT_RESOLVE_SLOT_SECONDS = 0.35f;
+    public static final float COMBAT_LAYOUT_BLEND_SECONDS = 0.4f;
     public static final int VICTORY_EXPERIENCE = 20;
     public static final int ITEM_EXPERIENCE = 10;
 

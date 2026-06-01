@@ -8,6 +8,7 @@ import com.desertadventure.config.GameConfig;
 import com.desertadventure.map.view.MapOverlayLayout;
 import com.desertadventure.presentation.GameViewport;
 import com.desertadventure.presentation.GameplayRenderer;
+import com.desertadventure.screen.layout.CombatCardLayout;
 import com.desertadventure.state.GameSession;
 import com.desertadventure.state.GameplayMode;
 
@@ -98,9 +99,15 @@ final class GameplaySceneDrawer {
 
     private void drawCombat(SpriteBatch batch, float delta, GameplayMode mode) {
         modeUpdater.ensureCombatInitializedForDraw(mode);
+        float blend = modeUpdater.getLayoutBlend();
+        CombatCardLayout layout = input.getCombatCardInput().getLayout();
+        layout.applyBlend(blend);
+
         batch.begin();
-        renderer.drawParallaxBackground(batch, false, delta);
+        renderer.drawParallaxBackground(batch, false, delta, blend);
+        renderer.drawParallaxFloor(batch, blend);
         batch.end();
+
         CombatEntity player = session.getCombatController().getPlayer();
         if (player == null) {
             return;
@@ -109,11 +116,8 @@ final class GameplaySceneDrawer {
         entities.add(player);
         entities.addAll(session.getCombatController().getEnemies());
         renderer.renderCombatEntities(entities);
-        renderer.renderCombatCardUi(
-                session.getCombatController(),
-                input.getCombatCardInput().getLayout(),
-                batch,
-                uiFont);
+        renderer.renderCombatHand(session.getCombatController(), layout, batch, uiFont);
+        renderer.renderCombatSlotsAndControls(session.getCombatController(), layout, batch, uiFont);
     }
 
     private void drawStorm(SpriteBatch batch, float delta) {
@@ -122,9 +126,11 @@ final class GameplaySceneDrawer {
     }
 
     private void drawExplore(SpriteBatch batch, boolean running, float delta) {
+        float blend = modeUpdater.getLayoutBlend();
         batch.begin();
-        renderer.drawParallaxBackground(batch, running, delta);
+        renderer.drawParallaxBackground(batch, running, delta, blend);
+        renderer.drawParallaxFloor(batch, blend);
         batch.end();
-        renderer.renderExploreForeground(session, running);
+        renderer.renderExploreForeground(session, running, blend);
     }
 }

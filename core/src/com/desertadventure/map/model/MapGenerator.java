@@ -14,6 +14,7 @@ public final class MapGenerator {
         scatterBlocked(map, random);
         placeKeyLocations(map);
         scatterInteractables(map, random);
+        placeTestCombatsNearSpawn(map);
         return map;
     }
 
@@ -77,6 +78,20 @@ public final class MapGenerator {
                     tile.setType(TileType.ITEM);
                 }
             }
+        }
+    }
+
+    /** Fixed combat tiles within a few steps of spawn (random scatter skips this band). */
+    private static void placeTestCombatsNearSpawn(GameMap map) {
+        if (!GameConfig.MAP_NEAR_SPAWN_TEST_COMBATS) {
+            return;
+        }
+        int[][] offsets = {
+                {3, 0}, {-3, 0}, {0, 3}, {0, -3},
+                {4, 0}, {-4, 0}, {3, 1}, {-3, -1},
+        };
+        for (int[] offset : offsets) {
+            setTile(map, offset[0], offset[1], TileType.COMBAT);
         }
     }
 }

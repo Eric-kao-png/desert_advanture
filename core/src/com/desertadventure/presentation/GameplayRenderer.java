@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.combat.system.CombatController;
 import com.desertadventure.screen.layout.CombatCardLayout;
+import com.desertadventure.screen.layout.CombatSceneLayout;
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.config.UiColors;
 import com.desertadventure.map.model.GridPos;
@@ -62,8 +63,8 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         houses.repopulate(screenW);
     }
 
-    /** sky → sun → back → houses → middle → forward → floor. Batch must already be begun. */
-    public void drawParallaxBackground(SpriteBatch batch, boolean running, float delta) {
+    /** sky → sun → back → houses → middle → forward (no floor). Batch must already be begun. */
+    public void drawParallaxBackground(SpriteBatch batch, boolean running, float delta, float layoutBlend) {
         float w = GameConfig.VIEW_WIDTH;
         float h = GameConfig.VIEW_HEIGHT;
         parallax.scroll(delta, running);
@@ -74,24 +75,39 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         houses.draw(batch, w);
         parallax.drawMiddle(batch, w, h);
         parallax.drawForward(batch, w, h);
-        parallax.drawFloor(batch, w, GameConfig.EXPLORE_GROUND_Y);
     }
 
-    public void renderExploreForeground(GameSession session, boolean running) {
+    /** Tiled ground plane from y=0 to groundY. Batch must already be begun. */
+    public void drawParallaxFloor(SpriteBatch batch, float layoutBlend) {
+        batch.setProjectionMatrix(screenProjection);
+        parallax.drawFloor(batch, GameConfig.VIEW_WIDTH, CombatSceneLayout.groundY(layoutBlend));
+    }
+
+    public void renderExploreForeground(GameSession session, boolean running, float layoutBlend) {
         float w = GameConfig.VIEW_WIDTH;
         float h = GameConfig.VIEW_HEIGHT;
-        drawPlayer(w * GameConfig.EXPLORE_PLAYER_X_RATIO, GameConfig.EXPLORE_GROUND_Y, running);
+        float groundY = CombatSceneLayout.groundY(layoutBlend);
+        drawPlayer(w * GameConfig.EXPLORE_PLAYER_X_RATIO, groundY, running);
         ShapeDrawer.fillRect(shapes, 0, h - GameConfig.HUD_TOP_BAR_HEIGHT, w, GameConfig.HUD_TOP_BAR_HEIGHT,
                 UiColors.HUD_TOP_BAR);
     }
 
-    public void renderCombatCardUi(
+    public void renderCombatHand(
             CombatController combat,
             CombatCardLayout layout,
             SpriteBatch batch,
             BitmapFont font) {
         shapes.setProjectionMatrix(screenProjection);
-        combatCards.render(combat, layout, batch, font);
+        combatCards.renderHand(combat, layout, batch, font);
+    }
+
+    public void renderCombatSlotsAndControls(
+            CombatController combat,
+            CombatCardLayout layout,
+            SpriteBatch batch,
+            BitmapFont font) {
+        shapes.setProjectionMatrix(screenProjection);
+        combatCards.renderSlotsAndControls(combat, layout, batch, font);
     }
 
     public void renderCombatEntities(List<CombatEntity> entities) {

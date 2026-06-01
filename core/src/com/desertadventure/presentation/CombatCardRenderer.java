@@ -1,9 +1,14 @@
 package com.desertadventure.presentation;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Rectangle;
+import com.desertadventure.config.GameConfig;
 import com.desertadventure.combat.card.ActionCardInstance;
 import com.desertadventure.combat.card.ActionCardType;
 import com.desertadventure.combat.card.CombatPhase;
@@ -22,14 +27,42 @@ public final class CombatCardRenderer {
     private static final Color ENEMY_CARD = new Color(0.5f, 0.2f, 0.2f, 0.95f);
     private static final Color CONFIRM = new Color(0.22f, 0.5f, 0.32f, 1f);
     private static final Color CONFIRM_DISABLED = new Color(0.3f, 0.3f, 0.3f, 0.8f);
+    private static final Color HAND_VIEWPORT_BG = new Color(0.12f, 0.11f, 0.1f, 0.88f);
+    private static final Color HAND_VIEWPORT_BORDER = new Color(0.42f, 0.38f, 0.3f, 1f);
 
     private final ShapeRenderer shapes;
+    private final OrthographicCamera scissorCamera = new OrthographicCamera();
+    private final Matrix4 identityTransform = new Matrix4();
+    private final Rectangle scissorBounds = new Rectangle();
+    private final Rectangle scissorResult = new Rectangle();
 
     public CombatCardRenderer(ShapeRenderer shapes) {
         this.shapes = shapes;
     }
 
-    public void render(
+    /** Hand row and confirm; drawn above ground after parallax floor. */
+    public void renderHand(
+            CombatController combat,
+            CombatCardLayout layout,
+            SpriteBatch batch,
+            BitmapFont font) {
+        layout.rebuildHand(combat);
+        drawHandViewportFrame(layout);
+        if (pushHandClip(shapes.getProjectionMatrix(), layout)) {
+            drawHandShapes(combat, layout);
+            batch.begin();
+            drawHandNames(batch, font, layout, combat);
+            batch.end();
+            popHandClip();
+        }
+        drawConfirmShape(layout, combat);
+        batch.begin();
+        drawConfirmText(batch, font, layout, combat);
+        batch.end();
+    }
+
+    /** Timeline slots and tooltips above fighters. */
+    public void renderSlotsAndControls(
             CombatController combat,
             CombatCardLayout layout,
             SpriteBatch batch,
@@ -39,15 +72,11 @@ public final class CombatCardRenderer {
         layout.rebuildHand(combat);
 
         drawSlotShapes(combat, layout, phase, resolvingSlot);
-        drawHandShapes(combat, layout);
         drawTooltipShapes(layout, combat, font);
-        drawConfirmShape(layout, combat);
 
         batch.begin();
         drawSlotNames(batch, font, layout, combat);
-        drawHandNames(batch, font, layout, combat);
         drawTooltipTexts(batch, font, layout, combat);
-        drawConfirmText(batch, font, layout, combat);
         batch.end();
     }
 
@@ -77,6 +106,35 @@ public final class CombatCardRenderer {
             }
         }
         shapes.end();
+    }
+
+    private void drawHandViewportFrame(CombatCardLayout layout) {
+        float x = layout.handViewportX;
+        float y = layout.handViewportY;
+        float w = layout.handViewportW;
+        float h = layout.handViewportH;
+        float border = GameConfig.COMBAT_HAND_BORDER;
+
+        shapes.begin(ShapeRenderer.ShapeType.Filled);
+        shapes.setColor(HAND_VIEWPORT_BORDER);
+        shapes.rect(x, y, w, border);
+        shapes.rect(x, y + h - border, w, border);
+        shapes.rect(x, y, border, h);
+        shapes.rect(x + w - border, y, border, h);
+        shapes.setColor(HAND_VIEWPORT_BG);
+        shapes.rect(x + border, y + border, w - 2f * border, h - 2f * border);
+        shapes.end();
+    }
+
+    private boolean pushHandClip(Matrix4 projection, CombatCardLayout layout) {
+        scissorBounds.set(layout.handClipX(), layout.handClipY(), layout.handClipW(), layout.handClipH());
+        scissorCamera.combined.set(projection);
+        ScissorStack.calculateScissors(scissorCamera, identityTransform, scissorBounds, scissorResult);
+        return ScissorStack.pushScissors(scissorResult);
+    }
+
+    private static void popHandClip() {
+        ScissorStack.popScissors();
     }
 
     private void drawHandShapes(CombatController combat, CombatCardLayout layout) {

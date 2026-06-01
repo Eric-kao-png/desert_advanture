@@ -1,7 +1,9 @@
 package com.desertadventure.screen;
 
+import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.presentation.GameplayRenderer;
+import com.desertadventure.screen.layout.CombatSceneLayout;
 import com.desertadventure.state.GameSession;
 import com.desertadventure.state.GameplayMode;
 
@@ -25,6 +27,9 @@ final class GameplayModeUpdater {
     void update(float delta) {
         GameplayMode mode = session.getMode();
         detectModeTransitions(mode);
+        combatState.updateLayoutBlend(delta, mode);
+        applyLayoutBlendToInput();
+        syncCombatEntityGround();
         ensureCombatInitialized(mode);
         session.getMessageFeed().update(delta);
 
@@ -72,12 +77,34 @@ final class GameplayModeUpdater {
         ensureCombatInitialized(mode);
     }
 
+    float getLayoutBlend() {
+        return combatState.layoutBlend;
+    }
+
+    private void applyLayoutBlendToInput() {
+        input.getCombatCardInput().getLayout().applyBlend(combatState.layoutBlend);
+    }
+
+    private void syncCombatEntityGround() {
+        if (!session.getCombatController().isActive()) {
+            return;
+        }
+        float groundY = CombatSceneLayout.entityGroundY(combatState.layoutBlend);
+        CombatEntity player = session.getCombatController().getPlayer();
+        if (player != null) {
+            player.setPosition(player.getX(), groundY);
+        }
+        for (CombatEntity enemy : session.getCombatController().getEnemies()) {
+            enemy.setPosition(enemy.getX(), groundY);
+        }
+    }
+
     private void beginCombat(boolean boss) {
         session.getCombatController().startCombat(
                 session.getCurrentDistanceBand(),
                 boss,
                 GameConfig.VIEW_WIDTH,
-                GameConfig.EXPLORE_GROUND_Y,
+                GameConfig.COMBAT_GROUND_Y,
                 session.getActionCardDeck(),
                 session::onCombatEnd
         );
