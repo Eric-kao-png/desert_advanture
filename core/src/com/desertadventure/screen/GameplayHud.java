@@ -61,12 +61,15 @@ public class GameplayHud {
             case RUNNING -> drawHint(batch, GameMessages.HUD_RUNNING);
             case COMBAT, BOSS_COMBAT -> {
                 drawHint(batch, GameMessages.HUD_COMBAT);
-                CombatEntity boss = findBoss(session);
-                if (boss != null) {
-                    font.draw(batch, String.format("Boss HP: %.0f/%.0f", boss.getHp(), boss.getMaxHp()),
+                CombatEntity enemy = firstLivingEnemy(session);
+                if (enemy != null) {
+                    font.draw(batch, String.format("Enemy HP: %.0f/%.0f", enemy.getHp(), enemy.getMaxHp()),
                             GameConfig.VIEW_WIDTH - GameConfig.BOSS_HUD_RIGHT_OFFSET,
                             GameConfig.VIEW_HEIGHT - GameConfig.HUD_STATUS_TOP_OFFSET);
                 }
+                font.draw(batch, String.format("Round %d", session.getCombatController().getRoundNumber()),
+                        GameConfig.VIEW_WIDTH - GameConfig.BOSS_HUD_RIGHT_OFFSET,
+                        GameConfig.VIEW_HEIGHT - GameConfig.HUD_STATUS_TOP_OFFSET - GameConfig.HUD_LINE_STEP);
             }
             case STORM -> {
                 font.setColor(UiColors.HUD_STORM_TITLE);
@@ -101,9 +104,9 @@ public class GameplayHud {
         font.setColor(Color.WHITE);
     }
 
-    private static CombatEntity findBoss(GameSession session) {
+    private static CombatEntity firstLivingEnemy(GameSession session) {
         for (CombatEntity enemy : session.getCombatController().getEnemies()) {
-            if (enemy.getKind() == CombatEntity.Kind.BOSS) {
+            if (enemy.isAlive()) {
                 return enemy;
             }
         }

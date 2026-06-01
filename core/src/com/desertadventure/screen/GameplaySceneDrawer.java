@@ -109,6 +109,11 @@ final class GameplaySceneDrawer {
         entities.add(player);
         entities.addAll(session.getCombatController().getEnemies());
         renderer.renderCombatEntities(entities);
+        renderer.renderCombatCardUi(
+                session.getCombatController(),
+                input.getCombatCardInput().getLayout(),
+                batch,
+                uiFont);
     }
 
     private void drawStorm(SpriteBatch batch, float delta) {

@@ -78,6 +78,7 @@ final class GameplayModeUpdater {
                 boss,
                 GameConfig.VIEW_WIDTH,
                 GameConfig.EXPLORE_GROUND_Y,
+                session.getActionCardDeck(),
                 session::onCombatEnd
         );
         combatState.combatInitialized = true;

@@ -1,6 +1,9 @@
 package com.desertadventure.state;
 
 import com.desertadventure.combat.CombatOutcome;
+import com.desertadventure.combat.card.ActionCardDeck;
+import com.desertadventure.combat.card.ActionCardDeckResetPolicy;
+import com.desertadventure.combat.card.DefaultActionCardDeckResetPolicy;
 import com.desertadventure.combat.system.CombatController;
 import com.desertadventure.config.GameMessages;
 import com.desertadventure.event.RequiredEventTracker;
@@ -28,6 +31,8 @@ public class GameSession implements ExplorationCallbacks {
     private final StormResetService stormReset = new StormResetService();
     private final TravelMovement travel;
     private final CombatController combatController;
+    private final ActionCardDeck actionCardDeck = new ActionCardDeck();
+    private final ActionCardDeckResetPolicy actionCardDeckResetPolicy = new DefaultActionCardDeckResetPolicy();
     private final MapViewState mapViewState = new MapViewState();
     private final MessageFeed messageFeed = new MessageFeed();
     private final Inventory inventory = new Inventory();
@@ -59,6 +64,7 @@ public class GameSession implements ExplorationCallbacks {
                 travel::resume, available -> bossAvailableThisCycle = available);
         resetToSpawn();
         stepBudget.resetForCycle(playerStats);
+        actionCardDeck.resetToDefault();
         map.revealAround(getPlayerGridPos());
     }
 
@@ -72,6 +78,7 @@ public class GameSession implements ExplorationCallbacks {
         mode = GameplayMode.EXPLORE_IDLE;
         messageFeed.clear();
         inventory.clear();
+        actionCardDeckResetPolicy.resetDeck(actionCardDeck);
         bossAvailableThisCycle = false;
     }
 
@@ -111,6 +118,10 @@ public class GameSession implements ExplorationCallbacks {
 
     public CombatController getCombatController() {
         return combatController;
+    }
+
+    public ActionCardDeck getActionCardDeck() {
+        return actionCardDeck;
     }
 
     @Override
@@ -256,7 +267,7 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public void completeStorm() {
-        stormReset.applyCycleReset(map, playerStats, stepBudget);
+        stormReset.applyCycleReset(map, playerStats, stepBudget, actionCardDeck, actionCardDeckResetPolicy);
         resetToSpawn();
         map.revealAround(getPlayerGridPos());
         permanentProgress.save();

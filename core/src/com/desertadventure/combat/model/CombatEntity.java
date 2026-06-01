@@ -78,6 +78,11 @@ public class CombatEntity {
         return hp;
     }
 
+    public void setHp(float hp) {
+        this.hp = Math.min(maxHp, Math.max(0f, hp));
+        alive = this.hp > 0f;
+    }
+
     public float getMaxHp() {
         return maxHp;
     }
@@ -119,6 +124,13 @@ public class CombatEntity {
             hp = 0f;
             alive = false;
         }
+    }
+
+    public void heal(float amount) {
+        if (!alive) {
+            return;
+        }
+        hp = Math.min(maxHp, hp + amount);
     }
 
     public void update(float delta, float arenaWidth) {

@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.desertadventure.combat.model.CombatEntity;
+import com.desertadventure.combat.system.CombatController;
+import com.desertadventure.screen.layout.CombatCardLayout;
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.config.UiColors;
 import com.desertadventure.map.model.GridPos;
@@ -26,6 +28,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
     private final OverlayCloseButton overlayCloseButton = new OverlayCloseButton();
     private final MapOverlayRenderer mapOverlay;
     private final CharacterOverlayRenderer characterOverlay;
+    private final CombatCardRenderer combatCards;
 
     public GameplayRenderer() {
         screenProjection.setToOrtho2D(0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT);
@@ -35,6 +38,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         houses = new BackgroundHouseSpawner(desertSprites);
         mapOverlay = new MapOverlayRenderer(overlayCloseButton);
         characterOverlay = new CharacterOverlayRenderer(overlayCloseButton);
+        combatCards = new CombatCardRenderer(shapes);
     }
 
     @Override
@@ -79,6 +83,15 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         drawPlayer(w * GameConfig.EXPLORE_PLAYER_X_RATIO, GameConfig.EXPLORE_GROUND_Y, running);
         ShapeDrawer.fillRect(shapes, 0, h - GameConfig.HUD_TOP_BAR_HEIGHT, w, GameConfig.HUD_TOP_BAR_HEIGHT,
                 UiColors.HUD_TOP_BAR);
+    }
+
+    public void renderCombatCardUi(
+            CombatController combat,
+            CombatCardLayout layout,
+            SpriteBatch batch,
+            BitmapFont font) {
+        shapes.setProjectionMatrix(screenProjection);
+        combatCards.render(combat, layout, batch, font);
     }
 
     public void renderCombatEntities(List<CombatEntity> entities) {

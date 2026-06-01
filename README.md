@@ -1,6 +1,6 @@
 # Desert Adventure
 
-A LibGDX desert roguelite prototype: 2D grid exploration, side-scrolling travel presentation, and real-time combat.
+A LibGDX desert roguelite prototype: 2D grid exploration, side-scrolling travel presentation, and turn-based card combat.
 
 ## Controls
 
@@ -13,8 +13,8 @@ A LibGDX desert roguelite prototype: 2D grid exploration, side-scrolling travel 
 | Mouse click | Select destination on map |
 | Esc | Close map or inventory (while open); return to main menu (while exploring) |
 | X (top-right) | Close map or inventory (while open) |
-| WASD / Arrow keys | Combat movement |
-| J / K / L | Attack / Skill / Ultimate |
+| Click + slots 1 & 3 | Assign action cards (combat) |
+| Enter / Space | Confirm combat round |
 
 ## Run
 
@@ -33,6 +33,7 @@ macOS automatically adds `-XstartOnFirstThread` (required by LWJGL3).
 ## Documentation
 
 - [Movement & map logic](docs/Movement-and-Map-Logic.md) — path planning, steps, mid-path encounters, file index
+- [Combat card system](docs/Combat-Card-System.md) — turn phases, deck, balance, controls
 - Parallax backgrounds: `core/assets/backgrounds/parallax_{back,middle,forward}.png`
 - Sprite sheet: `core/assets/sprites/desert_parallax_sheet.png` + `core/assets/data/desert_sprite_sheet.json`
 

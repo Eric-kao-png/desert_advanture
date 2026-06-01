@@ -24,10 +24,10 @@ public final class GameMessages {
     public static final String ITEM_STAMINA_POTION = "Stamina Potion";
     public static final String ITEM_HEALTH_GEM = "Health Gem";
     public static final String ITEM_STAMINA_GEM = "Stamina Gem";
-    public static final String ITEM_HEALTH_POTION_DESC = "Restores 50 HP.";
-    public static final String ITEM_STAMINA_POTION_DESC = "Restores 5 stamina.";
-    public static final String ITEM_HEALTH_GEM_DESC = "Permanently raises max HP by 50.";
-    public static final String ITEM_STAMINA_GEM_DESC = "Permanently raises max stamina by 5.";
+    public static final String ITEM_HEALTH_POTION_DESC = "Restores 8 HP.";
+    public static final String ITEM_STAMINA_POTION_DESC = "Restores 25 stamina.";
+    public static final String ITEM_HEALTH_GEM_DESC = "Permanently raises max HP by 4.";
+    public static final String ITEM_STAMINA_GEM_DESC = "Permanently raises max stamina by 15.";
 
     public static String inventoryFull() {
         return "Backpack is full.";
@@ -53,7 +53,7 @@ public final class GameMessages {
     public static final String HUD_MAP_OVERLAY = "Click destination | Arrows: pan | [X] or [M] or [Esc] Close";
     public static final String HUD_CHARACTER_OVERLAY = "Drag items to reorder | Click for details | [X] or [N] or [Esc] Close";
     public static final String HUD_RUNNING = "Moving... | [M] Map  [N] Inventory";
-    public static final String HUD_COMBAT = "WASD: Move | J: Attack K: Skill L: Ultimate";
+    public static final String HUD_COMBAT = "Click hand → slots 1 & 3 | Empty slots OK | Confirm or Enter";
     public static final String HUD_STORM_TITLE = "Sandstorm!";
 
     private GameMessages() {

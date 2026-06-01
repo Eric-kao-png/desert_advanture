@@ -19,7 +19,7 @@ public final class GameConfig {
     public static final float SUN_X = SUN_MARGIN_LEFT;
     public static final float SUN_Y = VIEW_HEIGHT - SUN_MARGIN_TOP - SUN_DISPLAY_SIZE + SUN_VERTICAL_OFFSET;
 
-    public static final int BASE_STEP_BUDGET = 12;
+    public static final int BASE_STEP_BUDGET = 100;
     public static final float TILE_TRAVEL_SECONDS = 0.4f;
     public static final float SCROLL_SPEED = 200f;
     /** Min step delta applied per travel update tick. */
@@ -168,25 +168,34 @@ public final class GameConfig {
     public static final float ENEMY_SPEED = 0f;
     public static final float BOSS_SPEED = 0f;
 
-    public static final float BASIC_ATTACK_COOLDOWN = 0.35f;
-    public static final float SKILL_COOLDOWN = 2.5f;
-    public static final float ULTIMATE_COOLDOWN = 8f;
-    /** Forward hitbox depth (player attacks to the right). */
-    public static final float BASIC_ATTACK_DEPTH = 56f;
-    public static final float BASIC_ATTACK_HEIGHT = 52f;
-    public static final float BASIC_ATTACK_RANGE = 70f;
-    public static final float SKILL_RANGE = 120f;
-    public static final float ULTIMATE_RANGE = 160f;
-
     public static final float COMBAT_PLAYER_X_RATIO = 0.3f;
     public static final float COMBAT_ENEMY_X_RATIO = 0.72f;
     public static final float COMBAT_BOSS_X_RATIO = 0.78f;
-    public static final float ENEMY_BASE_HP = 30f;
-    public static final float ENEMY_HP_PER_DISTANCE_BAND = 10f;
-    public static final float BOSS_BASE_HP = 300f;
-    public static final float BOSS_HP_PER_DISTANCE_BAND = 40f;
-    public static final int SKILL_ATTACK_BONUS = 15;
-    public static final int ULTIMATE_ATTACK_BONUS = 50;
+    public static final float ENEMY_BASE_HP = 8f;
+    public static final float ENEMY_HP_PER_DISTANCE_BAND = 3f;
+    public static final float BOSS_BASE_HP = 35f;
+    public static final float BOSS_HP_PER_DISTANCE_BAND = 8f;
+
+    // --- Turn-based action cards ---
+    public static final int CARD_ATTACK_DAMAGE = 10;
+    public static final int CARD_STRONG_ATTACK_DAMAGE = 15;
+    public static final int CARD_HEAL_AMOUNT = 8;
+    public static final int ENEMY_CARD_ATTACK_DAMAGE = 5;
+    public static final int CARD_ATTACK_COOLDOWN_TURNS = 0;
+    public static final int CARD_STRONG_ATTACK_COOLDOWN_TURNS = 1;
+    public static final int CARD_HEAL_COOLDOWN_TURNS = 2;
+
+    public static final float COMBAT_SLOT_WIDTH = 100f;
+    public static final float COMBAT_SLOT_HEIGHT = 130f;
+    public static final float COMBAT_SLOT_Y = 280f;
+    public static final float COMBAT_SLOT_GAP = 24f;
+    public static final float COMBAT_HAND_Y = 48f;
+    public static final float COMBAT_CARD_WIDTH = 88f;
+    public static final float COMBAT_CARD_HEIGHT = 110f;
+    public static final float COMBAT_HAND_GAP = 12f;
+    public static final float COMBAT_CONFIRM_WIDTH = 140f;
+    public static final float COMBAT_CONFIRM_HEIGHT = 44f;
+    public static final float COMBAT_RESOLVE_SLOT_SECONDS = 0.35f;
     public static final int VICTORY_EXPERIENCE = 20;
     public static final int ITEM_EXPERIENCE = 10;
 
@@ -194,17 +203,17 @@ public final class GameConfig {
     public static final float ITEM_TILE_DROP_CHANCE = 0.95f;
     /** Loot weights: health potion, stamina potion, health gem, stamina gem. */
     public static final int[] ITEM_DROP_WEIGHTS = {35, 35, 15, 15};
-    public static final float ITEM_HEALTH_POTION_RESTORE = 50f;
-    public static final float ITEM_STAMINA_POTION_RESTORE = 5f;
-    public static final float ITEM_HEALTH_GEM_BONUS = 50f;
-    public static final float ITEM_STAMINA_GEM_BONUS = 5f;
+    public static final float ITEM_HEALTH_POTION_RESTORE = 8f;
+    public static final float ITEM_STAMINA_POTION_RESTORE = 25f;
+    public static final float ITEM_HEALTH_GEM_BONUS = 4f;
+    public static final float ITEM_STAMINA_GEM_BONUS = 15f;
 
     public static final int PLAYER_INITIAL_LEVEL = 1;
     public static final int PLAYER_INITIAL_EXPERIENCE_TO_NEXT = 30;
-    public static final float PLAYER_INITIAL_MAX_HP = 100f;
+    public static final float PLAYER_INITIAL_MAX_HP = 20f;
     public static final int PLAYER_INITIAL_ATTACK = 10;
     public static final int PLAYER_INITIAL_DEFENSE = 2;
-    public static final float PLAYER_LEVEL_HP_GAIN = 15f;
+    public static final float PLAYER_LEVEL_HP_GAIN = 2f;
     public static final int PLAYER_LEVEL_ATTACK_GAIN = 3;
     public static final int PLAYER_LEVEL_DEFENSE_GAIN = 1;
     public static final int PLAYER_LEVEL_STEP_BONUS = 1;

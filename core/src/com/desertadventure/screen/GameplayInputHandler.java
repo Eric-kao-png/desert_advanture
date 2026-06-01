@@ -5,7 +5,7 @@ import com.desertadventure.map.model.GridPos;
 import com.desertadventure.map.view.MapOverlayInput;
 import com.desertadventure.presentation.GameViewport;
 import com.desertadventure.screen.input.CharacterOverlayPointerInput;
-import com.desertadventure.screen.input.CombatKeyboardInput;
+import com.desertadventure.screen.input.CombatCardInput;
 import com.desertadventure.screen.input.ExplorationKeyboardInput;
 import com.desertadventure.screen.input.MapOverlayPointerInput;
 import com.desertadventure.state.GameSession;
@@ -15,10 +15,11 @@ import com.desertadventure.state.GameplayMode;
 public class GameplayInputHandler {
     private final DesertAdventure game;
     private final GameSession session;
+    private final GameViewport viewport;
     private final CharacterOverlayInput characterInput;
     private final CharacterOverlayLayout characterLayout;
     private final ExplorationKeyboardInput explorationKeys = new ExplorationKeyboardInput();
-    private final CombatKeyboardInput combatKeys = new CombatKeyboardInput();
+    private final CombatCardInput combatCardInput = new CombatCardInput();
     private final MapOverlayPointerInput mapOverlayInput;
     private final CharacterOverlayPointerInput characterOverlayInput;
 
@@ -31,6 +32,7 @@ public class GameplayInputHandler {
             CharacterOverlayLayout characterLayout) {
         this.game = game;
         this.session = session;
+        this.viewport = viewport;
         this.characterInput = characterInput;
         this.characterLayout = characterLayout;
         mapOverlayInput = new MapOverlayPointerInput(session, viewport, mapInput);
@@ -75,7 +77,11 @@ public class GameplayInputHandler {
     }
 
     public void updateCombatInput(float delta) {
-        combatKeys.handle(session, delta);
+        combatCardInput.handle(session, viewport, delta);
+    }
+
+    public CombatCardInput getCombatCardInput() {
+        return combatCardInput;
     }
 
     public boolean isMapDismissHovered() {
