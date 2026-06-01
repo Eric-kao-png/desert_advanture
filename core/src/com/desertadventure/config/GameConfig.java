@@ -180,6 +180,11 @@ public final class GameConfig {
     /** HP bar above combat entity sprites (width = max(entity width × scale, min width)). */
     public static final float COMBAT_HP_BAR_HEIGHT = 12f;
     public static final float COMBAT_HP_BAR_GAP = 8f;
+    public static final float COMBAT_SHIELD_BAR_HEIGHT = 10f;
+    /** Vertical gap between the top of the HP bar and the bottom of the shield bar. */
+    public static final float COMBAT_SHIELD_BAR_GAP = 4f;
+    /** Shield bar fill at 100% when current shield reaches this value. */
+    public static final float COMBAT_SHIELD_BAR_DISPLAY_MAX = 12f;
     public static final float COMBAT_HP_BAR_WIDTH_SCALE = 2.4f;
     public static final float COMBAT_HP_BAR_MIN_WIDTH = 96f;
     /** Gap between numeric HP label and the left edge of the bar. */
