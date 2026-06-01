@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.Color;
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.combat.model.NegativeStatusType;
 import com.desertadventure.combat.model.PositiveStatusType;
@@ -43,26 +44,16 @@ public final class CombatStatusDrawer {
     }
 
     public static void drawText(SpriteBatch batch, BitmapFont font, CombatEntity entity) {
-        drawColumnText(batch, font, layoutPositivePanel(entity, font), formatPositive(entity),
-                UiColors.COMBAT_STATUS_POSITIVE_TEXT);
-        drawColumnText(batch, font, layoutNegativePanel(entity, font), formatNegative(entity),
-                UiColors.COMBAT_STATUS_NEGATIVE_TEXT);
+        drawStatusColumnText(batch, font, entity, true);
+        drawStatusColumnText(batch, font, entity, false);
     }
 
     static String formatPositive(CombatEntity entity) {
-        PositiveStatusType type = entity.getPositiveStatusType();
-        if (type == null || entity.getPositiveTurnsRemaining() <= 0) {
-            return "";
-        }
-        return formatLine(type.getDisplayLabel(), entity.getPositiveTurnsRemaining());
+        return formatStatusLine(entity.getPositiveStatusType(), entity.getPositiveTurnsRemaining());
     }
 
     static String formatNegative(CombatEntity entity) {
-        NegativeStatusType type = entity.getNegativeStatusType();
-        if (type == null || entity.getNegativeTurnsRemaining() <= 0) {
-            return "";
-        }
-        return formatLine(type.getDisplayLabel(), entity.getNegativeTurnsRemaining());
+        return formatStatusLine(entity.getNegativeStatusType(), entity.getNegativeTurnsRemaining());
     }
 
     static String formatLine(String label, int turns) {
@@ -105,7 +96,7 @@ public final class CombatStatusDrawer {
     }
 
     private static void drawColumnText(
-            SpriteBatch batch, BitmapFont font, PanelBounds panel, String text, com.badlogic.gdx.graphics.Color color) {
+            SpriteBatch batch, BitmapFont font, PanelBounds panel, String text, Color color) {
         if (panel == null || text.isEmpty()) {
             return;
         }
@@ -117,4 +108,27 @@ public final class CombatStatusDrawer {
         font.setColor(color);
         font.draw(batch, text, textX, textY);
     }
+
+    private static String formatStatusLine(PositiveStatusType statusType, int turns) {
+        if (statusType == null || turns <= 0) {
+            return "";
+        }
+        return formatLine(statusType.getDisplayLabel(), turns);
+    }
+
+    private static String formatStatusLine(NegativeStatusType statusType, int turns) {
+        if (statusType == null || turns <= 0) {
+            return "";
+        }
+        return formatLine(statusType.getDisplayLabel(), turns);
+    }
+
+    private static void drawStatusColumnText(
+            SpriteBatch batch, BitmapFont font, CombatEntity entity, boolean positiveColumn) {
+        PanelBounds panel = positiveColumn ? layoutPositivePanel(entity, font) : layoutNegativePanel(entity, font);
+        String text = positiveColumn ? formatPositive(entity) : formatNegative(entity);
+        Color color = positiveColumn ? UiColors.COMBAT_STATUS_POSITIVE_TEXT : UiColors.COMBAT_STATUS_NEGATIVE_TEXT;
+        drawColumnText(batch, font, panel, text, color);
+    }
+
 }

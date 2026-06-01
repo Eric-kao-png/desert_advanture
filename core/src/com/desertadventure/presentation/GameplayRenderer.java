@@ -125,32 +125,11 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
 
     public void renderCombatEntities(List<CombatEntity> entities, SpriteBatch batch, BitmapFont font) {
         shapes.setProjectionMatrix(screenProjection);
-        shapes.begin(ShapeRenderer.ShapeType.Filled);
-        for (CombatEntity entity : entities) {
-            if (!entity.isAlive() && entity.getKind() != CombatEntity.Kind.PLAYER) {
-                continue;
-            }
-            shapes.setColor(CombatEntityColors.forEntity(entity, entity.getHurtFlash() > 0f));
-            shapes.rect(entity.getX() - entity.getWidth() / 2f, entity.getY(),
-                    entity.getWidth(), entity.getHeight());
-        }
-        shapes.end();
-        for (CombatEntity entity : entities) {
-            if (!entity.isAlive() && entity.getKind() != CombatEntity.Kind.PLAYER) {
-                continue;
-            }
-            CombatHpBarDrawer.draw(shapes, entity);
-            CombatStatusDrawer.drawPanels(shapes, entity, font);
-        }
+        drawCombatEntityBodies(entities);
+        drawCombatEntityOverlays(entities, font);
         batch.setProjectionMatrix(screenProjection);
         batch.begin();
-        for (CombatEntity entity : entities) {
-            if (!entity.isAlive() && entity.getKind() != CombatEntity.Kind.PLAYER) {
-                continue;
-            }
-            CombatHpBarDrawer.drawHpText(batch, font, entity);
-            CombatStatusDrawer.drawText(batch, font, entity);
-        }
+        drawCombatEntityTexts(entities, batch, font);
         batch.end();
     }
 
@@ -210,6 +189,42 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
             this.centerX = centerX;
             this.bottomY = bottomY;
         }
+    }
+
+    private void drawCombatEntityBodies(List<CombatEntity> entities) {
+        shapes.begin(ShapeRenderer.ShapeType.Filled);
+        for (CombatEntity entity : entities) {
+            if (!shouldDrawCombatEntity(entity)) {
+                continue;
+            }
+            shapes.setColor(CombatEntityColors.forEntity(entity, entity.getHurtFlash() > 0f));
+            shapes.rect(entity.getX() - entity.getWidth() / 2f, entity.getY(), entity.getWidth(), entity.getHeight());
+        }
+        shapes.end();
+    }
+
+    private void drawCombatEntityOverlays(List<CombatEntity> entities, BitmapFont font) {
+        for (CombatEntity entity : entities) {
+            if (!shouldDrawCombatEntity(entity)) {
+                continue;
+            }
+            CombatHpBarDrawer.draw(shapes, entity);
+            CombatStatusDrawer.drawPanels(shapes, entity, font);
+        }
+    }
+
+    private void drawCombatEntityTexts(List<CombatEntity> entities, SpriteBatch batch, BitmapFont font) {
+        for (CombatEntity entity : entities) {
+            if (!shouldDrawCombatEntity(entity)) {
+                continue;
+            }
+            CombatHpBarDrawer.drawHpText(batch, font, entity);
+            CombatStatusDrawer.drawText(batch, font, entity);
+        }
+    }
+
+    private static boolean shouldDrawCombatEntity(CombatEntity entity) {
+        return entity.isAlive() || entity.getKind() == CombatEntity.Kind.PLAYER;
     }
 
 }

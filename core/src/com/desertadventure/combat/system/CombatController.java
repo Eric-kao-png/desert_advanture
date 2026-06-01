@@ -94,28 +94,8 @@ public class CombatController {
         clearAllSlots();
         selectedInstanceId = null;
         resolveTimer = 0f;
-
-        float playerX = arenaWidth * GameConfig.COMBAT_PLAYER_X_RATIO;
-        player = new CombatEntity(CombatEntity.Kind.PLAYER, playerX, groundY,
-                playerStats.getMaxHp(), playerStats.getAttack(), 0f);
-        player.setHp(playerStats.getHp());
-        player.clearCombatStatus();
-
-        float enemyX = arenaWidth * GameConfig.COMBAT_ENEMY_X_RATIO;
-        if (boss) {
-            float bossHp = GameConfig.BOSS_BASE_HP + distanceBand * GameConfig.BOSS_HP_PER_DISTANCE_BAND;
-            enemyX = arenaWidth * GameConfig.COMBAT_BOSS_X_RATIO;
-            CombatEntity bossEntity = new CombatEntity(CombatEntity.Kind.BOSS, enemyX, groundY, bossHp, 0, 0f);
-            bossEntity.clearCombatStatus();
-            enemies.add(bossEntity);
-        } else {
-            int minHp = GameConfig.ENEMY_HP_MIN;
-            int maxHp = GameConfig.ENEMY_HP_MAX;
-            float enemyHp = ThreadLocalRandom.current().nextInt(minHp, maxHp + 1);
-            CombatEntity enemy = new CombatEntity(CombatEntity.Kind.ENEMY, enemyX, groundY, enemyHp, 0, 0f);
-            enemy.clearCombatStatus();
-            enemies.add(enemy);
-        }
+        player = createPlayerEntity(arenaWidth, groundY);
+        enemies.add(createOpponentEntity(distanceBand, boss, arenaWidth, groundY));
     }
 
     public CombatEntity getPlayer() {
@@ -131,7 +111,7 @@ public class CombatController {
     }
 
     public ActionCardType getEnemyCardForSlot(int slotIndex) {
-        if (slotIndex == ENEMY_SLOT_A || slotIndex == ENEMY_SLOT_B) {
+        if (isEnemySlot(slotIndex)) {
             return ActionCardType.ATTACK;
         }
         return null;
@@ -154,6 +134,10 @@ public class CombatController {
 
     public boolean isPlayerSlot(int slotIndex) {
         return slotIndex == PLAYER_SLOT_A || slotIndex == PLAYER_SLOT_B;
+    }
+
+    private boolean isEnemySlot(int slotIndex) {
+        return slotIndex == ENEMY_SLOT_A || slotIndex == ENEMY_SLOT_B;
     }
 
     /** Cards shown in the hand row (includes cooldown; excludes slot-assigned). */
@@ -256,17 +240,10 @@ public class CombatController {
     }
 
     private void resolveSlot(int slotIndex) {
-        if (slotIndex == ENEMY_SLOT_A || slotIndex == ENEMY_SLOT_B) {
-            dealDamageToPlayer(ActionCardType.ATTACK.getPrimaryValue());
+        if (isEnemySlot(slotIndex)) {
+            resolveEnemySlot();
         } else {
-            Integer instanceId = slotInstanceIds[slotIndex];
-            if (instanceId != null) {
-                ActionCardInstance card = deck.findById(instanceId);
-                if (card != null) {
-                    applyCardEffect(card.getType());
-                    playedThisRound.add(instanceId);
-                }
-            }
+            resolvePlayerSlot(slotIndex);
         }
         if (checkAndEndCombatIfFinished()) {
             applyRoundEndEffects();
@@ -359,7 +336,7 @@ public class CombatController {
             return;
         }
         player.takeDamage(amount);
-        playerStats.setHp(player.getHp());
+        syncPlayerStatsHp();
     }
 
     private void healPlayer(float amount) {
@@ -367,7 +344,7 @@ public class CombatController {
             return;
         }
         player.heal(amount);
-        playerStats.setHp(player.getHp());
+        syncPlayerStatsHp();
     }
 
     private void finishRound() {
@@ -400,7 +377,7 @@ public class CombatController {
         float poisonDamage = GameConfig.CARD_POISON_DAMAGE_PER_ROUND;
         if (player != null) {
             player.applyRoundEndStatusEffects(poisonDamage);
-            playerStats.setHp(player.getHp());
+            syncPlayerStatsHp();
         }
         for (CombatEntity enemy : enemies) {
             enemy.applyRoundEndStatusEffects(poisonDamage);
@@ -448,12 +425,61 @@ public class CombatController {
         return ids;
     }
 
+    private CombatEntity createPlayerEntity(float arenaWidth, float groundY) {
+        float playerX = arenaWidth * GameConfig.COMBAT_PLAYER_X_RATIO;
+        CombatEntity playerEntity = new CombatEntity(
+                CombatEntity.Kind.PLAYER, playerX, groundY, playerStats.getMaxHp(), playerStats.getAttack(), 0f);
+        playerEntity.setHp(playerStats.getHp());
+        playerEntity.clearCombatStatus();
+        return playerEntity;
+    }
+
+    private CombatEntity createOpponentEntity(int distanceBand, boolean boss, float arenaWidth, float groundY) {
+        if (boss) {
+            float bossHp = GameConfig.BOSS_BASE_HP + distanceBand * GameConfig.BOSS_HP_PER_DISTANCE_BAND;
+            float bossX = arenaWidth * GameConfig.COMBAT_BOSS_X_RATIO;
+            CombatEntity bossEntity = new CombatEntity(CombatEntity.Kind.BOSS, bossX, groundY, bossHp, 0, 0f);
+            bossEntity.clearCombatStatus();
+            return bossEntity;
+        }
+
+        float enemyX = arenaWidth * GameConfig.COMBAT_ENEMY_X_RATIO;
+        int minHp = GameConfig.ENEMY_HP_MIN;
+        int maxHp = GameConfig.ENEMY_HP_MAX;
+        float enemyHp = ThreadLocalRandom.current().nextInt(minHp, maxHp + 1);
+        CombatEntity enemy = new CombatEntity(CombatEntity.Kind.ENEMY, enemyX, groundY, enemyHp, 0, 0f);
+        enemy.clearCombatStatus();
+        return enemy;
+    }
+
+    private void resolveEnemySlot() {
+        dealDamageToPlayer(ActionCardType.ATTACK.getPrimaryValue());
+    }
+
+    private void resolvePlayerSlot(int slotIndex) {
+        Integer instanceId = slotInstanceIds[slotIndex];
+        if (instanceId == null) {
+            return;
+        }
+        ActionCardInstance card = deck.findById(instanceId);
+        if (card == null) {
+            return;
+        }
+        applyCardEffect(card.getType());
+        playedThisRound.add(instanceId);
+    }
+
+    private void syncPlayerStatsHp() {
+        float hp = player != null ? player.getHp() : 0f;
+        playerStats.setHp(Math.max(0f, hp));
+    }
+
     private void endCombat(CombatOutcome result) {
         if (combatEnded) {
             return;
         }
         combatEnded = true;
-        playerStats.setHp(Math.max(0f, player != null ? player.getHp() : 0f));
+        syncPlayerStatsHp();
         if (onCombatEnd != null) {
             onCombatEnd.accept(result);
         }

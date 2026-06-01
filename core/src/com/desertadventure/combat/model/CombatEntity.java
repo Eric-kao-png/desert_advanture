@@ -34,6 +34,10 @@ public class CombatEntity {
         this.hp = maxHp;
         this.attack = attack;
         this.speed = speed;
+        applySizeByKind(kind);
+    }
+
+    private void applySizeByKind(Kind kind) {
         switch (kind) {
             case PLAYER -> {
                 width = GameConfig.PLAYER_WIDTH;
@@ -185,12 +189,7 @@ public class CombatEntity {
             hurtFlash = 0.15f;
             return;
         }
-        hp -= amount;
-        hurtFlash = 0.15f;
-        if (hp <= 0f) {
-            hp = 0f;
-            alive = false;
-        }
+        applyDirectDamage(amount);
     }
 
     /** Status tick damage; does not consume shield. */
@@ -198,12 +197,7 @@ public class CombatEntity {
         if (!alive || amount <= 0f) {
             return;
         }
-        hp -= amount;
-        hurtFlash = 0.15f;
-        if (hp <= 0f) {
-            hp = 0f;
-            alive = false;
-        }
+        applyDirectDamage(amount);
     }
 
     /**
@@ -264,5 +258,14 @@ public class CombatEntity {
 
     public void moveBy(float dx) {
         x += dx;
+    }
+
+    private void applyDirectDamage(float amount) {
+        hp -= amount;
+        hurtFlash = 0.15f;
+        if (hp <= 0f) {
+            hp = 0f;
+            alive = false;
+        }
     }
 }

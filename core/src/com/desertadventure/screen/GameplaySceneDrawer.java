@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.desertadventure.DesertAdventure;
 import com.desertadventure.combat.model.CombatEntity;
+import com.desertadventure.combat.system.CombatController;
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.map.view.MapOverlayLayout;
 import com.desertadventure.presentation.GameViewport;
@@ -108,16 +109,15 @@ final class GameplaySceneDrawer {
         renderer.drawParallaxFloor(batch, blend);
         batch.end();
 
-        CombatEntity player = session.getCombatController().getPlayer();
+        CombatController combat = session.getCombatController();
+        CombatEntity player = combat.getPlayer();
         if (player == null) {
             return;
         }
-        List<CombatEntity> entities = new ArrayList<>();
-        entities.add(player);
-        entities.addAll(session.getCombatController().getEnemies());
+        List<CombatEntity> entities = buildCombatEntities(combat, player);
         renderer.renderCombatEntities(entities, batch, uiFont);
-        renderer.renderCombatHand(session.getCombatController(), layout, batch, uiFont);
-        renderer.renderCombatSlotsAndControls(session.getCombatController(), layout, batch, uiFont);
+        renderer.renderCombatHand(combat, layout, batch, uiFont);
+        renderer.renderCombatSlotsAndControls(combat, layout, batch, uiFont);
     }
 
     private void drawStorm(SpriteBatch batch, float delta) {
@@ -132,5 +132,12 @@ final class GameplaySceneDrawer {
         renderer.drawParallaxFloor(batch, blend);
         batch.end();
         renderer.renderExploreForeground(session, running, blend, batch, uiFont);
+    }
+
+    private static List<CombatEntity> buildCombatEntities(CombatController combat, CombatEntity player) {
+        List<CombatEntity> entities = new ArrayList<>();
+        entities.add(player);
+        entities.addAll(combat.getEnemies());
+        return entities;
     }
 }
