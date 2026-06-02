@@ -41,9 +41,15 @@ public final class TileInteractionHandler {
 
     private static void handleEvent(Tile tile, boolean duringMove, TileInteractionContext ctx) {
         String eventId = tile.getEventId();
-        if (eventId != null && ctx.permanentProgress.isEventCompleted(eventId)) {
+        if (eventId == null) {
+            ctx.finish(duringMove);
+            return;
+        }
+        if (ctx.permanentProgress.isEventCompleted(eventId)) {
             ctx.callbacks.setPendingMessage(GameMessages.RUINS_ALREADY_DONE);
-        } else if (eventId != null) {
+            ctx.finish(duringMove);
+            return;
+        } else {
             ctx.eventTracker.completeEvent(eventId);
             ctx.permanentProgress.save();
             ctx.callbacks.setPendingMessage(GameMessages.requiredEventCompleted(eventId));

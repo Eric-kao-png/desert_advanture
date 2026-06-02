@@ -157,6 +157,7 @@ public final class GameConfig {
     public static final float MAP_PLAYER_MARKER_INSET = 2f;
     public static final float MAP_PLAYER_MARKER_SHRINK = 5f;
 
+    /** Logical player size used for bounds / layout (legacy blue rectangle size). */
     public static final float PLAYER_WIDTH = 48f;
     public static final float PLAYER_HEIGHT = 72f;
     public static final float ENEMY_WIDTH = 40f;
@@ -261,7 +262,10 @@ public final class GameConfig {
     public static final float COMBAT_HAND_SCROLL_THRESHOLD = 10f;
     public static final float COMBAT_CONFIRM_WIDTH = 130f;
     public static final float COMBAT_CONFIRM_HEIGHT = 40f;
-    public static final float COMBAT_RESOLVE_SLOT_SECONDS = 0.35f;
+    /** Time between slot resolves (baseline; may be effectively extended by attack animation gating). */
+    public static final float COMBAT_RESOLVE_SLOT_SECONDS = 0.45f;
+    /** Player attack animation duration used for resolve gating and sprite playback. */
+    public static final float COMBAT_PLAYER_ATTACK_ANIM_SECONDS = 0.22f;
     public static final float COMBAT_LAYOUT_BLEND_SECONDS = 0.4f;
     public static final int VICTORY_EXPERIENCE = 20;
     public static final int ITEM_EXPERIENCE = 10;

@@ -115,7 +115,7 @@ final class GameplaySceneDrawer {
             return;
         }
         List<CombatEntity> entities = buildCombatEntities(combat, player);
-        renderer.renderCombatEntities(entities, batch, uiFont);
+        renderer.renderCombatEntities(combat, entities, batch, uiFont);
         renderer.renderCombatHand(combat, layout, batch, uiFont);
         renderer.renderCombatSlotsAndControls(combat, layout, batch, uiFont);
     }

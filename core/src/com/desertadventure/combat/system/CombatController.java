@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 /** Turn-based 1v1 card combat (PLANNING → RESOLVING slots 1–4 → win/loss / next round). */
 public class CombatController {
     private static final int SLOT_COUNT = 4;
+    private static final int FIRST_SLOT_INDEX = 0;
 
     private final PlayerStats playerStats;
     private CombatEntity player;
@@ -41,6 +42,11 @@ public class CombatController {
     private boolean roundEndCooldownsApplied;
     private Integer selectedInstanceId;
     private final CardEffectResolver effectResolver = new CardEffectResolver();
+
+    // --- Player animation state (presentation hint) ---
+    private float playerAttackTimer;
+    private CombatOutcome pendingCombatEndOutcome;
+    private boolean pendingCombatEndNeedsRoundCleanup;
 
     /** Which two slots the player may use this round (0-based indices). */
     private int playerSlotA = 0;
@@ -81,23 +87,7 @@ public class CombatController {
             float groundY,
             ActionCardDeck actionDeck,
             Consumer<CombatOutcome> onEnd) {
-        this.bossFight = boss;
-        this.arenaWidth = arenaWidth;
-        this.groundY = groundY;
-        this.deck = actionDeck;
-        this.onCombatEnd = onEnd;
-        enemies.clear();
-        combatEnded = false;
-        phase = CombatPhase.PLANNING;
-        roundNumber = 1;
-        playedThisRound.clear();
-        roundEndCooldownsApplied = false;
-        clearAllSlots();
-        selectedInstanceId = null;
-        resolveTimer = 0f;
-        player = createPlayerEntity(arenaWidth, groundY);
-        enemies.add(createOpponentEntity(distanceBand, boss, arenaWidth, groundY));
-        rollPlayerSlotsForPlanning();
+        initializeCombatSession(distanceBand, boss, arenaWidth, groundY, actionDeck, onEnd);
     }
 
     public CombatEntity getPlayer() {
@@ -120,7 +110,7 @@ public class CombatController {
     }
 
     public Integer getSlotInstanceId(int slotIndex) {
-        if (slotIndex < 0 || slotIndex >= SLOT_COUNT) {
+        if (!isValidSlotIndex(slotIndex)) {
             return null;
         }
         return slotInstanceIds[slotIndex];
@@ -171,10 +161,18 @@ public class CombatController {
     /** Assignable hand cards only (not on cooldown, not in a slot). */
     public List<ActionCardInstance> getHandCandidates() {
         List<ActionCardInstance> hand = new ArrayList<>();
-        for (ActionCardInstance instance : getVisibleHand()) {
-            if (canAssignCard(instance)) {
-                hand.add(instance);
+        if (deck == null) {
+            return hand;
+        }
+        Set<Integer> assigned = assignedInstanceIds();
+        for (ActionCardInstance instance : deck.getInstances()) {
+            if (instance == null || instance.isOnCooldown()) {
+                continue;
             }
+            if (assigned.contains(instance.getInstanceId())) {
+                continue;
+            }
+            hand.add(instance);
         }
         return hand;
     }
@@ -226,7 +224,27 @@ public class CombatController {
     }
 
     public void update(float delta) {
-        if (!isActive() || phase != CombatPhase.RESOLVING) {
+        if (!isActive()) {
+            return;
+        }
+        if (playerAttackTimer > 0f) {
+            playerAttackTimer = Math.max(0f, playerAttackTimer - delta);
+        }
+        if (pendingCombatEndOutcome != null) {
+            // Let attack animation finish before ending combat (prevents instant victory pop).
+            if (playerAttackTimer <= 0f) {
+                if (pendingCombatEndNeedsRoundCleanup) {
+                    applyRoundEndEffects();
+                    clearAllSlots();
+                }
+                CombatOutcome outcome = pendingCombatEndOutcome;
+                pendingCombatEndOutcome = null;
+                pendingCombatEndNeedsRoundCleanup = false;
+                endCombat(outcome);
+            }
+            return;
+        }
+        if (phase != CombatPhase.RESOLVING) {
             return;
         }
         resolveTimer -= delta;
@@ -251,24 +269,29 @@ public class CombatController {
         } else {
             resolvePlayerSlot(slotIndex);
         }
-        if (checkAndEndCombatIfFinished()) {
+        CombatOutcome outcome = checkCombatOutcomeIfFinished();
+        if (outcome != null) {
+            if (shouldDelayCombatEndForPlayerAttack()) {
+                pendingCombatEndOutcome = outcome;
+                pendingCombatEndNeedsRoundCleanup = true;
+                return;
+            }
+            endCombat(outcome);
             applyRoundEndEffects();
             clearAllSlots();
         }
     }
 
-    /** Returns true if combat ended (player defeated or all enemies defeated). */
-    private boolean checkAndEndCombatIfFinished() {
+    /** Returns outcome if combat finished (player defeated or all enemies defeated). */
+    private CombatOutcome checkCombatOutcomeIfFinished() {
         if (player == null || !player.isAlive()) {
-            endCombat(CombatOutcome.DEFEAT);
-            return true;
+            return CombatOutcome.DEFEAT;
         }
         enemies.removeIf(enemy -> !enemy.isAlive());
         if (enemies.isEmpty()) {
-            endCombat(bossFight ? CombatOutcome.BOSS_VICTORY : CombatOutcome.VICTORY);
-            return true;
+            return bossFight ? CombatOutcome.BOSS_VICTORY : CombatOutcome.VICTORY;
         }
-        return false;
+        return null;
     }
 
     private void applyCardEffect(ActionCardType type) {
@@ -334,7 +357,14 @@ public class CombatController {
         applyRoundEndEffects();
         clearAllSlots();
 
-        if (checkAndEndCombatIfFinished()) {
+        CombatOutcome outcome = checkCombatOutcomeIfFinished();
+        if (outcome != null) {
+            if (shouldDelayCombatEndForPlayerAttack()) {
+                pendingCombatEndOutcome = outcome;
+                pendingCombatEndNeedsRoundCleanup = false; // already cleaned up above
+                return;
+            }
+            endCombat(outcome);
             return;
         }
 
@@ -438,6 +468,38 @@ public class CombatController {
         return ids;
     }
 
+    private boolean isValidSlotIndex(int slotIndex) {
+        return slotIndex >= FIRST_SLOT_INDEX && slotIndex < SLOT_COUNT;
+    }
+
+    private void initializeCombatSession(
+            int distanceBand,
+            boolean boss,
+            float arenaWidth,
+            float groundY,
+            ActionCardDeck actionDeck,
+            Consumer<CombatOutcome> onEnd) {
+        this.bossFight = boss;
+        this.arenaWidth = arenaWidth;
+        this.groundY = groundY;
+        this.deck = actionDeck;
+        this.onCombatEnd = onEnd;
+
+        enemies.clear();
+        combatEnded = false;
+        phase = CombatPhase.PLANNING;
+        roundNumber = 1;
+        playedThisRound.clear();
+        roundEndCooldownsApplied = false;
+        clearAllSlots();
+        selectedInstanceId = null;
+        resolveTimer = 0f;
+
+        player = createPlayerEntity(arenaWidth, groundY);
+        enemies.add(createOpponentEntity(distanceBand, boss, arenaWidth, groundY));
+        rollPlayerSlotsForPlanning();
+    }
+
     private CombatEntity createPlayerEntity(float arenaWidth, float groundY) {
         float playerX = arenaWidth * GameConfig.COMBAT_PLAYER_X_RATIO;
         CombatEntity playerEntity = new CombatEntity(
@@ -478,8 +540,33 @@ public class CombatController {
         if (card == null) {
             return;
         }
+        if (card.getType().getCategory() == ActionCardCategory.ATTACK) {
+            triggerPlayerAttackAnimation();
+        }
         applyCardEffect(card.getType());
         playedThisRound.add(instanceId);
+    }
+
+    public boolean isPlayerAttacking() {
+        return playerAttackTimer > 0f;
+    }
+
+    /** Normalized progress for the current attack animation (0..1). */
+    public float getPlayerAttackProgress(float attackDurationSeconds) {
+        if (attackDurationSeconds <= 0f) {
+            return 1f;
+        }
+        float remaining = Math.max(0f, Math.min(attackDurationSeconds, playerAttackTimer));
+        return 1f - (remaining / attackDurationSeconds);
+    }
+
+    private void triggerPlayerAttackAnimation() {
+        playerAttackTimer = Math.max(playerAttackTimer, GameConfig.COMBAT_PLAYER_ATTACK_ANIM_SECONDS);
+    }
+
+    private boolean shouldDelayCombatEndForPlayerAttack() {
+        // Only delay if player is currently playing the attack animation.
+        return playerAttackTimer > 0f;
     }
 
     private void syncPlayerStatsHp() {

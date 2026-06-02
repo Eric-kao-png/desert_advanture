@@ -35,7 +35,7 @@ final class CardEffectResolver {
 
     void resolve(CombatContext ctx, ActionCardType type) {
         CardDef def = CardDatabase.getRequired().getRequired(type.name());
-        boolean matchedConditional = false;
+        boolean matchedAnyConditional = false;
         for (CardEffectStepDef step : def.effects) {
             if (step == null) {
                 continue;
@@ -44,12 +44,12 @@ final class CardEffectResolver {
                 if (!matches(ctx, step.when)) {
                     continue;
                 }
-                matchedConditional = true;
+                matchedAnyConditional = true;
                 applyStep(ctx, step);
                 return; // first matching conditional wins (fallback steps come after)
             }
             // unconditional: only execute if no prior conditional matched
-            if (!matchedConditional) {
+            if (!matchedAnyConditional) {
                 applyStep(ctx, step);
             }
         }

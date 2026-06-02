@@ -24,10 +24,7 @@ public final class CombatCardInput {
 
     public void handle(GameSession session, GameViewport viewport, float delta) {
         if (!session.getMode().isCombat()) {
-            layout.clearHover();
-            layout.resetHandScroll();
-            resetHandScrollGesture();
-            pointerWasDown = false;
+            resetNonCombatState();
             return;
         }
         var combat = session.getCombatController();
@@ -67,6 +64,13 @@ public final class CombatCardInput {
         pointerWasDown = pointerDown;
         layout.rebuildHand(combat);
         layout.updateHover(worldX, worldY);
+    }
+
+    private void resetNonCombatState() {
+        layout.clearHover();
+        layout.resetHandScroll();
+        resetHandScrollGesture();
+        pointerWasDown = false;
     }
 
     private void beginHandScrollGesture(float worldX, float worldY) {

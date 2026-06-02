@@ -68,7 +68,7 @@ public class GameSession implements ExplorationCallbacks {
         resetToSpawn();
         stepBudget.resetForCycle(playerStats);
         actionCardDeck.resetToDefault();
-        map.revealAround(getPlayerGridPos());
+        revealAroundPlayer();
     }
 
     private static void initializeCardsIfNeeded() {
@@ -84,7 +84,7 @@ public class GameSession implements ExplorationCallbacks {
         map.resetCycleState();
         resetToSpawn();
         stepBudget.resetForCycle(playerStats);
-        map.revealAround(getPlayerGridPos());
+        revealAroundPlayer();
         mode = GameplayMode.EXPLORE_IDLE;
         messageFeed.clear();
         inventory.clear();
@@ -96,6 +96,10 @@ public class GameSession implements ExplorationCallbacks {
         GridPos spawn = map.getSpawnPosition();
         playerX = spawn.x;
         playerY = spawn.y;
+    }
+
+    private void revealAroundPlayer() {
+        map.revealAround(getPlayerGridPos());
     }
 
     public GameMap getMap() {
@@ -279,7 +283,7 @@ public class GameSession implements ExplorationCallbacks {
     public void completeStorm() {
         stormReset.applyCycleReset(map, playerStats, stepBudget);
         resetToSpawn();
-        map.revealAround(getPlayerGridPos());
+        revealAroundPlayer();
         permanentProgress.save();
         mode = GameplayMode.EXPLORE_IDLE;
         setPendingMessage(GameMessages.SANDSTORM_RETURN);
