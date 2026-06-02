@@ -12,7 +12,7 @@
       ]
     },
     {
-      "id": "STRONG_ATTACK",
+      "id": "SWIFT_STRIKE",
       "name": "Swift Strike",
       "category": "OFFENSE",
       "cooldown": 2,
@@ -42,7 +42,7 @@
       ]
     },
     {
-      "id": "FULL_POWER_ATTACK",
+      "id": "ASSAULT",
       "name": "Assault",
       "category": "OFFENSE",
       "cooldown": 3,
@@ -67,7 +67,7 @@
       ]
     },
     {
-      "id": "THRUST",
+      "id": "AMBUSH",
       "name": "Ambush",
       "category": "OFFENSE",
       "cooldown": 3,
@@ -82,13 +82,71 @@
       ]
     },
     {
-      "id": "POISON",
-      "name": "Poison magic",
+      "id": "POISON_MAGIC",
+      "name": "Poison Magic",
       "category": "UTILITY",
       "cooldown": 2,
       "targeting": "ENEMY",
       "effects": [
         { "template": "APPLY_NEGATIVE_STATUS", "status": "POISON", "turns": 2 }
+      ]
+    },
+    {
+      "id": "CLAW",
+      "name": "Claw",
+      "category": "OFFENSE",
+      "cooldown": 2,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "DEAL_DAMAGE", "amount": 3 }
+      ]
+    },
+    {
+      "id": "CHARGED_SLASH",
+      "name": "Charged Slash",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        {
+          "when": { "type": "SLOT_INDEX_EQUALS", "slotIndex": 3 },
+          "template": "DEAL_DAMAGE",
+          "amount": 6
+        },
+        { "template": "DEAL_DAMAGE", "amount": 3 }
+      ]
+    },
+    {
+      "id": "BLADE",
+      "name": "Blade",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "DEAL_DAMAGE", "amount": 3 },
+        { "template": "APPLY_NEGATIVE_STATUS", "status": "BLEED", "turns": 2 }
+      ]
+    },
+    {
+      "id": "GREAT_BLADE",
+      "name": "Great Blade",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "DEAL_DAMAGE", "amount": 3 },
+        { "template": "APPLY_NEGATIVE_STATUS", "status": "FEAR", "turns": 2 }
+      ]
+    },
+    {
+      "id": "VAMPIRISM",
+      "name": "Vampirism",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "DEAL_DAMAGE", "amount": 3 },
+        { "template": "HEAL_SELF", "amount": 3 }
       ]
     }
   ]

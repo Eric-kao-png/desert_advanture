@@ -350,13 +350,14 @@ public final class CombatCardRenderer {
     private static Color colorFor(ActionCardType type) {
         return switch (type) {
             case ATTACK -> CARD_ATTACK;
-            case STRONG_ATTACK -> CARD_STRONG;
+            case SWIFT_STRIKE -> CARD_STRONG;
             case HEAL -> CARD_HEAL;
             case SHIELD -> CARD_SHIELD;
-            case FULL_POWER_ATTACK -> CARD_FULL_POWER;
+            case ASSAULT -> CARD_FULL_POWER;
             case LIFE_MAGIC -> CARD_LIFE_MAGIC;
-            case THRUST -> CARD_THRUST;
-            case POISON -> CARD_POISON;
+            case AMBUSH -> CARD_THRUST;
+            case POISON_MAGIC -> CARD_POISON;
+            case CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM -> CARD_STRONG;
         };
     }
 

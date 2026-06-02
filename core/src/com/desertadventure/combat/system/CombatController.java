@@ -49,6 +49,11 @@ public class CombatController {
     private Integer selectedInstanceId;
     private final CardEffectResolver effectResolver = new CardEffectResolver();
 
+    enum DamageSource {
+        OFFENSE_CARD,
+        OTHER
+    }
+
     // --- Slot rolling (domain rule, swappable) ---
     private final PlayerSlotRoller playerSlotRoller;
 
@@ -320,7 +325,7 @@ public class CombatController {
     }
 
     private void applyCardEffect(ActionCardType type) {
-        CombatContext ctx = new CombatContext(this, roundNumber, playedThisRound);
+        CombatContext ctx = new CombatContext(this, roundNumber, playedThisRound, resolvingSlotIndex);
         effectResolver.resolve(ctx, type);
     }
 
@@ -341,9 +346,19 @@ public class CombatController {
     }
 
     void dealDamageToEnemy(float amount) {
+        dealDamageToEnemy(amount, DamageSource.OFFENSE_CARD);
+    }
+
+    void dealDamageToEnemy(float amount, DamageSource source) {
         for (CombatEntity enemy : enemies) {
             if (enemy.isAlive()) {
-                enemy.takeDamage(amount);
+                float finalAmount = amount;
+                if (source == DamageSource.OFFENSE_CARD
+                        && enemy.getNegativeStatusType() == NegativeStatusType.FEAR
+                        && enemy.getNegativeTurnsRemaining() > 0) {
+                    finalAmount += 1f;
+                }
+                enemy.takeDamage(finalAmount);
             }
         }
     }
@@ -512,9 +527,8 @@ public class CombatController {
         }
 
         float enemyX = arenaWidth * CombatConfig.COMBAT_ENEMY_X_RATIO;
-        int minHp = CombatConfig.ENEMY_HP_MIN;
-        int maxHp = CombatConfig.ENEMY_HP_MAX;
-        float enemyHp = ThreadLocalRandom.current().nextInt(minHp, maxHp + 1);
+        // Test-mode tweak: normal enemies use fixed HP=7; keep boss HP logic untouched.
+        float enemyHp = 7f;
         CombatEntity enemy = new CombatEntity(CombatEntity.Kind.ENEMY, enemyX, groundY, enemyHp, 0, 0f);
         enemy.clearCombatStatus();
         return enemy;

@@ -14,14 +14,8 @@ public final class ActionCardDeck {
         nextInstanceId = 1;
         addCard(ActionCardType.ATTACK);
         addCard(ActionCardType.ATTACK);
-        addCard(ActionCardType.STRONG_ATTACK);
+        addCard(ActionCardType.SWIFT_STRIKE);
         addCard(ActionCardType.HEAL);
-        // Extra cards for testing new mechanics.
-        addCard(ActionCardType.SHIELD);
-        addCard(ActionCardType.FULL_POWER_ATTACK);
-        addCard(ActionCardType.LIFE_MAGIC);
-        addCard(ActionCardType.THRUST);
-        addCard(ActionCardType.POISON);
     }
 
     public List<ActionCardInstance> getInstances() {

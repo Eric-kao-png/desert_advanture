@@ -33,6 +33,8 @@ final class CardEffectResolver {
                     when.category != null ? when.category : CardCategoryId.UTILITY);
             return ctx.turnHasResolvedCategory(category);
         });
+        registerCondition(ConditionType.SLOT_INDEX_EQUALS,
+                (ctx, when) -> when.slotIndex != null && ctx.resolvingSlotIndex() == when.slotIndex);
     }
 
     void resolve(CombatContext ctx, ActionCardType type) {

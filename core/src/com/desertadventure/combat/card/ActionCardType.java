@@ -5,13 +5,18 @@ import com.desertadventure.combat.card.data.CardDef;
 
 public enum ActionCardType {
     ATTACK,
-    STRONG_ATTACK,
+    SWIFT_STRIKE,
     HEAL,
     SHIELD,
-    FULL_POWER_ATTACK,
+    ASSAULT,
     LIFE_MAGIC,
-    THRUST,
-    POISON;
+    AMBUSH,
+    POISON_MAGIC,
+    CLAW,
+    CHARGED_SLASH,
+    BLADE,
+    GREAT_BLADE,
+    VAMPIRISM;
 
     public String getDisplayName() {
         return def().name;
@@ -20,10 +25,10 @@ public enum ActionCardType {
     public int getPrimaryValue() {
         CardDef def = def();
         return switch (this) {
-            case ATTACK, STRONG_ATTACK, HEAL, SHIELD -> def.firstAmount();
-            case FULL_POWER_ATTACK -> def.minAmount();
-            case THRUST -> def.minAmount();
-            case POISON -> def.firstTurns();
+            case ATTACK, SWIFT_STRIKE, HEAL, SHIELD, CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM -> def.firstAmount();
+            case ASSAULT -> def.minAmount();
+            case AMBUSH -> def.minAmount();
+            case POISON_MAGIC -> def.firstTurns();
             case LIFE_MAGIC -> 0;
         };
     }
@@ -31,9 +36,10 @@ public enum ActionCardType {
     public int getSecondaryValue() {
         CardDef def = def();
         return switch (this) {
-            case FULL_POWER_ATTACK -> def.maxAmount();
-            case THRUST -> def.maxAmount();
-            case POISON -> def.firstAmount();
+            case ASSAULT -> def.maxAmount();
+            case AMBUSH -> def.maxAmount();
+            case POISON_MAGIC -> def.firstAmount();
+            case BLADE, GREAT_BLADE -> def.firstTurns();
             default -> 0;
         };
     }
@@ -56,13 +62,13 @@ public enum ActionCardType {
     public ActionCardMechanic getMechanic() {
         // Legacy field kept for UI and any switch-based fallbacks; resolver uses JSON templates.
         return switch (this) {
-            case ATTACK, STRONG_ATTACK -> ActionCardMechanic.DAMAGE;
+            case ATTACK, SWIFT_STRIKE, CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM -> ActionCardMechanic.DAMAGE;
             case HEAL -> ActionCardMechanic.HEAL;
             case SHIELD -> ActionCardMechanic.SHIELD;
-            case FULL_POWER_ATTACK -> ActionCardMechanic.FULL_POWER_ATTACK;
+            case ASSAULT -> ActionCardMechanic.FULL_POWER_ATTACK;
             case LIFE_MAGIC -> ActionCardMechanic.HALVE_ENEMY_HP;
-            case THRUST -> ActionCardMechanic.THRUST;
-            case POISON -> ActionCardMechanic.POISON;
+            case AMBUSH -> ActionCardMechanic.THRUST;
+            case POISON_MAGIC -> ActionCardMechanic.POISON;
         };
     }
 

@@ -6,12 +6,12 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class ActionCardRewards {
     private static final ActionCardType[] VICTORY_LOOT = {
             ActionCardType.HEAL,
-            ActionCardType.STRONG_ATTACK,
+            ActionCardType.SWIFT_STRIKE,
             ActionCardType.SHIELD,
-            ActionCardType.FULL_POWER_ATTACK,
+            ActionCardType.ASSAULT,
             ActionCardType.LIFE_MAGIC,
-            ActionCardType.THRUST,
-            ActionCardType.POISON,
+            ActionCardType.AMBUSH,
+            ActionCardType.POISON_MAGIC,
     };
 
     private ActionCardRewards() {

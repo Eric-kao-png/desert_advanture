@@ -40,7 +40,7 @@ public class CombatFlowIntegrationTest {
         CombatController combat = new CombatController(stats);
 
         ActionCardDeck deck = new ActionCardDeck();
-        deck.addCard(ActionCardType.POISON);
+        deck.addCard(ActionCardType.POISON_MAGIC);
 
         // Use boss mode to avoid normal-enemy maxHp clamping (normal enemies roll maxHp 1..3).
         combat.startCombat(0, true, 800f, 120f, deck, ignored -> {
@@ -49,7 +49,7 @@ public class CombatFlowIntegrationTest {
         // Ensure enemy survives the round so we can observe round-end tick.
         combat.getEnemies().get(0).setHp(3f);
 
-        int poisonId = findFirstInstanceId(deck, ActionCardType.POISON);
+        int poisonId = findFirstInstanceId(deck, ActionCardType.POISON_MAGIC);
         combat.assignToPlayerSlot(firstPlayerSlot(combat), poisonId);
         combat.confirmPlanning();
 
@@ -128,6 +128,95 @@ public class CombatFlowIntegrationTest {
         assertEquals(0, combat.getEnemies().get(0).getNegativeTurnsRemaining());
     }
 
+    @Test
+    void bleed_ticksForRemainingTurnsValue_andDecrementsUntilCleared() {
+        PlayerStats stats = new PlayerStats();
+        CombatController combat = new CombatController(stats);
+
+        ActionCardDeck deck = new ActionCardDeck();
+        deck.addCard(ActionCardType.BLADE);
+
+        combat.startCombat(0, true, 800f, 120f, deck, ignored -> {
+        });
+
+        var enemy = combat.getEnemies().get(0);
+        enemy.setHp(10f);
+
+        int bladeId = findFirstInstanceId(deck, ActionCardType.BLADE);
+        combat.assignToPlayerSlot(firstPlayerSlot(combat), bladeId);
+        combat.confirmPlanning();
+
+        // Round 1: blade deals 3; end-of-round bleed ticks for 2.
+        resolveFullRound(combat);
+        assertEquals(5f, enemy.getHp(), 0.001f, "bleed should tick for 2 at end of round 1");
+        assertEquals(com.desertadventure.combat.model.NegativeStatusType.BLEED, enemy.getNegativeStatusType());
+        assertEquals(1, enemy.getNegativeTurnsRemaining(), "bleed turns should decrement at end of round 1");
+
+        // Round 2: no further effects; end-of-round bleed ticks for 1 then clears.
+        combat.confirmPlanning();
+        resolveFullRound(combat);
+        assertEquals(4f, enemy.getHp(), 0.001f, "bleed should tick for 1 at end of round 2");
+        assertNull(enemy.getNegativeStatusType(), "bleed should clear after ticking down to 0");
+        assertEquals(0, enemy.getNegativeTurnsRemaining());
+    }
+
+    @Test
+    void fear_addsPlus1Damage_whenHitByOffenseCardDamage() {
+        PlayerStats stats = new PlayerStats();
+        CombatController combat = new CombatController(stats);
+
+        ActionCardDeck deck = new ActionCardDeck();
+        deck.addCard(ActionCardType.GREAT_BLADE);
+        deck.addCard(ActionCardType.ATTACK);
+
+        combat.startCombat(0, true, 800f, 120f, deck, ignored -> {
+        });
+
+        var enemy = combat.getEnemies().get(0);
+        enemy.setHp(10f);
+
+        int greatBladeId = findFirstInstanceId(deck, ActionCardType.GREAT_BLADE);
+        combat.assignToPlayerSlot(firstPlayerSlot(combat), greatBladeId);
+        combat.confirmPlanning();
+        resolveFullRound(combat);
+
+        assertEquals(7f, enemy.getHp(), 0.001f, "great blade should deal 3");
+        assertEquals(com.desertadventure.combat.model.NegativeStatusType.FEAR, enemy.getNegativeStatusType());
+        assertEquals(1, enemy.getNegativeTurnsRemaining(), "duration should tick at round end");
+
+        int attackId = findFirstInstanceId(deck, ActionCardType.ATTACK);
+        combat.assignToPlayerSlot(firstPlayerSlot(combat), attackId);
+        combat.confirmPlanning();
+        resolveFullRound(combat);
+
+        // ATTACK normally deals 2; FEAR adds +1 for offense-card damage => 3
+        assertEquals(4f, enemy.getHp(), 0.001f, "fear should add +1 damage when hit by offense card");
+    }
+
+    @Test
+    void chargedSlash_slot4Condition_deals6WhenResolvedInSlotIndex3() {
+        PlayerStats stats = new PlayerStats();
+        // Force slot index 3 (slot 4) to be a player slot for this round.
+        SequencedPlanRoller roller = new SequencedPlanRoller(new com.desertadventure.combat.system.slots.PlayerSlotPlan(3, 0));
+        CombatController combat = new CombatController(stats, roller);
+
+        ActionCardDeck deck = new ActionCardDeck();
+        deck.addCard(ActionCardType.CHARGED_SLASH);
+
+        combat.startCombat(0, true, 800f, 120f, deck, ignored -> {
+        });
+
+        var enemy = combat.getEnemies().get(0);
+        enemy.setHp(10f);
+
+        int id = findFirstInstanceId(deck, ActionCardType.CHARGED_SLASH);
+        combat.assignToPlayerSlot(3, id);
+        combat.confirmPlanning();
+        resolveFullRound(combat);
+
+        assertEquals(4f, enemy.getHp(), 0.001f, "charged slash in slot 4 should deal 6");
+    }
+
     private static void resolveFullRound(CombatController combat) {
         // Each update resolves at most one slot; run enough updates for 4 slots.
         for (int i = 0; i < 4; i++) {
@@ -157,7 +246,10 @@ public class CombatFlowIntegrationTest {
     private static Map<String, CardDef> minimalDefs() {
         Map<String, CardDef> defs = new HashMap<>();
         defs.put("ATTACK", damageDef("ATTACK", "Attack", 1, 2));
-        defs.put("POISON", poisonDef());
+        defs.put("POISON_MAGIC", poisonDef());
+        defs.put("BLADE", bladeDef());
+        defs.put("GREAT_BLADE", greatBladeDef());
+        defs.put("CHARGED_SLASH", chargedSlashDef());
         return defs;
     }
 
@@ -177,8 +269,8 @@ public class CombatFlowIntegrationTest {
 
     private static CardDef poisonDef() {
         CardDef def = new CardDef();
-        def.id = "POISON";
-        def.name = "Poison";
+        def.id = "POISON_MAGIC";
+        def.name = "Poison Magic";
         def.category = CardCategoryId.UTILITY;
         def.cooldown = 2;
         def.targeting = CardTargetingId.ENEMY;
@@ -188,6 +280,89 @@ public class CombatFlowIntegrationTest {
         step.turns = 2;
         def.effects = List.of(step);
         return def;
+    }
+
+    private static CardDef bladeDef() {
+        CardDef def = new CardDef();
+        def.id = "BLADE";
+        def.name = "Blade";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectStepDef damage = new CardEffectStepDef();
+        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        damage.amount = 3;
+
+        CardEffectStepDef status = new CardEffectStepDef();
+        status.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
+        status.status = com.desertadventure.combat.model.NegativeStatusType.BLEED;
+        status.turns = 2;
+
+        def.effects = List.of(damage, status);
+        return def;
+    }
+
+    private static CardDef greatBladeDef() {
+        CardDef def = new CardDef();
+        def.id = "GREAT_BLADE";
+        def.name = "Great Blade";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectStepDef damage = new CardEffectStepDef();
+        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        damage.amount = 3;
+
+        CardEffectStepDef status = new CardEffectStepDef();
+        status.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
+        status.status = com.desertadventure.combat.model.NegativeStatusType.FEAR;
+        status.turns = 2;
+
+        def.effects = List.of(damage, status);
+        return def;
+    }
+
+    private static CardDef chargedSlashDef() {
+        CardDef def = new CardDef();
+        def.id = "CHARGED_SLASH";
+        def.name = "Charged Slash";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+
+        var cond = new com.desertadventure.combat.card.data.CardEffectConditionDef();
+        cond.type = com.desertadventure.combat.system.effects.ConditionType.SLOT_INDEX_EQUALS;
+        cond.slotIndex = 3;
+
+        var conditional = new com.desertadventure.combat.card.data.CardEffectStepDef();
+        conditional.when = cond;
+        conditional.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        conditional.amount = 6;
+
+        var fallback = new com.desertadventure.combat.card.data.CardEffectStepDef();
+        fallback.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        fallback.amount = 3;
+
+        def.effects = List.of(conditional, fallback);
+        return def;
+    }
+
+    private static final class SequencedPlanRoller implements com.desertadventure.combat.system.slots.PlayerSlotRoller {
+        private final com.desertadventure.combat.system.slots.PlayerSlotPlan[] plans;
+        private int idx;
+
+        SequencedPlanRoller(com.desertadventure.combat.system.slots.PlayerSlotPlan... plans) {
+            this.plans = plans;
+        }
+
+        @Override
+        public com.desertadventure.combat.system.slots.PlayerSlotPlan rollPlan() {
+            int i = Math.min(idx, plans.length - 1);
+            idx++;
+            return plans[i];
+        }
     }
 }
 

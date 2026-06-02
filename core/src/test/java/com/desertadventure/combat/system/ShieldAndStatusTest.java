@@ -51,5 +51,23 @@ public class ShieldAndStatusTest {
         assertNull(e.getNegativeStatusType(), "duration should tick down and clear poison at 0");
         assertEquals(0, e.getNegativeTurnsRemaining());
     }
+
+    @Test
+    void negativeStatus_isSingleSlot_newStatusOverwritesTypeAndTurns() {
+        CombatEntity e = new CombatEntity(CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+        e.clearCombatStatus();
+
+        e.setNegativeStatus(NegativeStatusType.POISON, 2);
+        assertEquals(NegativeStatusType.POISON, e.getNegativeStatusType());
+        assertEquals(2, e.getNegativeTurnsRemaining());
+
+        e.setNegativeStatus(NegativeStatusType.BLEED, 2);
+        assertEquals(NegativeStatusType.BLEED, e.getNegativeStatusType(), "new status should overwrite old status type");
+        assertEquals(2, e.getNegativeTurnsRemaining(), "new status should overwrite turns");
+
+        e.setNegativeStatus(NegativeStatusType.FEAR, 1);
+        assertEquals(NegativeStatusType.FEAR, e.getNegativeStatusType(), "new status should overwrite old status type");
+        assertEquals(1, e.getNegativeTurnsRemaining(), "new status should overwrite turns");
+    }
 }
 

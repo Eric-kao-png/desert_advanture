@@ -43,7 +43,7 @@ public class CardEffectResolverTest {
     void strongAttack_deals3Damage() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.STRONG_ATTACK);
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.SWIFT_STRIKE);
 
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
@@ -70,7 +70,7 @@ public class CardEffectResolverTest {
     void poison_appliesPoisonFor2Turns() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON);
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON_MAGIC);
 
         assertEquals(com.desertadventure.combat.model.NegativeStatusType.POISON, combat.appliedNegativeStatus);
         assertEquals(2, combat.appliedNegativeStatusTurns);
@@ -90,7 +90,7 @@ public class CardEffectResolverTest {
         FakeCombatController combat = new FakeCombatController();
         CombatContext ctx = new CombatContext(combat, 1, Set.of());
 
-        resolver.resolve(ctx, ActionCardType.FULL_POWER_ATTACK);
+        resolver.resolve(ctx, ActionCardType.ASSAULT);
 
         assertEquals(6f, combat.damageToEnemies, 0.001f);
     }
@@ -101,7 +101,7 @@ public class CardEffectResolverTest {
         combat.cardsByInstanceId.put(10, new ActionCardInstance(10, ActionCardType.HEAL));
         CombatContext ctx = new CombatContext(combat, 1, Set.of(10));
 
-        resolver.resolve(ctx, ActionCardType.FULL_POWER_ATTACK);
+        resolver.resolve(ctx, ActionCardType.ASSAULT);
 
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
@@ -109,24 +109,80 @@ public class CardEffectResolverTest {
     @Test
     void thrust_round1_executes6Damage_otherRoundsExecutes3Damage() {
         FakeCombatController combat = new FakeCombatController();
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.THRUST);
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.AMBUSH);
         assertEquals(6f, combat.damageToEnemies, 0.001f);
 
         combat.damageToEnemies = 0f;
-        resolver.resolve(new CombatContext(combat, 2, Set.of()), ActionCardType.THRUST);
+        resolver.resolve(new CombatContext(combat, 2, Set.of()), ActionCardType.AMBUSH);
         assertEquals(3f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void claw_deals3Damage() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of(), 0), ActionCardType.CLAW);
+
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void chargedSlash_slot4_deals6Damage_otherSlotsDeal3() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of(), 3), ActionCardType.CHARGED_SLASH);
+        assertEquals(6f, combat.damageToEnemies, 0.001f);
+
+        combat.damageToEnemies = 0f;
+        resolver.resolve(new CombatContext(combat, 1, Set.of(), 2), ActionCardType.CHARGED_SLASH);
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void blade_appliesBleedFor2Turns() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of(), 0), ActionCardType.BLADE);
+
+        assertEquals(com.desertadventure.combat.model.NegativeStatusType.BLEED, combat.appliedNegativeStatus);
+        assertEquals(2, combat.appliedNegativeStatusTurns);
+    }
+
+    @Test
+    void greatBlade_appliesFearFor2Turns() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of(), 0), ActionCardType.GREAT_BLADE);
+
+        assertEquals(com.desertadventure.combat.model.NegativeStatusType.FEAR, combat.appliedNegativeStatus);
+        assertEquals(2, combat.appliedNegativeStatusTurns);
+    }
+
+    @Test
+    void vampirism_deals3_andHeals3() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of(), 0), ActionCardType.VAMPIRISM);
+
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+        assertEquals(3f, combat.healPlayerAmount, 0.001f);
     }
 
     private static Map<String, CardDef> minimalDefs() {
         Map<String, CardDef> defs = new HashMap<>();
         defs.put("ATTACK", simpleDamageDef("ATTACK", "Attack", 1, 2));
-        defs.put("STRONG_ATTACK", simpleDamageDef("STRONG_ATTACK", "Strong Attack", 2, 3));
+        defs.put("SWIFT_STRIKE", simpleDamageDef("SWIFT_STRIKE", "Swift Strike", 2, 3));
         defs.put("HEAL", simpleHealDef());
         defs.put("SHIELD", simpleShieldDef());
-        defs.put("FULL_POWER_ATTACK", fullPowerDef());
-        defs.put("THRUST", thrustDef());
+        defs.put("ASSAULT", fullPowerDef());
+        defs.put("AMBUSH", thrustDef());
         defs.put("LIFE_MAGIC", lifeMagicDef());
-        defs.put("POISON", poisonDef());
+        defs.put("POISON_MAGIC", poisonDef());
+        defs.put("CLAW", simpleDamageDef("CLAW", "Claw", 2, 3));
+        defs.put("CHARGED_SLASH", chargedSlashDef());
+        defs.put("BLADE", bladeDef());
+        defs.put("GREAT_BLADE", greatBladeDef());
+        defs.put("VAMPIRISM", vampirismDef());
         return defs;
     }
 
@@ -174,8 +230,8 @@ public class CardEffectResolverTest {
 
     private static CardDef fullPowerDef() {
         CardDef def = new CardDef();
-        def.id = "FULL_POWER_ATTACK";
-        def.name = "Full Power";
+        def.id = "ASSAULT";
+        def.name = "Assault";
         def.category = CardCategoryId.OFFENSE;
         def.cooldown = 3;
         def.targeting = CardTargetingId.ENEMY;
@@ -214,8 +270,8 @@ public class CardEffectResolverTest {
 
     private static CardDef poisonDef() {
         CardDef def = new CardDef();
-        def.id = "POISON";
-        def.name = "Poison";
+        def.id = "POISON_MAGIC";
+        def.name = "Poison Magic";
         def.category = CardCategoryId.UTILITY;
         def.cooldown = 2;
         def.targeting = CardTargetingId.ENEMY;
@@ -230,8 +286,8 @@ public class CardEffectResolverTest {
 
     private static CardDef thrustDef() {
         CardDef def = new CardDef();
-        def.id = "THRUST";
-        def.name = "Thrust";
+        def.id = "AMBUSH";
+        def.name = "Ambush";
         def.category = CardCategoryId.OFFENSE;
         def.cooldown = 3;
         def.targeting = CardTargetingId.ENEMY;
@@ -250,6 +306,93 @@ public class CardEffectResolverTest {
         fallback.amount = 3;
 
         def.effects = List.of(conditional, fallback);
+        return def;
+    }
+
+    private static CardDef chargedSlashDef() {
+        CardDef def = new CardDef();
+        def.id = "CHARGED_SLASH";
+        def.name = "Charged Slash";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectConditionDef cond = new CardEffectConditionDef();
+        cond.type = com.desertadventure.combat.system.effects.ConditionType.SLOT_INDEX_EQUALS;
+        cond.slotIndex = 3;
+
+        CardEffectStepDef conditional = new CardEffectStepDef();
+        conditional.when = cond;
+        conditional.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        conditional.amount = 6;
+
+        CardEffectStepDef fallback = new CardEffectStepDef();
+        fallback.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        fallback.amount = 3;
+
+        def.effects = List.of(conditional, fallback);
+        return def;
+    }
+
+    private static CardDef bladeDef() {
+        CardDef def = new CardDef();
+        def.id = "BLADE";
+        def.name = "Blade";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectStepDef damage = new CardEffectStepDef();
+        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        damage.amount = 3;
+
+        CardEffectStepDef status = new CardEffectStepDef();
+        status.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
+        status.status = com.desertadventure.combat.model.NegativeStatusType.BLEED;
+        status.turns = 2;
+
+        def.effects = List.of(damage, status);
+        return def;
+    }
+
+    private static CardDef greatBladeDef() {
+        CardDef def = new CardDef();
+        def.id = "GREAT_BLADE";
+        def.name = "Great Blade";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectStepDef damage = new CardEffectStepDef();
+        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        damage.amount = 3;
+
+        CardEffectStepDef status = new CardEffectStepDef();
+        status.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
+        status.status = com.desertadventure.combat.model.NegativeStatusType.FEAR;
+        status.turns = 2;
+
+        def.effects = List.of(damage, status);
+        return def;
+    }
+
+    private static CardDef vampirismDef() {
+        CardDef def = new CardDef();
+        def.id = "VAMPIRISM";
+        def.name = "Vampirism";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectStepDef damage = new CardEffectStepDef();
+        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        damage.amount = 3;
+
+        CardEffectStepDef heal = new CardEffectStepDef();
+        heal.template = com.desertadventure.combat.system.effects.EffectTemplateId.HEAL_SELF;
+        heal.amount = 3;
+
+        def.effects = List.of(damage, heal);
         return def;
     }
 
@@ -280,7 +423,7 @@ public class CardEffectResolverTest {
         }
 
         @Override
-        void dealDamageToEnemy(float amount) {
+        void dealDamageToEnemy(float amount, DamageSource source) {
             damageToEnemies += amount;
         }
 

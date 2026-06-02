@@ -207,8 +207,12 @@ public class CombatEntity {
         if (!alive) {
             return;
         }
-        if (negativeType == NegativeStatusType.POISON && negativeTurnsRemaining > 0) {
-            takeStatusDamage(poisonDamagePerRound);
+        if (negativeTurnsRemaining > 0 && negativeType != null) {
+            if (negativeType == NegativeStatusType.POISON) {
+                takeStatusDamage(poisonDamagePerRound);
+            } else if (negativeType == NegativeStatusType.BLEED) {
+                takeStatusDamage(negativeTurnsRemaining);
+            }
         }
         tickStatusDurations();
     }

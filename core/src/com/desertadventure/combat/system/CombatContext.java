@@ -13,11 +13,17 @@ public final class CombatContext {
     private final CombatController combat;
     private final int roundNumber;
     private final Set<Integer> resolvedInstanceIdsThisRound;
+    private final int resolvingSlotIndex;
 
     CombatContext(CombatController combat, int roundNumber, Set<Integer> resolvedInstanceIdsThisRound) {
+        this(combat, roundNumber, resolvedInstanceIdsThisRound, -1);
+    }
+
+    CombatContext(CombatController combat, int roundNumber, Set<Integer> resolvedInstanceIdsThisRound, int resolvingSlotIndex) {
         this.combat = combat;
         this.roundNumber = roundNumber;
         this.resolvedInstanceIdsThisRound = resolvedInstanceIdsThisRound;
+        this.resolvingSlotIndex = resolvingSlotIndex;
     }
 
     public int roundNumber() {
@@ -42,10 +48,15 @@ public final class CombatContext {
         return false;
     }
 
+    /** 0-based slot index (0..3) for the card currently being resolved; -1 if unknown. */
+    public int resolvingSlotIndex() {
+        return resolvingSlotIndex;
+    }
+
     // --- operations ---
 
     public void dealDamageToEnemies(float amount) {
-        combat.dealDamageToEnemy(amount);
+        combat.dealDamageToEnemy(amount, CombatController.DamageSource.OFFENSE_CARD);
     }
 
     public void healPlayer(float amount) {

@@ -80,7 +80,7 @@ public class CombatOutcomeFinalizeIntegrationTest {
 
         ActionCardDeck deck = new ActionCardDeck();
         deck.addCard(ActionCardType.ATTACK);
-        deck.addCard(ActionCardType.STRONG_ATTACK);
+        deck.addCard(ActionCardType.SWIFT_STRIKE);
 
         combat.startCombat(0, true, 800f, 120f, deck, ignored -> {
         });
@@ -115,7 +115,7 @@ public class CombatOutcomeFinalizeIntegrationTest {
     private static Map<String, CardDef> minimalDefs() {
         Map<String, CardDef> defs = new HashMap<>();
         defs.put("ATTACK", damageDef("ATTACK", "Attack", 1, 2));
-        defs.put("STRONG_ATTACK", damageDef("STRONG_ATTACK", "Strong Attack", 2, 3));
+        defs.put("SWIFT_STRIKE", damageDef("SWIFT_STRIKE", "Swift Strike", 2, 3));
         return defs;
     }
 
