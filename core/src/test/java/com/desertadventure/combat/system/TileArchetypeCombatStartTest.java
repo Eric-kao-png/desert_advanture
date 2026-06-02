@@ -45,7 +45,7 @@ class TileArchetypeCombatStartTest {
     @Test
     void combatTile_wanderingWizard_startsCombatWithWizardArchetype() {
         GameSession session = new GameSession();
-        var tile = session.getMap().getTile(3, 0);
+        var tile = session.getMap().getTile(4, 0);
         assertNotNull(tile);
         session.handleTileInteraction(tile, false);
 

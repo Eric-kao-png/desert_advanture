@@ -10,9 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class CombatTileArchetypeTest {
     @Test
-    void pickForMapCoordinate_alternatesWizardAndZombie() {
-        assertEquals(EnemyArchetypeId.WANDERING_WIZARD, EnemyArchetypeRegistry.pickForMapCoordinate(4, 0));
+    void pickForMapCoordinate_cyclesZombieWizardAndSkeletonArcher() {
         assertEquals(EnemyArchetypeId.DESERT_ZOMBIE, EnemyArchetypeRegistry.pickForMapCoordinate(3, 0));
+        assertEquals(EnemyArchetypeId.WANDERING_WIZARD, EnemyArchetypeRegistry.pickForMapCoordinate(4, 0));
+        assertEquals(EnemyArchetypeId.SKELETON_ARCHER, EnemyArchetypeRegistry.pickForMapCoordinate(5, 0));
     }
 
     @Test
@@ -22,11 +23,11 @@ class CombatTileArchetypeTest {
         if (GameConfig.MAP_NEAR_SPAWN_TEST_COMBATS) {
             Tile east = map.getTile(new GridPos(3, 0));
             assertEquals(TileType.COMBAT, east.getType());
-            assertEquals(EnemyArchetypeId.WANDERING_WIZARD, east.getEnemyArchetype());
+            assertEquals(EnemyArchetypeId.DESERT_ZOMBIE, east.getEnemyArchetype());
 
-            Tile west = map.getTile(new GridPos(-3, 0));
-            assertEquals(TileType.COMBAT, west.getType());
-            assertEquals(EnemyArchetypeId.DESERT_ZOMBIE, west.getEnemyArchetype());
+            Tile skeleton = map.getTile(new GridPos(-3, -1));
+            assertEquals(TileType.COMBAT, skeleton.getType());
+            assertEquals(EnemyArchetypeId.SKELETON_ARCHER, skeleton.getEnemyArchetype());
         }
 
         Tile scattered = findScatteredCombatTile(map);

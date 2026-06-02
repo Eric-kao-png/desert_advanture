@@ -92,12 +92,12 @@ public final class MapGenerator {
                 {3, 0}, {-3, 0}, {0, 3}, {0, -3},
                 {4, 0}, {-4, 0}, {3, 1}, {-3, -1},
         };
-        for (int i = 0; i < offsets.length; i++) {
-            int[] offset = offsets[i];
-            EnemyArchetypeId archetype = i % 2 == 0
-                    ? EnemyArchetypeId.WANDERING_WIZARD
-                    : EnemyArchetypeId.DESERT_ZOMBIE;
-            setCombatTile(map, offset[0], offset[1], archetype);
+        for (int[] offset : offsets) {
+            setCombatTile(
+                    map,
+                    offset[0],
+                    offset[1],
+                    EnemyArchetypeRegistry.pickForMapCoordinate(offset[0], offset[1]));
         }
     }
 

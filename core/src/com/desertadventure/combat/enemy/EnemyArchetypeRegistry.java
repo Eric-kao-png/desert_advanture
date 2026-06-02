@@ -14,7 +14,8 @@ public final class EnemyArchetypeRegistry {
 
     private static final List<EnemyArchetypeId> NORMAL_ENCOUNTER_POOL = List.of(
             EnemyArchetypeId.DESERT_ZOMBIE,
-            EnemyArchetypeId.WANDERING_WIZARD);
+            EnemyArchetypeId.WANDERING_WIZARD,
+            EnemyArchetypeId.SKELETON_ARCHER);
 
     static {
         register(new EnemyArchetypeDef(
@@ -51,6 +52,20 @@ public final class EnemyArchetypeRegistry {
                         ActionCardType.MAGIC_BOLT,
                         ActionCardType.MAGIC_ARROW,
                         ActionCardType.PURIFY)));
+        register(new EnemyArchetypeDef(
+                EnemyArchetypeId.SKELETON_ARCHER,
+                "Skeleton Archer",
+                6,
+                7,
+                List.of(
+                        ActionCardType.ARROW,
+                        ActionCardType.ARROW,
+                        ActionCardType.ARROW,
+                        ActionCardType.POISON_ARROW,
+                        ActionCardType.POISON_ARROW),
+                List.of(
+                        ActionCardType.ARROW,
+                        ActionCardType.POISON_ARROW)));
     }
 
     private EnemyArchetypeRegistry() {
@@ -66,9 +81,11 @@ public final class EnemyArchetypeRegistry {
 
     /** Deterministic mix for map combat tiles without an explicit archetype. */
     public static EnemyArchetypeId pickForMapCoordinate(int worldX, int worldY) {
-        return (worldX + worldY) % 2 == 0
-                ? EnemyArchetypeId.WANDERING_WIZARD
-                : EnemyArchetypeId.DESERT_ZOMBIE;
+        return switch (Math.floorMod(worldX + worldY, 3)) {
+            case 0 -> EnemyArchetypeId.DESERT_ZOMBIE;
+            case 1 -> EnemyArchetypeId.WANDERING_WIZARD;
+            default -> EnemyArchetypeId.SKELETON_ARCHER;
+        };
     }
 
     /** Uses tile archetype when set; otherwise rolls from the normal encounter pool. */
