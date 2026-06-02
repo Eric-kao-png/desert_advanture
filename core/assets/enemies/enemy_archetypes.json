@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "normalEncounterPool": [
+    "DESERT_ZOMBIE",
+    "WANDERING_WIZARD",
+    "SKELETON_ARCHER"
+  ],
+  "archetypes": [
+    {
+      "id": "DESERT_ZOMBIE",
+      "name": "Desert Zombie",
+      "hpMin": 7,
+      "hpMax": 8,
+      "deck": ["CLAW", "CLAW", "ATTACK", "HEAL", "SHIELD", "VAMPIRISM", "VAMPIRISM"],
+      "loot": ["HEAL", "SHIELD", "VAMPIRISM"]
+    },
+    {
+      "id": "WANDERING_WIZARD",
+      "name": "Wandering Wizard",
+      "hpMin": 6,
+      "hpMax": 7,
+      "deck": [
+        "MAGIC_BOLT",
+        "MAGIC_BOLT",
+        "MAGIC_ARROW",
+        "POISON_BOLT",
+        "POISON_MAGIC",
+        "PURIFY",
+        "MAGIC_MIRROR"
+      ],
+      "loot": ["MAGIC_BOLT", "MAGIC_ARROW", "PURIFY"]
+    },
+    {
+      "id": "SKELETON_ARCHER",
+      "name": "Skeleton Archer",
+      "hpMin": 6,
+      "hpMax": 7,
+      "deck": ["ARROW", "ARROW", "ARROW", "POISON_ARROW", "POISON_ARROW"],
+      "loot": ["ARROW", "POISON_ARROW"]
+    }
+  ]
+}

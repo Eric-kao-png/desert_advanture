@@ -3,6 +3,7 @@ package com.desertadventure.combat.enemy;
 import com.desertadventure.combat.card.ActionCardRewards;
 import com.desertadventure.combat.card.ActionCardType;
 import com.desertadventure.combat.system.slots.RandomIntSource;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
@@ -12,6 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WanderingWizardArchetypeTest {
+    @BeforeAll
+    static void loadEnemies() {
+        EnemyArchetypeTestSupport.ensureLoaded();
+    }
+
     @Test
     void wanderingWizard_hpRoll_isInclusiveBetween6And7() {
         EnemyArchetypeDef def = EnemyArchetypeRegistry.getRequired(EnemyArchetypeId.WANDERING_WIZARD);

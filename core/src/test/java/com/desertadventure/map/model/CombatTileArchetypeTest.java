@@ -3,12 +3,19 @@ package com.desertadventure.map.model;
 import com.desertadventure.combat.enemy.EnemyArchetypeId;
 import com.desertadventure.combat.enemy.EnemyArchetypeRegistry;
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.combat.enemy.EnemyArchetypeTestSupport;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class CombatTileArchetypeTest {
+    @BeforeAll
+    static void loadEnemies() {
+        EnemyArchetypeTestSupport.ensureLoaded();
+    }
+
     @Test
     void pickForMapCoordinate_cyclesZombieWizardAndSkeletonArcher() {
         assertEquals(EnemyArchetypeId.DESERT_ZOMBIE, EnemyArchetypeRegistry.pickForMapCoordinate(3, 0));
