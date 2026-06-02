@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": "ATTACK",
+      "name": "Attack",
+      "category": "OFFENSE",
+      "cooldown": 1,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "DealDamage", "amount": 2 }
+      ]
+    },
+    {
+      "id": "STRONG_ATTACK",
+      "name": "Strong Attack",
+      "category": "OFFENSE",
+      "cooldown": 2,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "DealDamage", "amount": 3 }
+      ]
+    },
+    {
+      "id": "HEAL",
+      "name": "Heal",
+      "category": "UTILITY",
+      "cooldown": 4,
+      "targeting": "SELF",
+      "effects": [
+        { "template": "HealSelf", "amount": 4 }
+      ]
+    },
+    {
+      "id": "SHIELD",
+      "name": "Shield",
+      "category": "UTILITY",
+      "cooldown": 3,
+      "targeting": "SELF",
+      "effects": [
+        { "template": "AddShield", "amount": 4 }
+      ]
+    },
+    {
+      "id": "FULL_POWER_ATTACK",
+      "name": "Full Power",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        {
+          "when": { "type": "TurnHasResolvedCategory", "category": "UTILITY", "negate": true },
+          "template": "DealDamage",
+          "amount": 6
+        },
+        { "template": "DealDamage", "amount": 3 }
+      ]
+    },
+    {
+      "id": "LIFE_MAGIC",
+      "name": "Life Magic",
+      "category": "UTILITY",
+      "cooldown": 5,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "HalveEnemyHp" }
+      ]
+    },
+    {
+      "id": "THRUST",
+      "name": "Thrust",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        {
+          "when": { "type": "RoundEquals", "round": 1 },
+          "template": "DealDamage",
+          "amount": 6
+        },
+        { "template": "DealDamage", "amount": 3 }
+      ]
+    },
+    {
+      "id": "POISON",
+      "name": "Poison",
+      "category": "UTILITY",
+      "cooldown": 2,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "ApplyNegativeStatus", "status": "POISON", "turns": 2 }
+      ]
+    }
+  ]
+}
+

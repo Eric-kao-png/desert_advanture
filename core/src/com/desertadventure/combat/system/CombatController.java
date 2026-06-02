@@ -44,6 +44,7 @@ public class CombatController {
     private final Set<Integer> playedThisRound = new HashSet<>();
     private boolean roundEndCooldownsApplied;
     private Integer selectedInstanceId;
+    private final CardEffectResolver effectResolver = new CardEffectResolver();
 
     public CombatController(PlayerStats playerStats) {
         this.playerStats = playerStats;
@@ -266,32 +267,8 @@ public class CombatController {
     }
 
     private void applyCardEffect(ActionCardType type) {
-        switch (type.getMechanic()) {
-            case DAMAGE -> dealDamageToEnemy(type.getPrimaryValue());
-            case HEAL -> healPlayer(type.getPrimaryValue());
-            case SHIELD -> {
-                if (player != null) {
-                    player.addShield(type.getPrimaryValue());
-                }
-            }
-            case FULL_POWER_ATTACK -> {
-                int damage = changeCardResolvedThisRound()
-                        ? GameConfig.CARD_FULL_POWER_DAMAGE_LOW
-                        : GameConfig.CARD_FULL_POWER_DAMAGE_HIGH;
-                dealDamageToEnemy(damage);
-            }
-            case HALVE_ENEMY_HP -> halveEnemyHp();
-            case THRUST -> {
-                int damage = roundNumber == 1
-                        ? GameConfig.CARD_THRUST_DAMAGE_ROUND_ONE
-                        : GameConfig.CARD_THRUST_DAMAGE_OTHER;
-                dealDamageToEnemy(damage);
-            }
-            case POISON -> applyNegativeStatusToEnemies(
-                    NegativeStatusType.POISON, GameConfig.CARD_POISON_DURATION_TURNS);
-            default -> {
-            }
-        }
+        CombatContext ctx = new CombatContext(this, roundNumber, playedThisRound);
+        effectResolver.resolve(ctx, type);
     }
 
     private boolean changeCardResolvedThisRound() {
@@ -307,7 +284,7 @@ public class CombatController {
         return false;
     }
 
-    private void halveEnemyHp() {
+    void halveEnemyHp() {
         for (CombatEntity enemy : enemies) {
             if (enemy.isAlive()) {
                 enemy.setHp((float) Math.floor(enemy.getHp() / 2f));
@@ -315,7 +292,8 @@ public class CombatController {
         }
     }
 
-    private void applyNegativeStatusToEnemies(NegativeStatusType type, int turns) {
+    void applyNegativeStatusToEnemies(String statusId, int turns) {
+        NegativeStatusType type = NegativeStatusType.valueOf(statusId);
         for (CombatEntity enemy : enemies) {
             if (enemy.isAlive()) {
                 enemy.setNegativeStatus(type, turns);
@@ -323,7 +301,7 @@ public class CombatController {
         }
     }
 
-    private void dealDamageToEnemy(float amount) {
+    void dealDamageToEnemy(float amount) {
         for (CombatEntity enemy : enemies) {
             if (enemy.isAlive()) {
                 enemy.takeDamage(amount);
@@ -339,7 +317,7 @@ public class CombatController {
         syncPlayerStatsHp();
     }
 
-    private void healPlayer(float amount) {
+    void healPlayer(float amount) {
         if (player == null) {
             return;
         }

@@ -1,123 +1,126 @@
 package com.desertadventure.combat.card;
 
-import com.desertadventure.config.GameConfig;
+import com.desertadventure.combat.card.data.CardDatabase;
+import com.desertadventure.combat.card.data.CardDef;
 
 public enum ActionCardType {
-    ATTACK(
-            "Attack",
-            GameConfig.CARD_ATTACK_DAMAGE,
-            0,
-            ActionCardTarget.ENEMY,
-            GameConfig.CARD_ATTACK_COOLDOWN_TURNS,
-            ActionCardCategory.ATTACK,
-            ActionCardMechanic.DAMAGE),
-    STRONG_ATTACK(
-            "Strong Attack",
-            GameConfig.CARD_STRONG_ATTACK_DAMAGE,
-            0,
-            ActionCardTarget.ENEMY,
-            GameConfig.CARD_STRONG_ATTACK_COOLDOWN_TURNS,
-            ActionCardCategory.ATTACK,
-            ActionCardMechanic.DAMAGE),
-    HEAL(
-            "Heal",
-            GameConfig.CARD_HEAL_AMOUNT,
-            0,
-            ActionCardTarget.SELF,
-            GameConfig.CARD_HEAL_COOLDOWN_TURNS,
-            ActionCardCategory.CHANGE,
-            ActionCardMechanic.HEAL),
-    SHIELD(
-            "Shield",
-            GameConfig.CARD_SHIELD_AMOUNT,
-            0,
-            ActionCardTarget.SELF,
-            GameConfig.CARD_SHIELD_COOLDOWN_TURNS,
-            ActionCardCategory.CHANGE,
-            ActionCardMechanic.SHIELD),
-    FULL_POWER_ATTACK(
-            "Full Power",
-            GameConfig.CARD_FULL_POWER_DAMAGE_LOW,
-            GameConfig.CARD_FULL_POWER_DAMAGE_HIGH,
-            ActionCardTarget.ENEMY,
-            GameConfig.CARD_FULL_POWER_COOLDOWN_TURNS,
-            ActionCardCategory.ATTACK,
-            ActionCardMechanic.FULL_POWER_ATTACK),
-    LIFE_MAGIC(
-            "Life Magic",
-            0,
-            0,
-            ActionCardTarget.ENEMY,
-            GameConfig.CARD_LIFE_MAGIC_COOLDOWN_TURNS,
-            ActionCardCategory.CHANGE,
-            ActionCardMechanic.HALVE_ENEMY_HP),
-    THRUST(
-            "Thrust",
-            GameConfig.CARD_THRUST_DAMAGE_OTHER,
-            GameConfig.CARD_THRUST_DAMAGE_ROUND_ONE,
-            ActionCardTarget.ENEMY,
-            GameConfig.CARD_THRUST_COOLDOWN_TURNS,
-            ActionCardCategory.ATTACK,
-            ActionCardMechanic.THRUST),
-    POISON(
-            "Poison",
-            GameConfig.CARD_POISON_DURATION_TURNS,
-            GameConfig.CARD_POISON_DAMAGE_PER_ROUND,
-            ActionCardTarget.ENEMY,
-            GameConfig.CARD_POISON_COOLDOWN_TURNS,
-            ActionCardCategory.CHANGE,
-            ActionCardMechanic.POISON);
-
-    private final String displayName;
-    private final int primaryValue;
-    private final int secondaryValue;
-    private final ActionCardTarget target;
-    private final int cooldownTurns;
-    private final ActionCardCategory category;
-    private final ActionCardMechanic mechanic;
-
-    ActionCardType(
-            String displayName,
-            int primaryValue,
-            int secondaryValue,
-            ActionCardTarget target,
-            int cooldownTurns,
-            ActionCardCategory category,
-            ActionCardMechanic mechanic) {
-        this.displayName = displayName;
-        this.primaryValue = primaryValue;
-        this.secondaryValue = secondaryValue;
-        this.target = target;
-        this.cooldownTurns = cooldownTurns;
-        this.category = category;
-        this.mechanic = mechanic;
-    }
+    ATTACK,
+    STRONG_ATTACK,
+    HEAL,
+    SHIELD,
+    FULL_POWER_ATTACK,
+    LIFE_MAGIC,
+    THRUST,
+    POISON;
 
     public String getDisplayName() {
-        return displayName;
+        return def().name;
     }
 
     public int getPrimaryValue() {
-        return primaryValue;
+        CardDef def = def();
+        return switch (this) {
+            case ATTACK, STRONG_ATTACK, HEAL, SHIELD -> firstAmount(def);
+            case FULL_POWER_ATTACK -> minAmount(def);
+            case THRUST -> minAmount(def);
+            case POISON -> firstTurns(def);
+            case LIFE_MAGIC -> 0;
+        };
     }
 
     public int getSecondaryValue() {
-        return secondaryValue;
+        CardDef def = def();
+        return switch (this) {
+            case FULL_POWER_ATTACK -> maxAmount(def);
+            case THRUST -> maxAmount(def);
+            case POISON -> firstAmount(def);
+            default -> 0;
+        };
     }
 
     public ActionCardTarget getTarget() {
-        return target;
+        return switch (def().targeting) {
+            case SELF -> ActionCardTarget.SELF;
+            case ENEMY -> ActionCardTarget.ENEMY;
+        };
     }
 
     public int getCooldownTurns() {
-        return cooldownTurns;
+        return def().cooldown;
     }
 
     public ActionCardCategory getCategory() {
-        return category;
+        return ActionCardCategory.fromData(def().category);
     }
 
     public ActionCardMechanic getMechanic() {
-        return mechanic;
+        // Legacy field kept for UI and any switch-based fallbacks; resolver uses JSON templates.
+        return switch (this) {
+            case ATTACK, STRONG_ATTACK -> ActionCardMechanic.DAMAGE;
+            case HEAL -> ActionCardMechanic.HEAL;
+            case SHIELD -> ActionCardMechanic.SHIELD;
+            case FULL_POWER_ATTACK -> ActionCardMechanic.FULL_POWER_ATTACK;
+            case LIFE_MAGIC -> ActionCardMechanic.HALVE_ENEMY_HP;
+            case THRUST -> ActionCardMechanic.THRUST;
+            case POISON -> ActionCardMechanic.POISON;
+        };
+    }
+
+    private CardDef def() {
+        return CardDatabase.getRequired().getRequired(name());
+    }
+
+    private static int firstAmount(CardDef def) {
+        if (def.effects == null) {
+            return 0;
+        }
+        for (var step : def.effects) {
+            if (step != null && step.amount != null) {
+                return step.amount;
+            }
+        }
+        return 0;
+    }
+
+    private static int firstTurns(CardDef def) {
+        if (def.effects == null) {
+            return 0;
+        }
+        for (var step : def.effects) {
+            if (step != null && step.turns != null) {
+                return step.turns;
+            }
+        }
+        return 0;
+    }
+
+    private static int minAmount(CardDef def) {
+        int min = Integer.MAX_VALUE;
+        boolean found = false;
+        if (def.effects == null) {
+            return 0;
+        }
+        for (var step : def.effects) {
+            if (step != null && step.amount != null) {
+                min = Math.min(min, step.amount);
+                found = true;
+            }
+        }
+        return found ? min : 0;
+    }
+
+    private static int maxAmount(CardDef def) {
+        int max = Integer.MIN_VALUE;
+        boolean found = false;
+        if (def.effects == null) {
+            return 0;
+        }
+        for (var step : def.effects) {
+            if (step != null && step.amount != null) {
+                max = Math.max(max, step.amount);
+                found = true;
+            }
+        }
+        return found ? max : 0;
     }
 }

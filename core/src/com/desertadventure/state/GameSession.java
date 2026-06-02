@@ -4,6 +4,8 @@ import com.desertadventure.combat.CombatOutcome;
 import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardDeckResetPolicy;
 import com.desertadventure.combat.card.DefaultActionCardDeckResetPolicy;
+import com.desertadventure.combat.card.data.CardDatabase;
+import com.desertadventure.combat.card.data.GdxCardRepositoryLoader;
 import com.desertadventure.combat.system.CombatController;
 import com.desertadventure.config.GameMessages;
 import com.desertadventure.event.RequiredEventTracker;
@@ -48,6 +50,9 @@ public class GameSession implements ExplorationCallbacks {
     private boolean bossAvailableThisCycle;
 
     public GameSession() {
+        if (!CardDatabase.isInitialized()) {
+            CardDatabase.initialize(GdxCardRepositoryLoader.loadDefault());
+        }
         map = MapGenerator.createWorld();
         travel = new TravelMovement(this);
         eventTracker = new RequiredEventTracker(permanentProgress);
