@@ -20,10 +20,10 @@ public enum ActionCardType {
     public int getPrimaryValue() {
         CardDef def = def();
         return switch (this) {
-            case ATTACK, STRONG_ATTACK, HEAL, SHIELD -> firstAmount(def);
-            case FULL_POWER_ATTACK -> minAmount(def);
-            case THRUST -> minAmount(def);
-            case POISON -> firstTurns(def);
+            case ATTACK, STRONG_ATTACK, HEAL, SHIELD -> def.firstAmount();
+            case FULL_POWER_ATTACK -> def.minAmount();
+            case THRUST -> def.minAmount();
+            case POISON -> def.firstTurns();
             case LIFE_MAGIC -> 0;
         };
     }
@@ -31,9 +31,9 @@ public enum ActionCardType {
     public int getSecondaryValue() {
         CardDef def = def();
         return switch (this) {
-            case FULL_POWER_ATTACK -> maxAmount(def);
-            case THRUST -> maxAmount(def);
-            case POISON -> firstAmount(def);
+            case FULL_POWER_ATTACK -> def.maxAmount();
+            case THRUST -> def.maxAmount();
+            case POISON -> def.firstAmount();
             default -> 0;
         };
     }
@@ -68,59 +68,5 @@ public enum ActionCardType {
 
     private CardDef def() {
         return CardDatabase.getRequired().getRequired(name());
-    }
-
-    private static int firstAmount(CardDef def) {
-        if (def.effects == null) {
-            return 0;
-        }
-        for (var step : def.effects) {
-            if (step != null && step.amount != null) {
-                return step.amount;
-            }
-        }
-        return 0;
-    }
-
-    private static int firstTurns(CardDef def) {
-        if (def.effects == null) {
-            return 0;
-        }
-        for (var step : def.effects) {
-            if (step != null && step.turns != null) {
-                return step.turns;
-            }
-        }
-        return 0;
-    }
-
-    private static int minAmount(CardDef def) {
-        int min = Integer.MAX_VALUE;
-        boolean found = false;
-        if (def.effects == null) {
-            return 0;
-        }
-        for (var step : def.effects) {
-            if (step != null && step.amount != null) {
-                min = Math.min(min, step.amount);
-                found = true;
-            }
-        }
-        return found ? min : 0;
-    }
-
-    private static int maxAmount(CardDef def) {
-        int max = Integer.MIN_VALUE;
-        boolean found = false;
-        if (def.effects == null) {
-            return 0;
-        }
-        for (var step : def.effects) {
-            if (step != null && step.amount != null) {
-                max = Math.max(max, step.amount);
-                found = true;
-            }
-        }
-        return found ? max : 0;
     }
 }

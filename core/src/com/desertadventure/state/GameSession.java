@@ -50,9 +50,7 @@ public class GameSession implements ExplorationCallbacks {
     private boolean bossAvailableThisCycle;
 
     public GameSession() {
-        if (!CardDatabase.isInitialized()) {
-            CardDatabase.initialize(GdxCardRepositoryLoader.loadDefault());
-        }
+        initializeCardsIfNeeded();
         map = MapGenerator.createWorld();
         travel = new TravelMovement(this);
         eventTracker = new RequiredEventTracker(permanentProgress);
@@ -71,6 +69,13 @@ public class GameSession implements ExplorationCallbacks {
         stepBudget.resetForCycle(playerStats);
         actionCardDeck.resetToDefault();
         map.revealAround(getPlayerGridPos());
+    }
+
+    private static void initializeCardsIfNeeded() {
+        if (CardDatabase.isInitialized()) {
+            return;
+        }
+        CardDatabase.initialize(GdxCardRepositoryLoader.loadDefault());
     }
 
     public void startNewGame() {

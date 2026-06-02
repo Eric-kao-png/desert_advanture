@@ -65,5 +65,10 @@ public final class CombatContext {
     public void applyNegativeStatusToEnemies(String statusId, int turns) {
         combat.applyNegativeStatusToEnemies(statusId, turns);
     }
+
+    @Override
+    public String toString() {
+        return "CombatContext{round=" + roundNumber + "}";
+    }
 }
 

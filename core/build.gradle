@@ -12,6 +12,29 @@ sourceSets.main.resources.srcDirs = ["assets/"]
 
 eclipse.project.name = appName + "-core"
 
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/"]
+            exclude "test/**"
+        }
+        resources {
+            srcDirs = ["assets/"]
+        }
+    }
+    test {
+        java {
+            srcDirs = ["src/test/java"]
+        }
+    }
+}
+
 dependencies {
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.11.2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.11.2"
+}
+
+test {
+    useJUnitPlatform()
 }

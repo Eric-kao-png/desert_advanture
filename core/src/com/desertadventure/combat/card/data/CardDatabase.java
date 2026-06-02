@@ -8,6 +8,9 @@ public final class CardDatabase {
     }
 
     public static void initialize(CardRepository repo) {
+        if (repo == null) {
+            throw new IllegalArgumentException("repo must not be null");
+        }
         repository = repo;
     }
 
