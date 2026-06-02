@@ -304,7 +304,7 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public void onCombatEnd(CombatOutcome outcome) {
-        combatOutcomes.apply(outcome);
+        combatOutcomes.apply(outcome, combatController.getLastDefeatedEnemyArchetype());
     }
 
     public void updateRunning(float delta) {

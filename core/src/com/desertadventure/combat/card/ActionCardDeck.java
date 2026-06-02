@@ -10,12 +10,31 @@ public final class ActionCardDeck {
     private int nextInstanceId = 1;
 
     public void resetToDefault() {
+        resetFromCardTypes(List.of(
+                ActionCardType.ATTACK,
+                ActionCardType.ATTACK,
+                ActionCardType.SWIFT_STRIKE,
+                ActionCardType.HEAL));
+    }
+
+    /** Replaces all instances with one per entry (duplicate types allowed). */
+    public void resetFromCardTypes(List<ActionCardType> types) {
         instances.clear();
         nextInstanceId = 1;
-        addCard(ActionCardType.ATTACK);
-        addCard(ActionCardType.ATTACK);
-        addCard(ActionCardType.SWIFT_STRIKE);
-        addCard(ActionCardType.HEAL);
+        if (types == null) {
+            return;
+        }
+        for (ActionCardType type : types) {
+            if (type != null) {
+                addCard(type);
+            }
+        }
+    }
+
+    public static ActionCardDeck fromCardTypes(List<ActionCardType> types) {
+        ActionCardDeck deck = new ActionCardDeck();
+        deck.resetFromCardTypes(types);
+        return deck;
     }
 
     public List<ActionCardInstance> getInstances() {

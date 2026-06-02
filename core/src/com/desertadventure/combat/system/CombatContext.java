@@ -14,16 +14,31 @@ public final class CombatContext {
     private final int roundNumber;
     private final Set<Integer> resolvedInstanceIdsThisRound;
     private final int resolvingSlotIndex;
+    private final EffectCaster caster;
 
     CombatContext(CombatController combat, int roundNumber, Set<Integer> resolvedInstanceIdsThisRound) {
-        this(combat, roundNumber, resolvedInstanceIdsThisRound, -1);
+        this(combat, roundNumber, resolvedInstanceIdsThisRound, -1, EffectCaster.PLAYER);
     }
 
-    CombatContext(CombatController combat, int roundNumber, Set<Integer> resolvedInstanceIdsThisRound, int resolvingSlotIndex) {
+    CombatContext(
+            CombatController combat,
+            int roundNumber,
+            Set<Integer> resolvedInstanceIdsThisRound,
+            int resolvingSlotIndex) {
+        this(combat, roundNumber, resolvedInstanceIdsThisRound, resolvingSlotIndex, EffectCaster.PLAYER);
+    }
+
+    CombatContext(
+            CombatController combat,
+            int roundNumber,
+            Set<Integer> resolvedInstanceIdsThisRound,
+            int resolvingSlotIndex,
+            EffectCaster caster) {
         this.combat = combat;
         this.roundNumber = roundNumber;
         this.resolvedInstanceIdsThisRound = resolvedInstanceIdsThisRound;
         this.resolvingSlotIndex = resolvingSlotIndex;
+        this.caster = caster != null ? caster : EffectCaster.PLAYER;
     }
 
     public int roundNumber() {
@@ -56,31 +71,50 @@ public final class CombatContext {
     // --- operations ---
 
     public void dealDamageToEnemies(float amount) {
-        combat.dealDamageToEnemy(amount, CombatController.DamageSource.OFFENSE_CARD);
+        if (caster == EffectCaster.ENEMY) {
+            combat.dealDamageToPlayer(amount);
+        } else {
+            combat.dealDamageToEnemy(amount, CombatController.DamageSource.OFFENSE_CARD);
+        }
     }
 
     public void healPlayer(float amount) {
-        combat.healPlayer(amount);
+        if (caster == EffectCaster.ENEMY) {
+            combat.healEnemy(amount);
+        } else {
+            combat.healPlayer(amount);
+        }
     }
 
     public void addPlayerShield(int amount) {
-        CombatEntity p = combat.getPlayer();
-        if (p != null) {
-            p.addShield(amount);
+        if (caster == EffectCaster.ENEMY) {
+            combat.addEnemyShield(amount);
+        } else {
+            CombatEntity p = combat.getPlayer();
+            if (p != null) {
+                p.addShield(amount);
+            }
         }
     }
 
     public void halveEnemyHp() {
-        combat.halveEnemyHp();
+        if (caster == EffectCaster.ENEMY) {
+            combat.halvePlayerHp();
+        } else {
+            combat.halveEnemyHp();
+        }
     }
 
     public void applyNegativeStatusToEnemies(NegativeStatusType type, int turns) {
-        combat.applyNegativeStatusToEnemies(type, turns);
+        if (caster == EffectCaster.ENEMY) {
+            combat.applyNegativeStatusToPlayer(type, turns);
+        } else {
+            combat.applyNegativeStatusToEnemies(type, turns);
+        }
     }
 
     @Override
     public String toString() {
-        return "CombatContext{round=" + roundNumber + "}";
+        return "CombatContext{round=" + roundNumber + ", caster=" + caster + "}";
     }
 }
-

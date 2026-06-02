@@ -6,6 +6,11 @@ import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardInstance;
 import com.desertadventure.combat.card.ActionCardType;
 import com.desertadventure.combat.card.CombatPhase;
+import com.desertadventure.combat.enemy.EnemyAi;
+import com.desertadventure.combat.enemy.EnemyArchetypeDef;
+import com.desertadventure.combat.enemy.EnemyArchetypeId;
+import com.desertadventure.combat.enemy.EnemyArchetypeRegistry;
+import com.desertadventure.combat.enemy.RandomEnemyAi;
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.combat.model.NegativeStatusType;
 import com.desertadventure.config.CombatConfig;
@@ -18,6 +23,7 @@ import com.desertadventure.combat.system.presentation.PlayerAttackAnimation;
 import com.desertadventure.player.PlayerStats;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -67,13 +73,33 @@ public class CombatController {
     // --- Combat end outcome (produced immediately; finalization decided externally) ---
     private final CombatOutcomeFinalization outcomeFinalization = new CombatOutcomeFinalization();
 
+    // --- Enemy archetype (normal fights only; boss uses legacy fixed attack) ---
+    private EnemyArchetypeId currentEnemyArchetype;
+    private ActionCardDeck enemyDeck;
+    private final Set<Integer> enemyPlayedThisRound = new HashSet<>();
+    private final EnemyAi enemyAi;
+    private final RandomIntSource enemyHpRng;
+    private final Integer[] enemySlotInstanceIds = new Integer[SLOT_COUNT];
+    private final ActionCardType[] resolvedEnemySlotCards = new ActionCardType[SLOT_COUNT];
+    private EnemyArchetypeId lastDefeatedEnemyArchetype;
+
     public CombatController(PlayerStats playerStats) {
-        this(playerStats, defaultPlayerSlotRoller());
+        this(playerStats, defaultPlayerSlotRoller(), defaultEnemyAi(), defaultEnemyHpRng());
     }
 
     CombatController(PlayerStats playerStats, PlayerSlotRoller playerSlotRoller) {
+        this(playerStats, playerSlotRoller, defaultEnemyAi(), defaultEnemyHpRng());
+    }
+
+    CombatController(
+            PlayerStats playerStats,
+            PlayerSlotRoller playerSlotRoller,
+            EnemyAi enemyAi,
+            RandomIntSource enemyHpRng) {
         this.playerStats = playerStats;
         this.playerSlotRoller = playerSlotRoller;
+        this.enemyAi = enemyAi != null ? enemyAi : defaultEnemyAi();
+        this.enemyHpRng = enemyHpRng != null ? enemyHpRng : defaultEnemyHpRng();
     }
 
     public void setPlayerAttackAnimation(PlayerAttackAnimation playerAttackAnimation) {
@@ -151,11 +177,64 @@ public class CombatController {
         return bossFight;
     }
 
+    public EnemyArchetypeId getCurrentEnemyArchetype() {
+        return currentEnemyArchetype;
+    }
+
+    /** Archetype of the normal enemy defeated in the last VICTORY; null if none yet. */
+    public EnemyArchetypeId getLastDefeatedEnemyArchetype() {
+        return lastDefeatedEnemyArchetype;
+    }
+
     public ActionCardType getEnemyCardForSlot(int slotIndex) {
-        if (isEnemySlot(slotIndex)) {
+        ActionCardInstance instance = getEnemySlotCard(slotIndex);
+        if (instance != null) {
+            return instance.getType();
+        }
+        if (!isEnemySlot(slotIndex)) {
+            return null;
+        }
+        return currentEnemyArchetype == null ? ActionCardType.ATTACK : null;
+    }
+
+    private ActionCardInstance getEnemySlotCard(int slotIndex) {
+        if (!isEnemySlot(slotIndex) || currentEnemyArchetype == null || enemyDeck == null) {
+            return null;
+        }
+        Integer instanceId = enemySlotInstanceIds[slotIndex];
+        if (instanceId == null) {
+            return null;
+        }
+        return enemyDeck.findById(instanceId);
+    }
+
+    /** True when the given slot index is an enemy slot for the current round. */
+    public boolean isEnemySlotIndex(int slotIndex) {
+        return isEnemySlot(slotIndex);
+    }
+
+    /** Planned enemy card for UI/debug; null until rolled. */
+    public ActionCardType getPlannedEnemyCardForSlot(int slotIndex) {
+        return getEnemyCardForSlot(slotIndex);
+    }
+
+    /** Package-private: enemy deck instances for tests. */
+    List<ActionCardInstance> enemyDeckInstancesForTests() {
+        if (enemyDeck == null) {
+            return List.of();
+        }
+        return enemyDeck.getInstances();
+    }
+
+    /** Package-private: used by tests to assert plan==resolve. */
+    ActionCardType getResolvedEnemyCardForSlot(int slotIndex) {
+        if (!isEnemySlot(slotIndex)) {
+            return null;
+        }
+        if (currentEnemyArchetype == null) {
             return ActionCardType.ATTACK;
         }
-        return null;
+        return resolvedEnemySlotCards[slotIndex];
     }
 
     public Integer getSlotInstanceId(int slotIndex) {
@@ -227,10 +306,16 @@ public class CombatController {
     }
 
     public ActionCardInstance findCard(int instanceId) {
-        if (deck == null) {
-            return null;
+        if (deck != null) {
+            ActionCardInstance card = deck.findById(instanceId);
+            if (card != null) {
+                return card;
+            }
         }
-        return deck.findById(instanceId);
+        if (enemyDeck != null) {
+            return enemyDeck.findById(instanceId);
+        }
+        return null;
     }
 
     public boolean canConfirmPlanning() {
@@ -270,6 +355,7 @@ public class CombatController {
         resolvingSlotIndex = 0;
         resolveTimer = 0f;
         roundEndCooldownsApplied = false;
+        Arrays.fill(resolvedEnemySlotCards, null);
     }
 
     public void update(float delta) {
@@ -319,13 +405,22 @@ public class CombatController {
         }
         enemies.removeIf(enemy -> !enemy.isAlive());
         if (enemies.isEmpty()) {
+            if (!bossFight && currentEnemyArchetype != null) {
+                lastDefeatedEnemyArchetype = currentEnemyArchetype;
+            }
             return bossFight ? CombatOutcome.BOSS_VICTORY : CombatOutcome.VICTORY;
         }
         return null;
     }
 
     private void applyCardEffect(ActionCardType type) {
-        CombatContext ctx = new CombatContext(this, roundNumber, playedThisRound, resolvingSlotIndex);
+        applyCardEffect(type, EffectCaster.PLAYER);
+    }
+
+    private void applyCardEffect(ActionCardType type, EffectCaster caster) {
+        Set<Integer> resolvedThisRound =
+                caster == EffectCaster.ENEMY ? enemyPlayedThisRound : playedThisRound;
+        CombatContext ctx = new CombatContext(this, roundNumber, resolvedThisRound, resolvingSlotIndex, caster);
         effectResolver.resolve(ctx, type);
     }
 
@@ -363,19 +458,49 @@ public class CombatController {
         }
     }
 
-    private void dealDamageToPlayer(float amount) {
-        if (player == null) {
-            return;
-        }
-        player.takeDamage(amount);
-        syncPlayerStatsHp();
-    }
-
     void healPlayer(float amount) {
         if (player == null) {
             return;
         }
         player.heal(amount);
+        syncPlayerStatsHp();
+    }
+
+    void healEnemy(float amount) {
+        for (CombatEntity enemy : enemies) {
+            if (enemy.isAlive()) {
+                enemy.heal(amount);
+            }
+        }
+    }
+
+    void addEnemyShield(int amount) {
+        for (CombatEntity enemy : enemies) {
+            if (enemy.isAlive()) {
+                enemy.addShield(amount);
+            }
+        }
+    }
+
+    void halvePlayerHp() {
+        if (player == null) {
+            return;
+        }
+        player.setHp((float) Math.floor(player.getHp() / 2f));
+        syncPlayerStatsHp();
+    }
+
+    void applyNegativeStatusToPlayer(NegativeStatusType type, int turns) {
+        if (player != null && player.isAlive()) {
+            player.setNegativeStatus(type, turns);
+        }
+    }
+
+    void dealDamageToPlayer(float amount) {
+        if (player == null) {
+            return;
+        }
+        player.takeDamage(amount);
         syncPlayerStatsHp();
     }
 
@@ -391,6 +516,7 @@ public class CombatController {
 
         roundNumber++;
         rollPlayerSlotsForPlanning();
+        rollEnemySlotCards();
         phase = CombatPhase.PLANNING;
         selectedInstanceId = null;
     }
@@ -436,18 +562,23 @@ public class CombatController {
     }
 
     private void applyRoundEndCooldownsOnly() {
-        if (deck == null) {
+        applyRoundEndCooldownsForDeck(deck, playedThisRound);
+        applyRoundEndCooldownsForDeck(enemyDeck, enemyPlayedThisRound);
+    }
+
+    private static void applyRoundEndCooldownsForDeck(ActionCardDeck actionDeck, Set<Integer> playedThisRound) {
+        if (actionDeck == null) {
             playedThisRound.clear();
             return;
         }
         for (int instanceId : new HashSet<>(playedThisRound)) {
-            ActionCardInstance card = deck.findById(instanceId);
+            ActionCardInstance card = actionDeck.findById(instanceId);
             if (card != null) {
                 card.setCooldownRemaining(card.getType().getCooldownTurns());
             }
         }
         playedThisRound.clear();
-        for (ActionCardInstance instance : deck.getInstances()) {
+        for (ActionCardInstance instance : actionDeck.getInstances()) {
             instance.tickCooldown();
         }
     }
@@ -500,12 +631,23 @@ public class CombatController {
         playedThisRound.clear();
         roundEndCooldownsApplied = false;
         clearAllSlots();
+        clearEnemySlots();
+        enemyPlayedThisRound.clear();
         selectedInstanceId = null;
         resolveTimer = 0f;
+
+        currentEnemyArchetype = boss ? null : EnemyArchetypeId.DESERT_ZOMBIE;
+        if (currentEnemyArchetype != null) {
+            EnemyArchetypeDef archetype = EnemyArchetypeRegistry.getRequired(currentEnemyArchetype);
+            enemyDeck = ActionCardDeck.fromCardTypes(archetype.deckCardTypes());
+        } else {
+            enemyDeck = null;
+        }
 
         player = createPlayerEntity(arenaWidth, groundY);
         enemies.add(createOpponentEntity(distanceBand, boss, arenaWidth, groundY));
         rollPlayerSlotsForPlanning();
+        rollEnemySlotCards();
     }
 
     private CombatEntity createPlayerEntity(float arenaWidth, float groundY) {
@@ -527,15 +669,79 @@ public class CombatController {
         }
 
         float enemyX = arenaWidth * CombatConfig.COMBAT_ENEMY_X_RATIO;
-        // Test-mode tweak: normal enemies use fixed HP=7; keep boss HP logic untouched.
-        float enemyHp = 7f;
+        EnemyArchetypeDef archetype = EnemyArchetypeRegistry.getRequired(currentEnemyArchetype);
+        float enemyHp = archetype.rollMaxHp(enemyHpRng);
         CombatEntity enemy = new CombatEntity(CombatEntity.Kind.ENEMY, enemyX, groundY, enemyHp, 0, 0f);
         enemy.clearCombatStatus();
         return enemy;
     }
 
+    private void rollEnemySlotCards() {
+        clearEnemySlots();
+        if (currentEnemyArchetype == null || enemyDeck == null) {
+            return;
+        }
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            if (!isEnemySlot(i)) {
+                continue;
+            }
+            List<ActionCardInstance> candidates = enemySlotPickCandidates();
+            ActionCardInstance picked = enemyAi.pickCard(candidates);
+            if (picked != null) {
+                enemySlotInstanceIds[i] = picked.getInstanceId();
+            }
+        }
+    }
+
+    private List<ActionCardInstance> enemySlotPickCandidates() {
+        List<ActionCardInstance> candidates = new ArrayList<>();
+        if (enemyDeck == null) {
+            return candidates;
+        }
+        Set<Integer> assigned = assignedEnemySlotInstanceIds();
+        for (ActionCardInstance instance : enemyDeck.getInstances()) {
+            if (instance.isOnCooldown()) {
+                continue;
+            }
+            if (assigned.contains(instance.getInstanceId())) {
+                continue;
+            }
+            candidates.add(instance);
+        }
+        return candidates;
+    }
+
+    private Set<Integer> assignedEnemySlotInstanceIds() {
+        Set<Integer> ids = new HashSet<>();
+        for (Integer id : enemySlotInstanceIds) {
+            if (id != null) {
+                ids.add(id);
+            }
+        }
+        return ids;
+    }
+
+    private void clearEnemySlots() {
+        Arrays.fill(enemySlotInstanceIds, null);
+    }
+
     private void resolveEnemySlot() {
-        dealDamageToPlayer(ActionCardType.ATTACK.getPrimaryValue());
+        if (currentEnemyArchetype == null) {
+            dealDamageToPlayer(ActionCardType.ATTACK.getPrimaryValue());
+            return;
+        }
+        ActionCardInstance card = getEnemySlotCard(resolvingSlotIndex);
+        if (card == null) {
+            ActionCardInstance picked = enemyAi.pickCard(enemySlotPickCandidates());
+            if (picked == null) {
+                return;
+            }
+            card = picked;
+            enemySlotInstanceIds[resolvingSlotIndex] = picked.getInstanceId();
+        }
+        resolvedEnemySlotCards[resolvingSlotIndex] = card.getType();
+        applyCardEffect(card.getType(), EffectCaster.ENEMY);
+        enemyPlayedThisRound.add(card.getInstanceId());
     }
 
     private void resolvePlayerSlot(int slotIndex) {
@@ -573,8 +779,16 @@ public class CombatController {
                 CombatConfig.PLAYER_SLOTS_WEIGHT_24,
                 CombatConfig.PLAYER_SLOTS_WEIGHT_12,
                 CombatConfig.PLAYER_SLOTS_WEIGHT_34);
-        RandomIntSource rng = bound -> ThreadLocalRandom.current().nextInt(bound);
+        RandomIntSource rng = defaultEnemyHpRng();
         return new WeightedPlayerSlotRoller(weights, rng);
+    }
+
+    private static EnemyAi defaultEnemyAi() {
+        return new RandomEnemyAi(defaultEnemyHpRng());
+    }
+
+    private static RandomIntSource defaultEnemyHpRng() {
+        return bound -> ThreadLocalRandom.current().nextInt(bound);
     }
 
     private static final class NoopPlayerAttackAnimation implements PlayerAttackAnimation {

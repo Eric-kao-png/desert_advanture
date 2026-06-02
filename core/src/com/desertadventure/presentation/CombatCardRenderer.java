@@ -99,14 +99,14 @@ public final class CombatCardRenderer {
             float innerY = layout.innerCardY();
             float innerW = layout.innerCardW();
             float innerH = layout.innerCardH();
-            if (combat.getEnemyCardForSlot(i) != null) {
+            if (combat.isEnemySlotIndex(i)) {
                 drawCardShape(innerX, innerY, innerW, innerH, ENEMY_CARD);
-            } else {
-                ActionCardInstance card = combat.getSlotCard(i);
-                if (card != null) {
-                    Color fill = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_FILL : colorFor(card.getType());
-                    drawCardShape(innerX, innerY, innerW, innerH, fill);
-                }
+                continue;
+            }
+            ActionCardInstance card = combat.getSlotCard(i);
+            if (card != null) {
+                Color fill = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_FILL : colorFor(card.getType());
+                drawCardShape(innerX, innerY, innerW, innerH, fill);
             }
         }
         shapes.end();
@@ -203,15 +203,18 @@ public final class CombatCardRenderer {
             float innerY = layout.innerCardY();
             float innerW = layout.innerCardW();
             float innerH = layout.innerCardH();
-            if (combat.getEnemyCardForSlot(hoveredSlot) != null) {
-                drawTooltipPanel(font, ActionCardUiText.enemyAttackDetailLines(),
+            if (combat.isEnemySlotIndex(hoveredSlot)) {
+                drawTooltipPanel(
+                        font,
+                        ActionCardUiText.detailLines(combat.getPlannedEnemyCardForSlot(hoveredSlot)),
                         innerX, innerY, innerW, innerH);
-            } else {
-                ActionCardInstance card = combat.getSlotCard(hoveredSlot);
-                if (card != null) {
-                    drawTooltipPanel(font, ActionCardUiText.detailLines(card),
-                            innerX, innerY, innerW, innerH);
-                }
+                shapes.end();
+                return;
+            }
+            ActionCardInstance card = combat.getSlotCard(hoveredSlot);
+            if (card != null) {
+                drawTooltipPanel(font, ActionCardUiText.detailLines(card),
+                        innerX, innerY, innerW, innerH);
             }
         }
         shapes.end();
@@ -253,16 +256,19 @@ public final class CombatCardRenderer {
             float innerY = layout.innerCardY();
             float innerW = layout.innerCardW();
             float innerH = layout.innerCardH();
-            if (combat.getEnemyCardForSlot(i) != null) {
-                ActionCardUiText.drawCardFaceCentered(batch, font, ActionCardType.ATTACK,
-                        innerX, innerY, innerW, innerH, Color.WHITE);
-            } else {
-                ActionCardInstance card = combat.getSlotCard(i);
-                if (card != null) {
-                    Color textColor = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_TEXT : Color.WHITE;
-                    ActionCardUiText.drawCardFaceCentered(batch, font, card.getType(),
-                            innerX, innerY, innerW, innerH, textColor);
+            if (combat.isEnemySlotIndex(i)) {
+                ActionCardType type = combat.getPlannedEnemyCardForSlot(i);
+                if (type != null) {
+                    ActionCardUiText.drawCardFaceCentered(batch, font, type,
+                            innerX, innerY, innerW, innerH, Color.WHITE);
                 }
+                continue;
+            }
+            ActionCardInstance card = combat.getSlotCard(i);
+            if (card != null) {
+                Color textColor = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_TEXT : Color.WHITE;
+                ActionCardUiText.drawCardFaceCentered(batch, font, card.getType(),
+                        innerX, innerY, innerW, innerH, textColor);
             }
         }
     }
@@ -307,15 +313,18 @@ public final class CombatCardRenderer {
             float innerY = layout.innerCardY();
             float innerW = layout.innerCardW();
             float innerH = layout.innerCardH();
-            if (combat.getEnemyCardForSlot(hoveredSlot) != null) {
-                drawTooltipForCard(batch, font, ActionCardUiText.enemyAttackDetailLines(),
+            if (combat.isEnemySlotIndex(hoveredSlot)) {
+                drawTooltipForCard(
+                        batch,
+                        font,
+                        ActionCardUiText.detailLines(combat.getPlannedEnemyCardForSlot(hoveredSlot)),
                         innerX, innerY, innerW, innerH);
-            } else {
-                ActionCardInstance card = combat.getSlotCard(hoveredSlot);
-                if (card != null) {
-                    drawTooltipForCard(batch, font, ActionCardUiText.detailLines(card),
-                            innerX, innerY, innerW, innerH);
-                }
+                return;
+            }
+            ActionCardInstance card = combat.getSlotCard(hoveredSlot);
+            if (card != null) {
+                drawTooltipForCard(batch, font, ActionCardUiText.detailLines(card),
+                        innerX, innerY, innerW, innerH);
             }
         }
     }

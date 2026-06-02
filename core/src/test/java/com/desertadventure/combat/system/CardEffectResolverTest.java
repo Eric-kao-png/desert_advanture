@@ -40,6 +40,33 @@ public class CardEffectResolverTest {
     }
 
     @Test
+    void enemyCaster_attack_dealsDamageToPlayer() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(
+                new CombatContext(combat, 1, Set.of(), -1, EffectCaster.ENEMY),
+                ActionCardType.ATTACK);
+
+        assertEquals(2f, combat.damageToPlayer, 0.001f);
+        assertEquals(0f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void enemyCaster_heal_healsEnemy() {
+        FakeCombatController combat = new FakeCombatController();
+        var enemy = new com.desertadventure.combat.model.CombatEntity(
+                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+        enemy.setHp(3f);
+        combat.enemies.add(enemy);
+
+        resolver.resolve(
+                new CombatContext(combat, 1, Set.of(), -1, EffectCaster.ENEMY),
+                ActionCardType.HEAL);
+
+        assertEquals(7f, enemy.getHp(), 0.001f);
+    }
+
+    @Test
     void strongAttack_deals3Damage() {
         FakeCombatController combat = new FakeCombatController();
 
@@ -402,7 +429,9 @@ public class CardEffectResolverTest {
      */
     static final class FakeCombatController extends CombatController {
         float damageToEnemies;
+        float damageToPlayer;
         float healPlayerAmount;
+        final java.util.List<com.desertadventure.combat.model.CombatEntity> enemies = new java.util.ArrayList<>();
         com.desertadventure.combat.model.NegativeStatusType appliedNegativeStatus;
         int appliedNegativeStatusTurns;
         int halveEnemyHpCalls;
@@ -428,8 +457,22 @@ public class CardEffectResolverTest {
         }
 
         @Override
+        void dealDamageToPlayer(float amount) {
+            damageToPlayer += amount;
+        }
+
+        @Override
         void healPlayer(float amount) {
             healPlayerAmount += amount;
+        }
+
+        @Override
+        void healEnemy(float amount) {
+            for (com.desertadventure.combat.model.CombatEntity enemy : enemies) {
+                if (enemy.isAlive()) {
+                    enemy.heal(amount);
+                }
+            }
         }
 
         @Override
@@ -450,7 +493,7 @@ public class CardEffectResolverTest {
 
         @Override
         public java.util.List<com.desertadventure.combat.model.CombatEntity> getEnemies() {
-            return java.util.List.of();
+            return enemies;
         }
     }
 }

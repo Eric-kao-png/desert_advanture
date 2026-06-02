@@ -79,6 +79,19 @@ public final class ActionCardUiText {
         };
     }
 
+    /** Detail lines for non-hand cards (e.g. enemy planned cards). */
+    public static String[] detailLines(ActionCardType type) {
+        if (type == null) {
+            return new String[] { "Unknown" };
+        }
+        return new String[] {
+                type.getDisplayName(),
+                GameMessages.cardCategoryTooltip(type.getCategory()),
+                effectLabel(type),
+                "Cooldown: " + type.getCooldownTurns(),
+        };
+    }
+
     public static TooltipBounds measureTooltip(BitmapFont font, String[] lines) {
         float maxW = 0f;
         for (String line : lines) {

@@ -4,6 +4,7 @@ import com.desertadventure.combat.CombatOutcome;
 import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardRewards;
 import com.desertadventure.combat.card.ActionCardType;
+import com.desertadventure.combat.enemy.EnemyArchetypeId;
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.config.GameMessages;
 import com.desertadventure.exploration.TravelMovement;
@@ -49,22 +50,25 @@ public final class CombatOutcomeApplier {
         this.player = player;
     }
 
-    public void apply(CombatOutcome outcome) {
+    public void apply(CombatOutcome outcome, EnemyArchetypeId defeatedEnemyArchetype) {
         Tile tile = map.getTile(player.get());
         switch (outcome) {
-            case VICTORY -> applyVictory(tile);
+            case VICTORY -> applyVictory(tile, defeatedEnemyArchetype);
             // Camp-clear boss uses BOSS_VICTORY, not VICTORY — no random card loot here.
             case BOSS_VICTORY -> applyBossVictory();
             case DEFEAT -> triggerStorm.run();
         }
     }
 
-    private void applyVictory(Tile tile) {
+    private void applyVictory(Tile tile, EnemyArchetypeId defeatedEnemyArchetype) {
         tile.setCycleCleared(true);
         map.markCycleModified(tile.getPosition());
         playerStats.addExperience(GameConfig.VICTORY_EXPERIENCE);
         messages.push(GameMessages.BATTLE_WON);
-        ActionCardType reward = ActionCardRewards.rollVictoryCard();
+        if (defeatedEnemyArchetype == null) {
+            throw new IllegalStateException("VICTORY requires a defeated enemy archetype");
+        }
+        ActionCardType reward = ActionCardRewards.rollVictoryCard(defeatedEnemyArchetype);
         actionCardDeck.addCard(reward);
         messages.push(GameMessages.cardGained(reward.getDisplayName()));
         if (travel.hasActivePlan()) {
