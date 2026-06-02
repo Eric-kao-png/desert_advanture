@@ -78,6 +78,53 @@ public final class CombatContext {
         }
     }
 
+    public void dealDamageToEnemiesIgnoringShield(float amount) {
+        if (caster == EffectCaster.ENEMY) {
+            combat.dealDamageToPlayerIgnoringShield(amount);
+        } else {
+            combat.dealDamageToEnemyIgnoringShield(amount);
+        }
+    }
+
+    public void clearCasterNegativeStatus() {
+        if (caster == EffectCaster.ENEMY) {
+            combat.clearNegativeStatusOnEnemies();
+        } else {
+            combat.clearNegativeStatusOnPlayer();
+        }
+    }
+
+    public void transferCasterNegativeToOpponent() {
+        if (caster == EffectCaster.ENEMY) {
+            combat.transferNegativeStatusFromEnemyToPlayer();
+        } else {
+            combat.transferNegativeStatusFromPlayerToEnemies();
+        }
+    }
+
+    public void applyRandomPoisonToEnemies() {
+        int turns = combat.rollPoisonBoltPoisonTurns();
+        if (turns > 0) {
+            applyNegativeStatusToEnemies(NegativeStatusType.POISON, turns);
+        }
+    }
+
+    public boolean casterHasNegativeStatus() {
+        if (caster == EffectCaster.ENEMY) {
+            return combat.enemyHasNegativeStatus();
+        }
+        CombatEntity p = combat.getPlayer();
+        return p != null && p.hasNegativeStatus();
+    }
+
+    public boolean opponentHasNegativeStatus() {
+        if (caster == EffectCaster.ENEMY) {
+            CombatEntity p = combat.getPlayer();
+            return p != null && p.hasNegativeStatus();
+        }
+        return combat.enemyHasNegativeStatus();
+    }
+
     public void healPlayer(float amount) {
         if (caster == EffectCaster.ENEMY) {
             combat.healEnemy(amount);

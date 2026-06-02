@@ -138,6 +138,13 @@ public final class ActionCardUiText {
                     + type.getPrimaryValue();
             case POISON -> "Poison: " + type.getPrimaryValue() + " rds, "
                     + type.getSecondaryValue() + " dmg/round";
+            case PURIFY -> "Clear debuff or heal " + type.getSecondaryValue();
+            case IGNORE_SHIELD_DAMAGE -> "Damage: " + type.getPrimaryValue() + " (ignores shield)";
+            case RANDOM_POISON_DAMAGE -> "Damage: " + type.getPrimaryValue()
+                    + ", 25% poison 1 rd / 25% 2 rds";
+            case TRANSFER_DEBUFF -> "Transfer your debuff to enemy";
+            case BONUS_DAMAGE_VS_DEBUFFED -> "Damage: " + type.getSecondaryValue()
+                    + " if debuffed, else " + type.getPrimaryValue();
         };
     }
 

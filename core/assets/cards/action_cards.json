@@ -148,6 +148,66 @@
         { "template": "DEAL_DAMAGE", "amount": 3 },
         { "template": "HEAL_SELF", "amount": 3 }
       ]
+    },
+    {
+      "id": "PURIFY",
+      "name": "Purify",
+      "category": "UTILITY",
+      "cooldown": 2,
+      "targeting": "SELF",
+      "effects": [
+        {
+          "when": { "type": "CASTER_HAS_NEGATIVE_STATUS" },
+          "template": "CLEAR_SELF_NEGATIVE_STATUS"
+        },
+        { "template": "HEAL_SELF", "amount": 2 }
+      ]
+    },
+    {
+      "id": "MAGIC_BOLT",
+      "name": "Magic Bolt",
+      "category": "OFFENSE",
+      "cooldown": 2,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "DEAL_DAMAGE_IGNORE_SHIELD", "amount": 3 }
+      ]
+    },
+    {
+      "id": "POISON_BOLT",
+      "name": "Poison Bolt",
+      "category": "OFFENSE",
+      "cooldown": 2,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "DEAL_DAMAGE", "amount": 2 },
+        { "template": "APPLY_RANDOM_POISON" }
+      ]
+    },
+    {
+      "id": "MAGIC_MIRROR",
+      "name": "Magic Mirror",
+      "category": "UTILITY",
+      "cooldown": 3,
+      "targeting": "SELF",
+      "effects": [
+        { "template": "TRANSFER_NEGATIVE_STATUS_TO_OPPONENT" }
+      ]
+    },
+    {
+      "id": "MAGIC_ARROW",
+      "name": "Magic Arrow",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        {
+          "when": { "type": "OPPONENT_HAS_NEGATIVE_STATUS" },
+          "template": "DEAL_DAMAGE",
+          "amount": 4
+        },
+        { "template": "DEAL_DAMAGE", "amount": 3 }
+      ]
     }
   ]
 }

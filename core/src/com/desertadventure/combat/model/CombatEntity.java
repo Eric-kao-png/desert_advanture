@@ -150,6 +150,15 @@ public class CombatEntity {
         return negativeTurnsRemaining;
     }
 
+    public boolean hasNegativeStatus() {
+        return negativeTurnsRemaining > 0 && negativeType != null;
+    }
+
+    public void clearNegativeStatus() {
+        negativeType = null;
+        negativeTurnsRemaining = 0;
+    }
+
     /** Replaces any existing positive status. */
     public void setPositiveStatus(PositiveStatusType type, int turns) {
         if (!alive || type == null || turns <= 0) {
@@ -194,6 +203,14 @@ public class CombatEntity {
 
     /** Status tick damage; does not consume shield. */
     public void takeStatusDamage(float amount) {
+        if (!alive || amount <= 0f) {
+            return;
+        }
+        applyDirectDamage(amount);
+    }
+
+    /** Card damage that bypasses shield (still respects alive check). */
+    public void takeDamageIgnoringShield(float amount) {
         if (!alive || amount <= 0f) {
             return;
         }

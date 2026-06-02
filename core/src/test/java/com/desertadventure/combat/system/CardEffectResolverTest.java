@@ -195,6 +195,110 @@ public class CardEffectResolverTest {
         assertEquals(3f, combat.healPlayerAmount, 0.001f);
     }
 
+    @Test
+    void purify_withDebuff_clearsNegativeStatus() {
+        FakeCombatController combat = new FakeCombatController();
+        combat.playerEntity.setNegativeStatus(
+                com.desertadventure.combat.model.NegativeStatusType.POISON, 2);
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.PURIFY);
+
+        assertEquals(0, combat.playerEntity.getNegativeTurnsRemaining());
+        assertEquals(0f, combat.healPlayerAmount, 0.001f);
+    }
+
+    @Test
+    void purify_withoutDebuff_heals2() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.PURIFY);
+
+        assertEquals(2f, combat.healPlayerAmount, 0.001f);
+    }
+
+    @Test
+    void magicBolt_deals3IgnoringShield() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.MAGIC_BOLT);
+
+        assertEquals(3f, combat.damageIgnoringShieldToEnemies, 0.001f);
+    }
+
+    @Test
+    void poisonBolt_deals2_andAppliesPoisonOnLowRoll() {
+        FakeCombatController combat = new FakeCombatController();
+        combat.setCardEffectRngForTests(bound -> bound == 100 ? 10 : 0);
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON_BOLT);
+
+        assertEquals(2f, combat.damageToEnemies, 0.001f);
+        assertEquals(com.desertadventure.combat.model.NegativeStatusType.POISON, combat.appliedNegativeStatus);
+        assertEquals(1, combat.appliedNegativeStatusTurns);
+    }
+
+    @Test
+    void poisonBolt_noPoisonOnHighRoll() {
+        FakeCombatController combat = new FakeCombatController();
+        combat.setCardEffectRngForTests(bound -> bound == 100 ? 60 : 0);
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON_BOLT);
+
+        assertEquals(2f, combat.damageToEnemies, 0.001f);
+        assertEquals(null, combat.appliedNegativeStatus);
+    }
+
+    @Test
+    void magicMirror_transfersPlayerDebuffToEnemy() {
+        FakeCombatController combat = new FakeCombatController();
+        var enemy = new com.desertadventure.combat.model.CombatEntity(
+                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+        combat.enemies.add(enemy);
+        combat.playerEntity.setNegativeStatus(
+                com.desertadventure.combat.model.NegativeStatusType.BLEED, 2);
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.MAGIC_MIRROR);
+
+        assertEquals(0, combat.playerEntity.getNegativeTurnsRemaining());
+        assertEquals(com.desertadventure.combat.model.NegativeStatusType.BLEED, enemy.getNegativeStatusType());
+        assertEquals(2, enemy.getNegativeTurnsRemaining());
+    }
+
+    @Test
+    void enemyCaster_magicMirror_transfersEnemyDebuffToPlayer() {
+        FakeCombatController combat = new FakeCombatController();
+        var enemy = new com.desertadventure.combat.model.CombatEntity(
+                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+        enemy.setNegativeStatus(com.desertadventure.combat.model.NegativeStatusType.POISON, 1);
+        combat.enemies.add(enemy);
+
+        resolver.resolve(
+                new CombatContext(combat, 1, Set.of(), -1, EffectCaster.ENEMY),
+                ActionCardType.MAGIC_MIRROR);
+
+        assertEquals(0, enemy.getNegativeTurnsRemaining());
+        assertEquals(com.desertadventure.combat.model.NegativeStatusType.POISON,
+                combat.playerEntity.getNegativeStatusType());
+        assertEquals(1, combat.playerEntity.getNegativeTurnsRemaining());
+    }
+
+    @Test
+    void magicArrow_deals4WhenTargetHasDebuff_else3() {
+        FakeCombatController combat = new FakeCombatController();
+        var enemy = new com.desertadventure.combat.model.CombatEntity(
+                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+        enemy.setNegativeStatus(com.desertadventure.combat.model.NegativeStatusType.FEAR, 1);
+        combat.enemies.add(enemy);
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.MAGIC_ARROW);
+        assertEquals(4f, combat.damageToEnemies, 0.001f);
+
+        combat.damageToEnemies = 0f;
+        enemy.clearNegativeStatus();
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.MAGIC_ARROW);
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+    }
+
     private static Map<String, CardDef> minimalDefs() {
         Map<String, CardDef> defs = new HashMap<>();
         defs.put("ATTACK", simpleDamageDef("ATTACK", "Attack", 1, 2));
@@ -210,6 +314,11 @@ public class CardEffectResolverTest {
         defs.put("BLADE", bladeDef());
         defs.put("GREAT_BLADE", greatBladeDef());
         defs.put("VAMPIRISM", vampirismDef());
+        defs.put("PURIFY", purifyDef());
+        defs.put("MAGIC_BOLT", simpleDamageIgnoreShieldDef());
+        defs.put("POISON_BOLT", poisonBoltDef());
+        defs.put("MAGIC_MIRROR", magicMirrorDef());
+        defs.put("MAGIC_ARROW", magicArrowDef());
         return defs;
     }
 
@@ -403,6 +512,100 @@ public class CardEffectResolverTest {
         return def;
     }
 
+    private static CardDef purifyDef() {
+        CardDef def = new CardDef();
+        def.id = "PURIFY";
+        def.name = "Purify";
+        def.category = CardCategoryId.UTILITY;
+        def.cooldown = 2;
+        def.targeting = CardTargetingId.SELF;
+
+        CardEffectConditionDef cond = new CardEffectConditionDef();
+        cond.type = com.desertadventure.combat.system.effects.ConditionType.CASTER_HAS_NEGATIVE_STATUS;
+
+        CardEffectStepDef clear = new CardEffectStepDef();
+        clear.when = cond;
+        clear.template = com.desertadventure.combat.system.effects.EffectTemplateId.CLEAR_SELF_NEGATIVE_STATUS;
+
+        CardEffectStepDef heal = new CardEffectStepDef();
+        heal.template = com.desertadventure.combat.system.effects.EffectTemplateId.HEAL_SELF;
+        heal.amount = 2;
+
+        def.effects = List.of(clear, heal);
+        return def;
+    }
+
+    private static CardDef simpleDamageIgnoreShieldDef() {
+        CardDef def = new CardDef();
+        def.id = "MAGIC_BOLT";
+        def.name = "Magic Bolt";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 2;
+        def.targeting = CardTargetingId.ENEMY;
+        CardEffectStepDef step = new CardEffectStepDef();
+        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE_IGNORE_SHIELD;
+        step.amount = 3;
+        def.effects = List.of(step);
+        return def;
+    }
+
+    private static CardDef poisonBoltDef() {
+        CardDef def = new CardDef();
+        def.id = "POISON_BOLT";
+        def.name = "Poison Bolt";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 2;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectStepDef damage = new CardEffectStepDef();
+        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        damage.amount = 2;
+
+        CardEffectStepDef poison = new CardEffectStepDef();
+        poison.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_RANDOM_POISON;
+
+        def.effects = List.of(damage, poison);
+        return def;
+    }
+
+    private static CardDef magicMirrorDef() {
+        CardDef def = new CardDef();
+        def.id = "MAGIC_MIRROR";
+        def.name = "Magic Mirror";
+        def.category = CardCategoryId.UTILITY;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.SELF;
+        CardEffectStepDef step = new CardEffectStepDef();
+        step.template =
+                com.desertadventure.combat.system.effects.EffectTemplateId.TRANSFER_NEGATIVE_STATUS_TO_OPPONENT;
+        def.effects = List.of(step);
+        return def;
+    }
+
+    private static CardDef magicArrowDef() {
+        CardDef def = new CardDef();
+        def.id = "MAGIC_ARROW";
+        def.name = "Magic Arrow";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectConditionDef cond = new CardEffectConditionDef();
+        cond.type = com.desertadventure.combat.system.effects.ConditionType.OPPONENT_HAS_NEGATIVE_STATUS;
+
+        CardEffectStepDef bonus = new CardEffectStepDef();
+        bonus.when = cond;
+        bonus.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        bonus.amount = 4;
+
+        CardEffectStepDef fallback = new CardEffectStepDef();
+        fallback.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        fallback.amount = 3;
+
+        def.effects = List.of(bonus, fallback);
+        return def;
+    }
+
     private static CardDef vampirismDef() {
         CardDef def = new CardDef();
         def.id = "VAMPIRISM";
@@ -429,7 +632,9 @@ public class CardEffectResolverTest {
      */
     static final class FakeCombatController extends CombatController {
         float damageToEnemies;
+        float damageIgnoringShieldToEnemies;
         float damageToPlayer;
+        float damageIgnoringShieldToPlayer;
         float healPlayerAmount;
         final java.util.List<com.desertadventure.combat.model.CombatEntity> enemies = new java.util.ArrayList<>();
         com.desertadventure.combat.model.NegativeStatusType appliedNegativeStatus;
@@ -457,8 +662,70 @@ public class CardEffectResolverTest {
         }
 
         @Override
+        void dealDamageToEnemyIgnoringShield(float amount) {
+            damageIgnoringShieldToEnemies += amount;
+        }
+
+        @Override
         void dealDamageToPlayer(float amount) {
             damageToPlayer += amount;
+        }
+
+        @Override
+        void dealDamageToPlayerIgnoringShield(float amount) {
+            damageIgnoringShieldToPlayer += amount;
+        }
+
+        @Override
+        void clearNegativeStatusOnPlayer() {
+            playerEntity.clearNegativeStatus();
+        }
+
+        @Override
+        void clearNegativeStatusOnEnemies() {
+            for (com.desertadventure.combat.model.CombatEntity enemy : enemies) {
+                if (enemy.isAlive()) {
+                    enemy.clearNegativeStatus();
+                }
+            }
+        }
+
+        @Override
+        void transferNegativeStatusFromPlayerToEnemies() {
+            if (!playerEntity.hasNegativeStatus()) {
+                return;
+            }
+            var type = playerEntity.getNegativeStatusType();
+            int turns = playerEntity.getNegativeTurnsRemaining();
+            playerEntity.clearNegativeStatus();
+            for (com.desertadventure.combat.model.CombatEntity enemy : enemies) {
+                if (enemy.isAlive()) {
+                    enemy.setNegativeStatus(type, turns);
+                }
+            }
+        }
+
+        @Override
+        void transferNegativeStatusFromEnemyToPlayer() {
+            for (com.desertadventure.combat.model.CombatEntity enemy : enemies) {
+                if (enemy.isAlive() && enemy.hasNegativeStatus()) {
+                    var type = enemy.getNegativeStatusType();
+                    int turns = enemy.getNegativeTurnsRemaining();
+                    enemy.clearNegativeStatus();
+                    playerEntity.setNegativeStatus(type, turns);
+                    return;
+                }
+            }
+        }
+
+        @Override
+        boolean enemyHasNegativeStatus() {
+            for (com.desertadventure.combat.model.CombatEntity enemy : enemies) {
+                if (enemy.isAlive() && enemy.hasNegativeStatus()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override

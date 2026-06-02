@@ -16,7 +16,12 @@ public enum ActionCardType {
     CHARGED_SLASH,
     BLADE,
     GREAT_BLADE,
-    VAMPIRISM;
+    VAMPIRISM,
+    PURIFY,
+    MAGIC_BOLT,
+    POISON_BOLT,
+    MAGIC_MIRROR,
+    MAGIC_ARROW;
 
     public String getDisplayName() {
         return def().name;
@@ -25,11 +30,12 @@ public enum ActionCardType {
     public int getPrimaryValue() {
         CardDef def = def();
         return switch (this) {
-            case ATTACK, SWIFT_STRIKE, HEAL, SHIELD, CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM -> def.firstAmount();
+            case ATTACK, SWIFT_STRIKE, HEAL, SHIELD, CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM,
+                    MAGIC_BOLT, POISON_BOLT, MAGIC_ARROW -> def.firstAmount();
             case ASSAULT -> def.minAmount();
             case AMBUSH -> def.minAmount();
             case POISON_MAGIC -> def.firstTurns();
-            case LIFE_MAGIC -> 0;
+            case LIFE_MAGIC, PURIFY, MAGIC_MIRROR -> 0;
         };
     }
 
@@ -40,6 +46,8 @@ public enum ActionCardType {
             case AMBUSH -> def.maxAmount();
             case POISON_MAGIC -> def.firstAmount();
             case BLADE, GREAT_BLADE -> def.firstTurns();
+            case PURIFY -> 2;
+            case MAGIC_ARROW -> def.maxAmount();
             default -> 0;
         };
     }
@@ -63,12 +71,17 @@ public enum ActionCardType {
         // Legacy field kept for UI and any switch-based fallbacks; resolver uses JSON templates.
         return switch (this) {
             case ATTACK, SWIFT_STRIKE, CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM -> ActionCardMechanic.DAMAGE;
+            case POISON_BOLT -> ActionCardMechanic.RANDOM_POISON_DAMAGE;
             case HEAL -> ActionCardMechanic.HEAL;
             case SHIELD -> ActionCardMechanic.SHIELD;
             case ASSAULT -> ActionCardMechanic.FULL_POWER_ATTACK;
             case LIFE_MAGIC -> ActionCardMechanic.HALVE_ENEMY_HP;
             case AMBUSH -> ActionCardMechanic.THRUST;
             case POISON_MAGIC -> ActionCardMechanic.POISON;
+            case PURIFY -> ActionCardMechanic.PURIFY;
+            case MAGIC_BOLT -> ActionCardMechanic.IGNORE_SHIELD_DAMAGE;
+            case MAGIC_MIRROR -> ActionCardMechanic.TRANSFER_DEBUFF;
+            case MAGIC_ARROW -> ActionCardMechanic.BONUS_DAMAGE_VS_DEBUFFED;
         };
     }
 

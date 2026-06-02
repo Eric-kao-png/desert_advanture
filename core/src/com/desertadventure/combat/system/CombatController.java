@@ -79,6 +79,7 @@ public class CombatController {
     private final Set<Integer> enemyPlayedThisRound = new HashSet<>();
     private final EnemyAi enemyAi;
     private final RandomIntSource enemyHpRng;
+    private RandomIntSource cardEffectRng = defaultCardEffectRng();
     private final Integer[] enemySlotInstanceIds = new Integer[SLOT_COUNT];
     private final ActionCardType[] resolvedEnemySlotCards = new ActionCardType[SLOT_COUNT];
     private EnemyArchetypeId lastDefeatedEnemyArchetype;
@@ -440,6 +441,70 @@ public class CombatController {
         }
     }
 
+    void clearNegativeStatusOnPlayer() {
+        if (player != null && player.isAlive()) {
+            player.clearNegativeStatus();
+        }
+    }
+
+    void clearNegativeStatusOnEnemies() {
+        for (CombatEntity enemy : enemies) {
+            if (enemy.isAlive()) {
+                enemy.clearNegativeStatus();
+            }
+        }
+    }
+
+    void transferNegativeStatusFromPlayerToEnemies() {
+        if (player == null || !player.hasNegativeStatus()) {
+            return;
+        }
+        NegativeStatusType type = player.getNegativeStatusType();
+        int turns = player.getNegativeTurnsRemaining();
+        player.clearNegativeStatus();
+        for (CombatEntity enemy : enemies) {
+            if (enemy.isAlive()) {
+                enemy.setNegativeStatus(type, turns);
+            }
+        }
+    }
+
+    void transferNegativeStatusFromEnemyToPlayer() {
+        CombatEntity enemy = firstAliveEnemy();
+        if (enemy == null || !enemy.hasNegativeStatus() || player == null) {
+            return;
+        }
+        NegativeStatusType type = enemy.getNegativeStatusType();
+        int turns = enemy.getNegativeTurnsRemaining();
+        enemy.clearNegativeStatus();
+        if (player.isAlive()) {
+            player.setNegativeStatus(type, turns);
+        }
+    }
+
+    boolean enemyHasNegativeStatus() {
+        CombatEntity enemy = firstAliveEnemy();
+        return enemy != null && enemy.hasNegativeStatus();
+    }
+
+    /**
+     * One roll for poison bolt: &lt;25 → 1 turn, &lt;50 → 2 turns, else none (mutually exclusive).
+     */
+    int rollPoisonBoltPoisonTurns() {
+        int roll = cardEffectRng.nextInt(100);
+        if (roll < 25) {
+            return 1;
+        }
+        if (roll < 50) {
+            return 2;
+        }
+        return 0;
+    }
+
+    void setCardEffectRngForTests(RandomIntSource rng) {
+        cardEffectRng = rng != null ? rng : defaultCardEffectRng();
+    }
+
     void dealDamageToEnemy(float amount) {
         dealDamageToEnemy(amount, DamageSource.OFFENSE_CARD);
     }
@@ -496,12 +561,42 @@ public class CombatController {
         }
     }
 
+    void dealDamageToEnemyIgnoringShield(float amount) {
+        for (CombatEntity enemy : enemies) {
+            if (enemy.isAlive()) {
+                float finalAmount = amount;
+                if (enemy.getNegativeStatusType() == NegativeStatusType.FEAR
+                        && enemy.getNegativeTurnsRemaining() > 0) {
+                    finalAmount += 1f;
+                }
+                enemy.takeDamageIgnoringShield(finalAmount);
+            }
+        }
+    }
+
     void dealDamageToPlayer(float amount) {
         if (player == null) {
             return;
         }
         player.takeDamage(amount);
         syncPlayerStatsHp();
+    }
+
+    void dealDamageToPlayerIgnoringShield(float amount) {
+        if (player == null) {
+            return;
+        }
+        player.takeDamageIgnoringShield(amount);
+        syncPlayerStatsHp();
+    }
+
+    private CombatEntity firstAliveEnemy() {
+        for (CombatEntity enemy : enemies) {
+            if (enemy.isAlive()) {
+                return enemy;
+            }
+        }
+        return null;
     }
 
     private void finishRound() {
@@ -785,6 +880,10 @@ public class CombatController {
 
     private static EnemyAi defaultEnemyAi() {
         return new RandomEnemyAi(defaultEnemyHpRng());
+    }
+
+    private static RandomIntSource defaultCardEffectRng() {
+        return bound -> ThreadLocalRandom.current().nextInt(bound);
     }
 
     private static RandomIntSource defaultEnemyHpRng() {

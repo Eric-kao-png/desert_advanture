@@ -20,11 +20,17 @@ final class CardEffectResolver {
 
     CardEffectResolver() {
         registerTemplate(EffectTemplateId.DEAL_DAMAGE, (ctx, step) -> ctx.dealDamageToEnemies(step.amount));
+        registerTemplate(EffectTemplateId.DEAL_DAMAGE_IGNORE_SHIELD,
+                (ctx, step) -> ctx.dealDamageToEnemiesIgnoringShield(step.amount));
         registerTemplate(EffectTemplateId.HEAL_SELF, (ctx, step) -> ctx.healPlayer(step.amount));
         registerTemplate(EffectTemplateId.ADD_SHIELD, (ctx, step) -> ctx.addPlayerShield(step.amount));
         registerTemplate(EffectTemplateId.HALVE_ENEMY_HP, (ctx, step) -> ctx.halveEnemyHp());
         registerTemplate(EffectTemplateId.APPLY_NEGATIVE_STATUS, (ctx, step) ->
                 ctx.applyNegativeStatusToEnemies(step.status, step.turns));
+        registerTemplate(EffectTemplateId.APPLY_RANDOM_POISON, (ctx, step) -> ctx.applyRandomPoisonToEnemies());
+        registerTemplate(EffectTemplateId.CLEAR_SELF_NEGATIVE_STATUS, (ctx, step) -> ctx.clearCasterNegativeStatus());
+        registerTemplate(EffectTemplateId.TRANSFER_NEGATIVE_STATUS_TO_OPPONENT,
+                (ctx, step) -> ctx.transferCasterNegativeToOpponent());
 
         registerCondition(ConditionType.ROUND_EQUALS,
                 (ctx, when) -> when.round != null && ctx.roundNumber() == when.round);
@@ -35,6 +41,8 @@ final class CardEffectResolver {
         });
         registerCondition(ConditionType.SLOT_INDEX_EQUALS,
                 (ctx, when) -> when.slotIndex != null && ctx.resolvingSlotIndex() == when.slotIndex);
+        registerCondition(ConditionType.CASTER_HAS_NEGATIVE_STATUS, (ctx, when) -> ctx.casterHasNegativeStatus());
+        registerCondition(ConditionType.OPPONENT_HAS_NEGATIVE_STATUS, (ctx, when) -> ctx.opponentHasNegativeStatus());
     }
 
     void resolve(CombatContext ctx, ActionCardType type) {
