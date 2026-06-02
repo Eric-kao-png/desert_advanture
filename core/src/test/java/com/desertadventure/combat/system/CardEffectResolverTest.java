@@ -31,6 +31,61 @@ public class CardEffectResolverTest {
     }
 
     @Test
+    void attack_deals2Damage() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.ATTACK);
+
+        assertEquals(2f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void strongAttack_deals3Damage() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.STRONG_ATTACK);
+
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void healSelf_heals4() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.HEAL);
+
+        assertEquals(4f, combat.healPlayerAmount, 0.001f);
+    }
+
+    @Test
+    void shield_adds4Shield() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.SHIELD);
+
+        assertEquals(4, combat.playerEntity.getShield());
+    }
+
+    @Test
+    void poison_appliesPoisonFor2Turns() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON);
+
+        assertEquals("POISON", combat.appliedNegativeStatusId);
+        assertEquals(2, combat.appliedNegativeStatusTurns);
+    }
+
+    @Test
+    void lifeMagic_halvesEnemyHp() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.LIFE_MAGIC);
+
+        assertEquals(1, combat.halveEnemyHpCalls);
+    }
+
+    @Test
     void fullPower_noUtilityResolved_executesConditional6Damage() {
         FakeCombatController combat = new FakeCombatController();
         CombatContext ctx = new CombatContext(combat, 1, Set.of());
@@ -64,10 +119,29 @@ public class CardEffectResolverTest {
 
     private static Map<String, CardDef> minimalDefs() {
         Map<String, CardDef> defs = new HashMap<>();
+        defs.put("ATTACK", simpleDamageDef("ATTACK", "Attack", 1, 2));
+        defs.put("STRONG_ATTACK", simpleDamageDef("STRONG_ATTACK", "Strong Attack", 2, 3));
+        defs.put("HEAL", simpleHealDef());
+        defs.put("SHIELD", simpleShieldDef());
         defs.put("FULL_POWER_ATTACK", fullPowerDef());
         defs.put("THRUST", thrustDef());
-        defs.put("HEAL", simpleHealDef());
+        defs.put("LIFE_MAGIC", lifeMagicDef());
+        defs.put("POISON", poisonDef());
         return defs;
+    }
+
+    private static CardDef simpleDamageDef(String id, String name, int cooldown, int damage) {
+        CardDef def = new CardDef();
+        def.id = id;
+        def.name = name;
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = cooldown;
+        def.targeting = CardTargetingId.ENEMY;
+        CardEffectStepDef step = new CardEffectStepDef();
+        step.template = "DealDamage";
+        step.amount = damage;
+        def.effects = List.of(step);
+        return def;
     }
 
     private static CardDef simpleHealDef() {
@@ -79,6 +153,20 @@ public class CardEffectResolverTest {
         def.targeting = CardTargetingId.SELF;
         CardEffectStepDef step = new CardEffectStepDef();
         step.template = "HealSelf";
+        step.amount = 4;
+        def.effects = List.of(step);
+        return def;
+    }
+
+    private static CardDef simpleShieldDef() {
+        CardDef def = new CardDef();
+        def.id = "SHIELD";
+        def.name = "Shield";
+        def.category = CardCategoryId.UTILITY;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.SELF;
+        CardEffectStepDef step = new CardEffectStepDef();
+        step.template = "AddShield";
         step.amount = 4;
         def.effects = List.of(step);
         return def;
@@ -107,6 +195,36 @@ public class CardEffectResolverTest {
         fallback.amount = 3;
 
         def.effects = List.of(conditional, fallback);
+        return def;
+    }
+
+    private static CardDef lifeMagicDef() {
+        CardDef def = new CardDef();
+        def.id = "LIFE_MAGIC";
+        def.name = "Life Magic";
+        def.category = CardCategoryId.UTILITY;
+        def.cooldown = 5;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectStepDef step = new CardEffectStepDef();
+        step.template = "HalveEnemyHp";
+        def.effects = List.of(step);
+        return def;
+    }
+
+    private static CardDef poisonDef() {
+        CardDef def = new CardDef();
+        def.id = "POISON";
+        def.name = "Poison";
+        def.category = CardCategoryId.UTILITY;
+        def.cooldown = 2;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectStepDef step = new CardEffectStepDef();
+        step.template = "ApplyNegativeStatus";
+        step.status = "POISON";
+        step.turns = 2;
+        def.effects = List.of(step);
         return def;
     }
 
@@ -141,10 +259,19 @@ public class CardEffectResolverTest {
      */
     static final class FakeCombatController extends CombatController {
         float damageToEnemies;
+        float healPlayerAmount;
+        String appliedNegativeStatusId;
+        int appliedNegativeStatusTurns;
+        int halveEnemyHpCalls;
         final Map<Integer, ActionCardInstance> cardsByInstanceId = new HashMap<>();
+        final com.desertadventure.combat.model.CombatEntity playerEntity =
+                new com.desertadventure.combat.model.CombatEntity(
+                        com.desertadventure.combat.model.CombatEntity.Kind.PLAYER,
+                        0f, 0f, 10f, 0, 0f);
 
         FakeCombatController() {
             super(new PlayerStats());
+            playerEntity.clearCombatStatus();
         }
 
         @Override
@@ -159,17 +286,28 @@ public class CardEffectResolverTest {
 
         @Override
         void healPlayer(float amount) {
-            // not needed for these tests
+            healPlayerAmount += amount;
         }
 
         @Override
         void applyNegativeStatusToEnemies(String statusId, int turns) {
-            // not needed for these tests
+            appliedNegativeStatusId = statusId;
+            appliedNegativeStatusTurns = turns;
         }
 
         @Override
         void halveEnemyHp() {
-            // not needed for these tests
+            halveEnemyHpCalls++;
+        }
+
+        @Override
+        public com.desertadventure.combat.model.CombatEntity getPlayer() {
+            return playerEntity;
+        }
+
+        @Override
+        public java.util.List<com.desertadventure.combat.model.CombatEntity> getEnemies() {
+            return java.util.List.of();
         }
     }
 }
