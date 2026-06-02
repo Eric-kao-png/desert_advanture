@@ -524,6 +524,11 @@ public class CombatController {
         return 0;
     }
 
+    /** Roll 0–99; succeeds when roll &lt; {@code chancePercent}. */
+    boolean rollPercentChance(int chancePercent) {
+        return cardEffectRng.nextInt(100) < chancePercent;
+    }
+
     void setCardEffectRngForTests(RandomIntSource rng) {
         cardEffectRng = rng != null ? rng : defaultCardEffectRng();
     }

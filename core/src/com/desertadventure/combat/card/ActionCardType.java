@@ -21,7 +21,9 @@ public enum ActionCardType {
     MAGIC_BOLT,
     POISON_BOLT,
     MAGIC_MIRROR,
-    MAGIC_ARROW;
+    MAGIC_ARROW,
+    ARROW,
+    POISON_ARROW;
 
     public String getDisplayName() {
         return def().name;
@@ -31,7 +33,7 @@ public enum ActionCardType {
         CardDef def = def();
         return switch (this) {
             case ATTACK, SWIFT_STRIKE, HEAL, SHIELD, CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM,
-                    MAGIC_BOLT, POISON_BOLT, MAGIC_ARROW -> def.firstAmount();
+                    MAGIC_BOLT, POISON_BOLT, MAGIC_ARROW, ARROW, POISON_ARROW -> def.firstAmount();
             case ASSAULT -> def.minAmount();
             case AMBUSH -> def.minAmount();
             case POISON_MAGIC -> def.firstTurns();
@@ -48,6 +50,7 @@ public enum ActionCardType {
             case BLADE, GREAT_BLADE -> def.firstTurns();
             case PURIFY -> 2;
             case MAGIC_ARROW -> def.maxAmount();
+            case POISON_ARROW -> def.firstTurns();
             default -> 0;
         };
     }
@@ -72,6 +75,8 @@ public enum ActionCardType {
         return switch (this) {
             case ATTACK, SWIFT_STRIKE, CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM -> ActionCardMechanic.DAMAGE;
             case POISON_BOLT -> ActionCardMechanic.RANDOM_POISON_DAMAGE;
+            case POISON_ARROW -> ActionCardMechanic.CHANCE_POISON_DAMAGE;
+            case ARROW -> ActionCardMechanic.DAMAGE;
             case HEAL -> ActionCardMechanic.HEAL;
             case SHIELD -> ActionCardMechanic.SHIELD;
             case ASSAULT -> ActionCardMechanic.FULL_POWER_ATTACK;

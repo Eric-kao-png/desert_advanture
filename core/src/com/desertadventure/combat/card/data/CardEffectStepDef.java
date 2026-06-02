@@ -11,5 +11,7 @@ public final class CardEffectStepDef {
     public Integer amount;
     public com.desertadventure.combat.model.NegativeStatusType status;
     public Integer turns;
+    /** Success threshold for {@code APPLY_CHANCE_POISON} (roll 0–99 &lt; chancePercent). */
+    public Integer chancePercent;
 }
 

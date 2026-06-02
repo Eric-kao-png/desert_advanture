@@ -109,6 +109,13 @@ public final class CombatContext {
         }
     }
 
+    /** Single roll: either poison for {@code turns} or nothing (mutually exclusive). */
+    public void applyChancePoisonToEnemies(int chancePercent, int turns) {
+        if (combat.rollPercentChance(chancePercent)) {
+            applyNegativeStatusToEnemies(NegativeStatusType.POISON, turns);
+        }
+    }
+
     public boolean casterHasNegativeStatus() {
         if (caster == EffectCaster.ENEMY) {
             return combat.enemyHasNegativeStatus();

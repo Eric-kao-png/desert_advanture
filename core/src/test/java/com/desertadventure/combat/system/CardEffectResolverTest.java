@@ -283,6 +283,38 @@ public class CardEffectResolverTest {
     }
 
     @Test
+    void arrow_deals3() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.ARROW);
+
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void poisonArrow_deals2_andAppliesPoisonOnLowRoll() {
+        FakeCombatController combat = new FakeCombatController();
+        combat.setCardEffectRngForTests(bound -> bound == 100 ? 49 : 0);
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON_ARROW);
+
+        assertEquals(2f, combat.damageToEnemies, 0.001f);
+        assertEquals(com.desertadventure.combat.model.NegativeStatusType.POISON, combat.appliedNegativeStatus);
+        assertEquals(2, combat.appliedNegativeStatusTurns);
+    }
+
+    @Test
+    void poisonArrow_noPoisonOnHighRoll() {
+        FakeCombatController combat = new FakeCombatController();
+        combat.setCardEffectRngForTests(bound -> bound == 100 ? 50 : 0);
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON_ARROW);
+
+        assertEquals(2f, combat.damageToEnemies, 0.001f);
+        assertEquals(null, combat.appliedNegativeStatus);
+    }
+
+    @Test
     void magicArrow_deals4WhenTargetHasDebuff_else3() {
         FakeCombatController combat = new FakeCombatController();
         var enemy = new com.desertadventure.combat.model.CombatEntity(
@@ -319,6 +351,8 @@ public class CardEffectResolverTest {
         defs.put("POISON_BOLT", poisonBoltDef());
         defs.put("MAGIC_MIRROR", magicMirrorDef());
         defs.put("MAGIC_ARROW", magicArrowDef());
+        defs.put("ARROW", arrowDef());
+        defs.put("POISON_ARROW", poisonArrowDef());
         return defs;
     }
 
@@ -603,6 +637,31 @@ public class CardEffectResolverTest {
         fallback.amount = 3;
 
         def.effects = List.of(bonus, fallback);
+        return def;
+    }
+
+    private static CardDef arrowDef() {
+        return simpleDamageDef("ARROW", "Arrow", 2, 3);
+    }
+
+    private static CardDef poisonArrowDef() {
+        CardDef def = new CardDef();
+        def.id = "POISON_ARROW";
+        def.name = "Poison Arrow";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 2;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectStepDef damage = new CardEffectStepDef();
+        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        damage.amount = 2;
+
+        CardEffectStepDef poison = new CardEffectStepDef();
+        poison.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_CHANCE_POISON;
+        poison.chancePercent = 50;
+        poison.turns = 2;
+
+        def.effects = List.of(damage, poison);
         return def;
     }
 

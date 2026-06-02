@@ -28,6 +28,11 @@ final class CardEffectResolver {
         registerTemplate(EffectTemplateId.APPLY_NEGATIVE_STATUS, (ctx, step) ->
                 ctx.applyNegativeStatusToEnemies(step.status, step.turns));
         registerTemplate(EffectTemplateId.APPLY_RANDOM_POISON, (ctx, step) -> ctx.applyRandomPoisonToEnemies());
+        registerTemplate(EffectTemplateId.APPLY_CHANCE_POISON, (ctx, step) -> {
+            int chance = step.chancePercent != null ? step.chancePercent : 50;
+            int turns = step.turns != null ? step.turns : 2;
+            ctx.applyChancePoisonToEnemies(chance, turns);
+        });
         registerTemplate(EffectTemplateId.CLEAR_SELF_NEGATIVE_STATUS, (ctx, step) -> ctx.clearCasterNegativeStatus());
         registerTemplate(EffectTemplateId.TRANSFER_NEGATIVE_STATUS_TO_OPPONENT,
                 (ctx, step) -> ctx.transferCasterNegativeToOpponent());
