@@ -5,7 +5,7 @@ package com.desertadventure.combat.card.data;
  * Kept intentionally small; add new condition types as needed.
  */
 public final class CardEffectConditionDef {
-    public String type;
+    public com.desertadventure.combat.system.effects.ConditionType type;
     public Integer round;
     public CardCategoryId category;
     public Boolean negate;

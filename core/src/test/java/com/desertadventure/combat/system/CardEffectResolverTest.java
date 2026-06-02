@@ -72,7 +72,7 @@ public class CardEffectResolverTest {
 
         resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON);
 
-        assertEquals("POISON", combat.appliedNegativeStatusId);
+        assertEquals(com.desertadventure.combat.model.NegativeStatusType.POISON, combat.appliedNegativeStatus);
         assertEquals(2, combat.appliedNegativeStatusTurns);
     }
 
@@ -138,7 +138,7 @@ public class CardEffectResolverTest {
         def.cooldown = cooldown;
         def.targeting = CardTargetingId.ENEMY;
         CardEffectStepDef step = new CardEffectStepDef();
-        step.template = "DealDamage";
+        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
         step.amount = damage;
         def.effects = List.of(step);
         return def;
@@ -152,7 +152,7 @@ public class CardEffectResolverTest {
         def.cooldown = 4;
         def.targeting = CardTargetingId.SELF;
         CardEffectStepDef step = new CardEffectStepDef();
-        step.template = "HealSelf";
+        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.HEAL_SELF;
         step.amount = 4;
         def.effects = List.of(step);
         return def;
@@ -166,7 +166,7 @@ public class CardEffectResolverTest {
         def.cooldown = 3;
         def.targeting = CardTargetingId.SELF;
         CardEffectStepDef step = new CardEffectStepDef();
-        step.template = "AddShield";
+        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.ADD_SHIELD;
         step.amount = 4;
         def.effects = List.of(step);
         return def;
@@ -181,17 +181,17 @@ public class CardEffectResolverTest {
         def.targeting = CardTargetingId.ENEMY;
 
         CardEffectConditionDef cond = new CardEffectConditionDef();
-        cond.type = "TurnHasResolvedCategory";
+        cond.type = com.desertadventure.combat.system.effects.ConditionType.TURN_HAS_RESOLVED_CATEGORY;
         cond.category = CardCategoryId.UTILITY;
         cond.negate = true;
 
         CardEffectStepDef conditional = new CardEffectStepDef();
         conditional.when = cond;
-        conditional.template = "DealDamage";
+        conditional.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
         conditional.amount = 6;
 
         CardEffectStepDef fallback = new CardEffectStepDef();
-        fallback.template = "DealDamage";
+        fallback.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
         fallback.amount = 3;
 
         def.effects = List.of(conditional, fallback);
@@ -207,7 +207,7 @@ public class CardEffectResolverTest {
         def.targeting = CardTargetingId.ENEMY;
 
         CardEffectStepDef step = new CardEffectStepDef();
-        step.template = "HalveEnemyHp";
+        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.HALVE_ENEMY_HP;
         def.effects = List.of(step);
         return def;
     }
@@ -221,8 +221,8 @@ public class CardEffectResolverTest {
         def.targeting = CardTargetingId.ENEMY;
 
         CardEffectStepDef step = new CardEffectStepDef();
-        step.template = "ApplyNegativeStatus";
-        step.status = "POISON";
+        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
+        step.status = com.desertadventure.combat.model.NegativeStatusType.POISON;
         step.turns = 2;
         def.effects = List.of(step);
         return def;
@@ -237,16 +237,16 @@ public class CardEffectResolverTest {
         def.targeting = CardTargetingId.ENEMY;
 
         CardEffectConditionDef cond = new CardEffectConditionDef();
-        cond.type = "RoundEquals";
+        cond.type = com.desertadventure.combat.system.effects.ConditionType.ROUND_EQUALS;
         cond.round = 1;
 
         CardEffectStepDef conditional = new CardEffectStepDef();
         conditional.when = cond;
-        conditional.template = "DealDamage";
+        conditional.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
         conditional.amount = 6;
 
         CardEffectStepDef fallback = new CardEffectStepDef();
-        fallback.template = "DealDamage";
+        fallback.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
         fallback.amount = 3;
 
         def.effects = List.of(conditional, fallback);
@@ -260,7 +260,7 @@ public class CardEffectResolverTest {
     static final class FakeCombatController extends CombatController {
         float damageToEnemies;
         float healPlayerAmount;
-        String appliedNegativeStatusId;
+        com.desertadventure.combat.model.NegativeStatusType appliedNegativeStatus;
         int appliedNegativeStatusTurns;
         int halveEnemyHpCalls;
         final Map<Integer, ActionCardInstance> cardsByInstanceId = new HashMap<>();
@@ -290,8 +290,8 @@ public class CardEffectResolverTest {
         }
 
         @Override
-        void applyNegativeStatusToEnemies(String statusId, int turns) {
-            appliedNegativeStatusId = statusId;
+        void applyNegativeStatusToEnemies(com.desertadventure.combat.model.NegativeStatusType type, int turns) {
+            appliedNegativeStatus = type;
             appliedNegativeStatusTurns = turns;
         }
 

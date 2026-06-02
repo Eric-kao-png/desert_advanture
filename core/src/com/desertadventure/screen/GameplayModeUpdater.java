@@ -45,7 +45,7 @@ final class GameplayModeUpdater {
                     combatState.combatInitialized = false;
                 }
             }
-            case COMBAT, BOSS_COMBAT -> input.updateCombatInput(delta);
+            case COMBAT, BOSS_COMBAT -> updateCombat(delta);
             default -> {
             }
         }
@@ -54,6 +54,14 @@ final class GameplayModeUpdater {
             combatState.combatInitialized = false;
         }
         combatState.lastMode = mode;
+    }
+
+    private void updateCombat(float delta) {
+        // Presentation layer owns animation timers and end-delay, not the combat core.
+        combatState.updateCombatPresentation(delta, session.getCombatController());
+        session.getCombatController().update(delta);
+        combatState.updateCombatPresentation(0f, session.getCombatController());
+        input.updateCombatInput(delta);
     }
 
     private void detectModeTransitions(GameplayMode mode) {
@@ -108,6 +116,7 @@ final class GameplayModeUpdater {
                 session.getActionCardDeck(),
                 session::onCombatEnd
         );
+        combatState.resetForCombatStart(session.getCombatController());
         combatState.combatInitialized = true;
     }
 }

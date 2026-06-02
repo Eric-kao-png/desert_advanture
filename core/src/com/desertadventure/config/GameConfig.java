@@ -1,10 +1,17 @@
 package com.desertadventure.config;
 
 import com.badlogic.gdx.graphics.Color;
+import com.desertadventure.config.CombatConfig;
+import com.desertadventure.config.PlayerConfig;
+import com.desertadventure.config.UiLayoutConfig;
 
 public final class GameConfig {
-    public static final int VIEW_WIDTH = 1280;
-    public static final int VIEW_HEIGHT = 720;
+    // -------------------------------------------------------------------------
+    // NOTE: This file is intentionally kept as a compatibility facade.
+    // New code should prefer domain-scoped config classes (CombatConfig, PlayerConfig, UiLayoutConfig, ...).
+    // -------------------------------------------------------------------------
+    public static final int VIEW_WIDTH = UiLayoutConfig.VIEW_WIDTH;
+    public static final int VIEW_HEIGHT = UiLayoutConfig.VIEW_HEIGHT;
 
     /** Warm beige sky behind parallax; also used for GL clear. */
     public static final Color SKY_BASE_COLOR = new Color(0.96f, 0.90f, 0.78f, 1f);
@@ -81,22 +88,22 @@ public final class GameConfig {
     public static final int MAP_DISTANCE_BAND_DIVISOR = 3;
 
     /** Event / feedback lines in the bottom-left HUD area. */
-    public static final int MESSAGE_FEED_MAX_LINES = 5;
-    public static final float MESSAGE_FEED_DISPLAY_SECONDS = 4f;
-    public static final float MESSAGE_FEED_FADE_SECONDS = 1f;
-    public static final float MESSAGE_FEED_X = 16f;
-    public static final float MESSAGE_FEED_BASE_Y = 66f;
-    public static final float MESSAGE_FEED_LINE_HEIGHT = 22f;
+    public static final int MESSAGE_FEED_MAX_LINES = UiLayoutConfig.MESSAGE_FEED_MAX_LINES;
+    public static final float MESSAGE_FEED_DISPLAY_SECONDS = UiLayoutConfig.MESSAGE_FEED_DISPLAY_SECONDS;
+    public static final float MESSAGE_FEED_FADE_SECONDS = UiLayoutConfig.MESSAGE_FEED_FADE_SECONDS;
+    public static final float MESSAGE_FEED_X = UiLayoutConfig.MESSAGE_FEED_X;
+    public static final float MESSAGE_FEED_BASE_Y = UiLayoutConfig.MESSAGE_FEED_BASE_Y;
+    public static final float MESSAGE_FEED_LINE_HEIGHT = UiLayoutConfig.MESSAGE_FEED_LINE_HEIGHT;
 
-    public static final float HUD_LEFT_MARGIN = 16f;
-    public static final float HUD_LINE_STEP = 24f;
-    public static final float HUD_FONT_SCALE = 1.1f;
+    public static final float HUD_LEFT_MARGIN = UiLayoutConfig.HUD_LEFT_MARGIN;
+    public static final float HUD_LINE_STEP = UiLayoutConfig.HUD_LINE_STEP;
+    public static final float HUD_FONT_SCALE = UiLayoutConfig.HUD_FONT_SCALE;
     public static final float BOSS_HUD_RIGHT_OFFSET = 280f;
     public static final float STORM_TITLE_Y_RATIO = 0.55f;
 
     public static final float EXPLORE_GROUND_Y = 120f;
     /** Raised ground line during combat (explore + delta). */
-    public static final float COMBAT_GROUND_Y = 160f;
+    public static final float COMBAT_GROUND_Y = CombatConfig.COMBAT_GROUND_Y;
     public static final float EXPLORE_PLAYER_X_RATIO = 0.35f;
     public static final float PLAYER_BOB_AMPLITUDE = 4f;
     public static final double PLAYER_BOB_FREQUENCY = 0.02;
@@ -158,26 +165,26 @@ public final class GameConfig {
     public static final float MAP_PLAYER_MARKER_SHRINK = 5f;
 
     /** Logical player size used for bounds / layout (legacy blue rectangle size). */
-    public static final float PLAYER_WIDTH = 48f;
-    public static final float PLAYER_HEIGHT = 72f;
+    public static final float PLAYER_WIDTH = PlayerConfig.WIDTH;
+    public static final float PLAYER_HEIGHT = PlayerConfig.HEIGHT;
     public static final float ENEMY_WIDTH = 40f;
     public static final float ENEMY_HEIGHT = 56f;
     public static final float BOSS_WIDTH = 80f;
     public static final float BOSS_HEIGHT = 100f;
 
-    public static final float PLAYER_SPEED = 280f;
+    public static final float PLAYER_SPEED = PlayerConfig.SPEED;
     /** Sandbag enemies do not move (MVP). */
     public static final float ENEMY_SPEED = 0f;
     public static final float BOSS_SPEED = 0f;
 
-    public static final float COMBAT_PLAYER_X_RATIO = 0.3f;
-    public static final float COMBAT_ENEMY_X_RATIO = 0.72f;
-    public static final float COMBAT_BOSS_X_RATIO = 0.78f;
+    public static final float COMBAT_PLAYER_X_RATIO = CombatConfig.COMBAT_PLAYER_X_RATIO;
+    public static final float COMBAT_ENEMY_X_RATIO = CombatConfig.COMBAT_ENEMY_X_RATIO;
+    public static final float COMBAT_BOSS_X_RATIO = CombatConfig.COMBAT_BOSS_X_RATIO;
     /** Normal enemy HP rolled uniformly in [min, max] at combat start. */
-    public static final int ENEMY_HP_MIN = 1;
-    public static final int ENEMY_HP_MAX = 3;
-    public static final float BOSS_BASE_HP = 35f;
-    public static final float BOSS_HP_PER_DISTANCE_BAND = 8f;
+    public static final int ENEMY_HP_MIN = CombatConfig.ENEMY_HP_MIN;
+    public static final int ENEMY_HP_MAX = CombatConfig.ENEMY_HP_MAX;
+    public static final float BOSS_BASE_HP = CombatConfig.BOSS_BASE_HP;
+    public static final float BOSS_HP_PER_DISTANCE_BAND = CombatConfig.BOSS_HP_PER_DISTANCE_BAND;
     /** HP bar above combat entity sprites (width = max(entity width × scale, min width)). */
     public static final float COMBAT_HP_BAR_HEIGHT = 12f;
     public static final float COMBAT_HP_BAR_GAP = 8f;
@@ -202,35 +209,35 @@ public final class GameConfig {
     public static final float COMBAT_STATUS_BORDER_WIDTH = 1.5f;
 
     // --- Turn-based action cards ---
-    public static final int CARD_ATTACK_DAMAGE = 2;
-    public static final int CARD_STRONG_ATTACK_DAMAGE = 3;
-    public static final int CARD_HEAL_AMOUNT = 4;
-    public static final int CARD_ATTACK_COOLDOWN_TURNS = 1;
-    public static final int CARD_STRONG_ATTACK_COOLDOWN_TURNS = 2;
-    public static final int CARD_HEAL_COOLDOWN_TURNS = 4;
+    public static final int CARD_ATTACK_DAMAGE = CombatConfig.CARD_ATTACK_DAMAGE;
+    public static final int CARD_STRONG_ATTACK_DAMAGE = CombatConfig.CARD_STRONG_ATTACK_DAMAGE;
+    public static final int CARD_HEAL_AMOUNT = CombatConfig.CARD_HEAL_AMOUNT;
+    public static final int CARD_ATTACK_COOLDOWN_TURNS = CombatConfig.CARD_ATTACK_COOLDOWN_TURNS;
+    public static final int CARD_STRONG_ATTACK_COOLDOWN_TURNS = CombatConfig.CARD_STRONG_ATTACK_COOLDOWN_TURNS;
+    public static final int CARD_HEAL_COOLDOWN_TURNS = CombatConfig.CARD_HEAL_COOLDOWN_TURNS;
 
-    public static final int CARD_SHIELD_AMOUNT = 4;
-    public static final int CARD_SHIELD_COOLDOWN_TURNS = 3;
+    public static final int CARD_SHIELD_AMOUNT = CombatConfig.CARD_SHIELD_AMOUNT;
+    public static final int CARD_SHIELD_COOLDOWN_TURNS = CombatConfig.CARD_SHIELD_COOLDOWN_TURNS;
 
-    public static final int CARD_FULL_POWER_DAMAGE_LOW = 3;
-    public static final int CARD_FULL_POWER_DAMAGE_HIGH = 6;
-    public static final int CARD_FULL_POWER_COOLDOWN_TURNS = 3;
+    public static final int CARD_FULL_POWER_DAMAGE_LOW = CombatConfig.CARD_FULL_POWER_DAMAGE_LOW;
+    public static final int CARD_FULL_POWER_DAMAGE_HIGH = CombatConfig.CARD_FULL_POWER_DAMAGE_HIGH;
+    public static final int CARD_FULL_POWER_COOLDOWN_TURNS = CombatConfig.CARD_FULL_POWER_COOLDOWN_TURNS;
 
-    public static final int CARD_LIFE_MAGIC_COOLDOWN_TURNS = 5;
+    public static final int CARD_LIFE_MAGIC_COOLDOWN_TURNS = CombatConfig.CARD_LIFE_MAGIC_COOLDOWN_TURNS;
 
-    public static final int CARD_THRUST_DAMAGE_ROUND_ONE = 6;
-    public static final int CARD_THRUST_DAMAGE_OTHER = 3;
-    public static final int CARD_THRUST_COOLDOWN_TURNS = 3;
+    public static final int CARD_THRUST_DAMAGE_ROUND_ONE = CombatConfig.CARD_THRUST_DAMAGE_ROUND_ONE;
+    public static final int CARD_THRUST_DAMAGE_OTHER = CombatConfig.CARD_THRUST_DAMAGE_OTHER;
+    public static final int CARD_THRUST_COOLDOWN_TURNS = CombatConfig.CARD_THRUST_COOLDOWN_TURNS;
 
-    public static final int CARD_POISON_DURATION_TURNS = 2;
-    public static final int CARD_POISON_DAMAGE_PER_ROUND = 2;
-    public static final int CARD_POISON_COOLDOWN_TURNS = 2;
+    public static final int CARD_POISON_DURATION_TURNS = CombatConfig.CARD_POISON_DURATION_TURNS;
+    public static final int CARD_POISON_DAMAGE_PER_ROUND = CombatConfig.CARD_POISON_DAMAGE_PER_ROUND;
+    public static final int CARD_POISON_COOLDOWN_TURNS = CombatConfig.CARD_POISON_COOLDOWN_TURNS;
 
     /** Player slot pair roll weights per round (higher = more likely). */
-    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_13 = 70;
-    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_24 = 20;
-    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_12 = 5;
-    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_34 = 5;
+    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_13 = CombatConfig.PLAYER_SLOTS_WEIGHT_13;
+    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_24 = CombatConfig.PLAYER_SLOTS_WEIGHT_24;
+    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_12 = CombatConfig.PLAYER_SLOTS_WEIGHT_12;
+    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_34 = CombatConfig.PLAYER_SLOTS_WEIGHT_34;
 
     /** Layout blend endpoints at explore (0) — used when entering combat. */
     public static final float COMBAT_SLOT_WIDTH_EXPLORE = 100f;
@@ -263,11 +270,11 @@ public final class GameConfig {
     public static final float COMBAT_CONFIRM_WIDTH = 130f;
     public static final float COMBAT_CONFIRM_HEIGHT = 40f;
     /** Time between slot resolves (baseline; may be effectively extended by attack animation gating). */
-    public static final float COMBAT_RESOLVE_SLOT_SECONDS = 0.45f;
+    public static final float COMBAT_RESOLVE_SLOT_SECONDS = CombatConfig.RESOLVE_SLOT_SECONDS;
     /** Player attack animation duration used for resolve gating and sprite playback. */
-    public static final float COMBAT_PLAYER_ATTACK_ANIM_SECONDS = 0.22f;
-    public static final float COMBAT_LAYOUT_BLEND_SECONDS = 0.4f;
-    public static final int VICTORY_EXPERIENCE = 20;
+    public static final float COMBAT_PLAYER_ATTACK_ANIM_SECONDS = CombatConfig.PLAYER_ATTACK_ANIM_SECONDS;
+    public static final float COMBAT_LAYOUT_BLEND_SECONDS = CombatConfig.LAYOUT_BLEND_SECONDS;
+    public static final int VICTORY_EXPERIENCE = CombatConfig.VICTORY_EXPERIENCE;
     public static final int ITEM_EXPERIENCE = 10;
 
     /** Chance [0,1] to find an item when entering an ITEM tile (once per cycle per tile). */
@@ -279,16 +286,16 @@ public final class GameConfig {
     public static final float ITEM_HEALTH_GEM_BONUS = 4f;
     public static final float ITEM_STAMINA_GEM_BONUS = 15f;
 
-    public static final int PLAYER_INITIAL_LEVEL = 1;
-    public static final int PLAYER_INITIAL_EXPERIENCE_TO_NEXT = 30;
-    public static final float PLAYER_INITIAL_MAX_HP = 20f;
-    public static final int PLAYER_INITIAL_ATTACK = 10;
-    public static final int PLAYER_INITIAL_DEFENSE = 2;
-    public static final float PLAYER_LEVEL_HP_GAIN = 2f;
-    public static final int PLAYER_LEVEL_ATTACK_GAIN = 3;
-    public static final int PLAYER_LEVEL_DEFENSE_GAIN = 1;
-    public static final int PLAYER_LEVEL_STEP_BONUS = 1;
-    public static final float PLAYER_LEVEL_EXP_MULTIPLIER = 1.4f;
+    public static final int PLAYER_INITIAL_LEVEL = PlayerConfig.INITIAL_LEVEL;
+    public static final int PLAYER_INITIAL_EXPERIENCE_TO_NEXT = PlayerConfig.INITIAL_EXPERIENCE_TO_NEXT;
+    public static final float PLAYER_INITIAL_MAX_HP = PlayerConfig.INITIAL_MAX_HP;
+    public static final int PLAYER_INITIAL_ATTACK = PlayerConfig.INITIAL_ATTACK;
+    public static final int PLAYER_INITIAL_DEFENSE = PlayerConfig.INITIAL_DEFENSE;
+    public static final float PLAYER_LEVEL_HP_GAIN = PlayerConfig.LEVEL_HP_GAIN;
+    public static final int PLAYER_LEVEL_ATTACK_GAIN = PlayerConfig.LEVEL_ATTACK_GAIN;
+    public static final int PLAYER_LEVEL_DEFENSE_GAIN = PlayerConfig.LEVEL_DEFENSE_GAIN;
+    public static final int PLAYER_LEVEL_STEP_BONUS = PlayerConfig.LEVEL_STEP_BONUS;
+    public static final float PLAYER_LEVEL_EXP_MULTIPLIER = PlayerConfig.LEVEL_EXP_MULTIPLIER;
 
     public static final float STORM_FADE_SECONDS = 2f;
 

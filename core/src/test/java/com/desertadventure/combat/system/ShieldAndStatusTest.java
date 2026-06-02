@@ -1,0 +1,55 @@
+package com.desertadventure.combat.system;
+
+import com.desertadventure.combat.model.CombatEntity;
+import com.desertadventure.combat.model.NegativeStatusType;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+public class ShieldAndStatusTest {
+    @Test
+    void takeDamage_consumesShieldFirst_thenHp() {
+        CombatEntity e = new CombatEntity(CombatEntity.Kind.PLAYER, 0f, 0f, 10f, 0, 0f);
+        e.clearCombatStatus();
+        e.setHp(10f);
+        e.addShield(3);
+
+        e.takeDamage(2f);
+        assertEquals(1, e.getShield(), "shield should absorb damage first");
+        assertEquals(10f, e.getHp(), 0.001f, "hp should not drop while shield absorbs all damage");
+
+        e.takeDamage(5f);
+        assertEquals(0, e.getShield(), "shield should be fully consumed");
+        assertEquals(6f, e.getHp(), 0.001f, "remaining damage should reduce hp");
+    }
+
+    @Test
+    void takeStatusDamage_bypassesShield() {
+        CombatEntity e = new CombatEntity(CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+        e.clearCombatStatus();
+        e.setHp(10f);
+        e.addShield(999);
+
+        e.takeStatusDamage(2f);
+        assertEquals(999, e.getShield(), "status damage should not consume shield");
+        assertEquals(8f, e.getHp(), 0.001f, "status damage should reduce hp directly");
+    }
+
+    @Test
+    void poison_roundEndDealsStatusDamage_bypassingShield_andTicksDurationToClear() {
+        CombatEntity e = new CombatEntity(CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+        e.clearCombatStatus();
+        e.setHp(10f);
+        e.addShield(5);
+        e.setNegativeStatus(NegativeStatusType.POISON, 1);
+
+        e.applyRoundEndStatusEffects(2f);
+
+        assertEquals(5, e.getShield(), "poison tick should bypass shield");
+        assertEquals(8f, e.getHp(), 0.001f, "poison tick should deal damage");
+        assertNull(e.getNegativeStatusType(), "duration should tick down and clear poison at 0");
+        assertEquals(0, e.getNegativeTurnsRemaining());
+    }
+}
+

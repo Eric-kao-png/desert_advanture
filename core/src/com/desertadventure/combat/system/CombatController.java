@@ -8,7 +8,13 @@ import com.desertadventure.combat.card.ActionCardType;
 import com.desertadventure.combat.card.CombatPhase;
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.combat.model.NegativeStatusType;
-import com.desertadventure.config.GameConfig;
+import com.desertadventure.config.CombatConfig;
+import com.desertadventure.combat.system.slots.PlayerSlotPlan;
+import com.desertadventure.combat.system.slots.PlayerSlotRoller;
+import com.desertadventure.combat.system.slots.RandomIntSource;
+import com.desertadventure.combat.system.slots.SlotRollWeights;
+import com.desertadventure.combat.system.slots.WeightedPlayerSlotRoller;
+import com.desertadventure.combat.system.presentation.PlayerAttackAnimation;
 import com.desertadventure.player.PlayerStats;
 
 import java.util.ArrayList;
@@ -43,17 +49,55 @@ public class CombatController {
     private Integer selectedInstanceId;
     private final CardEffectResolver effectResolver = new CardEffectResolver();
 
-    // --- Player animation state (presentation hint) ---
-    private float playerAttackTimer;
-    private CombatOutcome pendingCombatEndOutcome;
-    private boolean pendingCombatEndNeedsRoundCleanup;
+    // --- Slot rolling (domain rule, swappable) ---
+    private final PlayerSlotRoller playerSlotRoller;
+
+    // --- Presentation hints (owned externally; injected) ---
+    private PlayerAttackAnimation playerAttackAnimation = new NoopPlayerAttackAnimation();
 
     /** Which two slots the player may use this round (0-based indices). */
     private int playerSlotA = 0;
     private int playerSlotB = 2;
 
+    // --- Combat end outcome (produced immediately; finalization decided externally) ---
+    private final CombatOutcomeFinalization outcomeFinalization = new CombatOutcomeFinalization();
+
     public CombatController(PlayerStats playerStats) {
+        this(playerStats, defaultPlayerSlotRoller());
+    }
+
+    CombatController(PlayerStats playerStats, PlayerSlotRoller playerSlotRoller) {
         this.playerStats = playerStats;
+        this.playerSlotRoller = playerSlotRoller;
+    }
+
+    public void setPlayerAttackAnimation(PlayerAttackAnimation playerAttackAnimation) {
+        this.playerAttackAnimation = playerAttackAnimation != null ? playerAttackAnimation : new NoopPlayerAttackAnimation();
+    }
+
+    public CombatOutcome getPendingOutcome() {
+        return outcomeFinalization.getPendingOutcome();
+    }
+
+    public boolean hasPendingOutcome() {
+        return outcomeFinalization.hasPendingOutcome();
+    }
+
+    /**
+     * Finalizes a previously produced outcome: runs any deferred round-end cleanup and triggers the end callback.
+     * Presentation layer decides when to call this (e.g., after attack animation finishes).
+     */
+    public void finalizePendingOutcome() {
+        CombatOutcomeFinalization.ConsumedOutcome consumed = outcomeFinalization.consume();
+        if (consumed == null) {
+            return;
+        }
+
+        if (consumed.needsRoundCleanup()) {
+            applyRoundEndEffects();
+            clearAllSlots();
+        }
+        endCombat(consumed.outcome());
     }
 
     public boolean isActive() {
@@ -227,21 +271,8 @@ public class CombatController {
         if (!isActive()) {
             return;
         }
-        if (playerAttackTimer > 0f) {
-            playerAttackTimer = Math.max(0f, playerAttackTimer - delta);
-        }
-        if (pendingCombatEndOutcome != null) {
-            // Let attack animation finish before ending combat (prevents instant victory pop).
-            if (playerAttackTimer <= 0f) {
-                if (pendingCombatEndNeedsRoundCleanup) {
-                    applyRoundEndEffects();
-                    clearAllSlots();
-                }
-                CombatOutcome outcome = pendingCombatEndOutcome;
-                pendingCombatEndOutcome = null;
-                pendingCombatEndNeedsRoundCleanup = false;
-                endCombat(outcome);
-            }
+        if (outcomeFinalization.hasPendingOutcome()) {
+            // Outcome already decided; core waits for presentation to finalize.
             return;
         }
         if (phase != CombatPhase.RESOLVING) {
@@ -252,7 +283,7 @@ public class CombatController {
             return;
         }
         resolveSlot(resolvingSlotIndex);
-        if (combatEnded) {
+        if (combatEnded || outcomeFinalization.hasPendingOutcome()) {
             return;
         }
         resolvingSlotIndex++;
@@ -260,7 +291,7 @@ public class CombatController {
             finishRound();
             return;
         }
-        resolveTimer = GameConfig.COMBAT_RESOLVE_SLOT_SECONDS;
+        resolveTimer = CombatConfig.RESOLVE_SLOT_SECONDS;
     }
 
     private void resolveSlot(int slotIndex) {
@@ -271,14 +302,8 @@ public class CombatController {
         }
         CombatOutcome outcome = checkCombatOutcomeIfFinished();
         if (outcome != null) {
-            if (shouldDelayCombatEndForPlayerAttack()) {
-                pendingCombatEndOutcome = outcome;
-                pendingCombatEndNeedsRoundCleanup = true;
-                return;
-            }
-            endCombat(outcome);
-            applyRoundEndEffects();
-            clearAllSlots();
+            // Defer end callback until presentation decides it's safe (e.g. let attack anim finish).
+            outcomeFinalization.setPendingOutcome(outcome, true);
         }
     }
 
@@ -299,19 +324,6 @@ public class CombatController {
         effectResolver.resolve(ctx, type);
     }
 
-    private boolean changeCardResolvedThisRound() {
-        if (deck == null) {
-            return false;
-        }
-        for (int instanceId : playedThisRound) {
-            ActionCardInstance card = deck.findById(instanceId);
-            if (card != null && card.getType().getCategory() == ActionCardCategory.CHANGE) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     void halveEnemyHp() {
         for (CombatEntity enemy : enemies) {
             if (enemy.isAlive()) {
@@ -320,8 +332,7 @@ public class CombatController {
         }
     }
 
-    void applyNegativeStatusToEnemies(String statusId, int turns) {
-        NegativeStatusType type = NegativeStatusType.valueOf(statusId);
+    void applyNegativeStatusToEnemies(NegativeStatusType type, int turns) {
         for (CombatEntity enemy : enemies) {
             if (enemy.isAlive()) {
                 enemy.setNegativeStatus(type, turns);
@@ -359,12 +370,7 @@ public class CombatController {
 
         CombatOutcome outcome = checkCombatOutcomeIfFinished();
         if (outcome != null) {
-            if (shouldDelayCombatEndForPlayerAttack()) {
-                pendingCombatEndOutcome = outcome;
-                pendingCombatEndNeedsRoundCleanup = false; // already cleaned up above
-                return;
-            }
-            endCombat(outcome);
+            outcomeFinalization.setPendingOutcome(outcome, false); // already cleaned up above
             return;
         }
 
@@ -375,21 +381,8 @@ public class CombatController {
     }
 
     private void rollPlayerSlotsForPlanning() {
-        int w13 = GameConfig.COMBAT_PLAYER_SLOTS_WEIGHT_13;
-        int w24 = GameConfig.COMBAT_PLAYER_SLOTS_WEIGHT_24;
-        int w12 = GameConfig.COMBAT_PLAYER_SLOTS_WEIGHT_12;
-        int w34 = GameConfig.COMBAT_PLAYER_SLOTS_WEIGHT_34;
-        int total = Math.max(1, w13 + w24 + w12 + w34);
-        int roll = ThreadLocalRandom.current().nextInt(total);
-        if (roll < w13) {
-            setPlayerSlots(0, 2); // 1 & 3
-        } else if (roll < w13 + w24) {
-            setPlayerSlots(1, 3); // 2 & 4
-        } else if (roll < w13 + w24 + w12) {
-            setPlayerSlots(0, 1); // 1 & 2
-        } else {
-            setPlayerSlots(2, 3); // 3 & 4
-        }
+        PlayerSlotPlan plan = playerSlotRoller.rollPlan();
+        setPlayerSlots(plan.slotA(), plan.slotB());
     }
 
     private void setPlayerSlots(int a, int b) {
@@ -417,7 +410,7 @@ public class CombatController {
     }
 
     private void applyRoundEndStatusEffects() {
-        float poisonDamage = GameConfig.CARD_POISON_DAMAGE_PER_ROUND;
+        float poisonDamage = CombatConfig.CARD_POISON_DAMAGE_PER_ROUND;
         if (player != null) {
             player.applyRoundEndStatusEffects(poisonDamage);
             syncPlayerStatsHp();
@@ -501,7 +494,7 @@ public class CombatController {
     }
 
     private CombatEntity createPlayerEntity(float arenaWidth, float groundY) {
-        float playerX = arenaWidth * GameConfig.COMBAT_PLAYER_X_RATIO;
+        float playerX = arenaWidth * CombatConfig.COMBAT_PLAYER_X_RATIO;
         CombatEntity playerEntity = new CombatEntity(
                 CombatEntity.Kind.PLAYER, playerX, groundY, playerStats.getMaxHp(), playerStats.getAttack(), 0f);
         playerEntity.setHp(playerStats.getHp());
@@ -511,16 +504,16 @@ public class CombatController {
 
     private CombatEntity createOpponentEntity(int distanceBand, boolean boss, float arenaWidth, float groundY) {
         if (boss) {
-            float bossHp = GameConfig.BOSS_BASE_HP + distanceBand * GameConfig.BOSS_HP_PER_DISTANCE_BAND;
-            float bossX = arenaWidth * GameConfig.COMBAT_BOSS_X_RATIO;
+            float bossHp = CombatConfig.BOSS_BASE_HP + distanceBand * CombatConfig.BOSS_HP_PER_DISTANCE_BAND;
+            float bossX = arenaWidth * CombatConfig.COMBAT_BOSS_X_RATIO;
             CombatEntity bossEntity = new CombatEntity(CombatEntity.Kind.BOSS, bossX, groundY, bossHp, 0, 0f);
             bossEntity.clearCombatStatus();
             return bossEntity;
         }
 
-        float enemyX = arenaWidth * GameConfig.COMBAT_ENEMY_X_RATIO;
-        int minHp = GameConfig.ENEMY_HP_MIN;
-        int maxHp = GameConfig.ENEMY_HP_MAX;
+        float enemyX = arenaWidth * CombatConfig.COMBAT_ENEMY_X_RATIO;
+        int minHp = CombatConfig.ENEMY_HP_MIN;
+        int maxHp = CombatConfig.ENEMY_HP_MAX;
         float enemyHp = ThreadLocalRandom.current().nextInt(minHp, maxHp + 1);
         CombatEntity enemy = new CombatEntity(CombatEntity.Kind.ENEMY, enemyX, groundY, enemyHp, 0, 0f);
         enemy.clearCombatStatus();
@@ -548,25 +541,42 @@ public class CombatController {
     }
 
     public boolean isPlayerAttacking() {
-        return playerAttackTimer > 0f;
+        return playerAttackAnimation.isAttacking();
     }
 
     /** Normalized progress for the current attack animation (0..1). */
     public float getPlayerAttackProgress(float attackDurationSeconds) {
-        if (attackDurationSeconds <= 0f) {
-            return 1f;
-        }
-        float remaining = Math.max(0f, Math.min(attackDurationSeconds, playerAttackTimer));
-        return 1f - (remaining / attackDurationSeconds);
+        return playerAttackAnimation.getAttackProgress(attackDurationSeconds);
     }
 
     private void triggerPlayerAttackAnimation() {
-        playerAttackTimer = Math.max(playerAttackTimer, GameConfig.COMBAT_PLAYER_ATTACK_ANIM_SECONDS);
+        playerAttackAnimation.triggerAttack(CombatConfig.PLAYER_ATTACK_ANIM_SECONDS);
     }
 
-    private boolean shouldDelayCombatEndForPlayerAttack() {
-        // Only delay if player is currently playing the attack animation.
-        return playerAttackTimer > 0f;
+    private static PlayerSlotRoller defaultPlayerSlotRoller() {
+        SlotRollWeights weights = new SlotRollWeights(
+                CombatConfig.PLAYER_SLOTS_WEIGHT_13,
+                CombatConfig.PLAYER_SLOTS_WEIGHT_24,
+                CombatConfig.PLAYER_SLOTS_WEIGHT_12,
+                CombatConfig.PLAYER_SLOTS_WEIGHT_34);
+        RandomIntSource rng = bound -> ThreadLocalRandom.current().nextInt(bound);
+        return new WeightedPlayerSlotRoller(weights, rng);
+    }
+
+    private static final class NoopPlayerAttackAnimation implements PlayerAttackAnimation {
+        @Override
+        public void triggerAttack(float attackAnimSeconds) {
+        }
+
+        @Override
+        public boolean isAttacking() {
+            return false;
+        }
+
+        @Override
+        public float getAttackProgress(float attackDurationSeconds) {
+            return 1f;
+        }
     }
 
     private void syncPlayerStatsHp() {

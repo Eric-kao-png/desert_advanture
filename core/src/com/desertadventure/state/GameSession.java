@@ -55,20 +55,10 @@ public class GameSession implements ExplorationCallbacks {
         travel = new TravelMovement(this);
         eventTracker = new RequiredEventTracker(permanentProgress);
         combatController = new CombatController(playerStats);
-        mapTravel = new MapTravelActions(
-                map, mapViewState, travel, messageFeed,
-                GameSessionDelegates.modeAccess(this), GameSessionDelegates.playerPosition(this));
-        combatOutcomes = new CombatOutcomeApplier(
-                map, playerStats, permanentProgress, travel, messageFeed, actionCardDeck,
-                GameSessionDelegates.modeAccess(this), this::triggerStorm, this::getPlayerGridPos);
-        tileContext = new TileInteractionContext(
-                this, map, playerStats, permanentProgress,
-                eventTracker, inventory, stepBudget,
-                travel::resume, available -> bossAvailableThisCycle = available);
-        resetToSpawn();
-        stepBudget.resetForCycle(playerStats);
-        actionCardDeck.resetToDefault();
-        revealAroundPlayer();
+        mapTravel = createMapTravelActions();
+        combatOutcomes = createCombatOutcomeApplier();
+        tileContext = createTileInteractionContext();
+        initializeNewSessionState();
     }
 
     private static void initializeCardsIfNeeded() {
@@ -76,6 +66,13 @@ public class GameSession implements ExplorationCallbacks {
             return;
         }
         CardDatabase.initialize(GdxCardRepositoryLoader.loadDefault());
+    }
+
+    private void initializeNewSessionState() {
+        resetToSpawn();
+        stepBudget.resetForCycle(playerStats);
+        actionCardDeck.resetToDefault();
+        revealAroundPlayer();
     }
 
     public void startNewGame() {
@@ -100,6 +97,25 @@ public class GameSession implements ExplorationCallbacks {
 
     private void revealAroundPlayer() {
         map.revealAround(getPlayerGridPos());
+    }
+
+    private MapTravelActions createMapTravelActions() {
+        return new MapTravelActions(
+                map, mapViewState, travel, messageFeed,
+                GameSessionDelegates.modeAccess(this), GameSessionDelegates.playerPosition(this));
+    }
+
+    private CombatOutcomeApplier createCombatOutcomeApplier() {
+        return new CombatOutcomeApplier(
+                map, playerStats, permanentProgress, travel, messageFeed, actionCardDeck,
+                GameSessionDelegates.modeAccess(this), this::triggerStorm, this::getPlayerGridPos);
+    }
+
+    private TileInteractionContext createTileInteractionContext() {
+        return new TileInteractionContext(
+                this, map, playerStats, permanentProgress,
+                eventTracker, inventory, stepBudget,
+                travel::resume, available -> bossAvailableThisCycle = available);
     }
 
     public GameMap getMap() {
@@ -156,7 +172,7 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public void openMapOverlay() {
-        pauseTravelIfRunning();
+        stopRunningTravelForOverlay();
         mapTravel.openOverlay();
     }
 
@@ -167,11 +183,11 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public void openCharacterOverlay() {
-        pauseTravelIfRunning();
+        stopRunningTravelForOverlay();
         mode = GameplayMode.CHARACTER_OVERLAY;
     }
 
-    private void pauseTravelIfRunning() {
+    private void stopRunningTravelForOverlay() {
         if (mode == GameplayMode.RUNNING) {
             travel.stopForMap();
         }
@@ -188,12 +204,11 @@ public class GameSession implements ExplorationCallbacks {
         if (type == null) {
             return false;
         }
-        String name = type.getDisplayName();
         if (!inventory.useSlot(slotIndex, playerStats, stepBudget)) {
-            setPendingMessage(GameMessages.itemEmpty(name));
+            setPendingMessage(GameMessages.itemEmpty(type.getDisplayName()));
             return false;
         }
-        setPendingMessage(GameMessages.itemUsed(name));
+        setPendingMessage(GameMessages.itemUsed(type.getDisplayName()));
         return true;
     }
 
@@ -229,10 +244,8 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     private PathRunner activePathRunner() {
-        if (mode == GameplayMode.RUNNING && travel.getPathRunner().isRunning()) {
-            return travel.getPathRunner();
-        }
-        return null;
+        boolean shouldUseRunner = mode == GameplayMode.RUNNING && travel.getPathRunner().isRunning();
+        return shouldUseRunner ? travel.getPathRunner() : null;
     }
 
     public MessageFeed getMessageFeed() {

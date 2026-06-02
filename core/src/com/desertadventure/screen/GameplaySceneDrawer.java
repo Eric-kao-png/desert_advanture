@@ -50,9 +50,7 @@ final class GameplaySceneDrawer {
         SpriteBatch batch = game.getBatch();
         renderer.setProjectionMatrix(viewport.getProjectionMatrix());
 
-        if (mode == GameplayMode.MAP_OVERLAY) {
-            input.updateMapHover();
-        }
+        updateHoverStateForMode(mode);
 
         switch (mode) {
             case MAP_OVERLAY -> drawMapOverlay(batch, delta);
@@ -72,6 +70,16 @@ final class GameplaySceneDrawer {
         batch.end();
     }
 
+    private void updateHoverStateForMode(GameplayMode mode) {
+        if (mode == GameplayMode.MAP_OVERLAY) {
+            input.updateMapHover();
+            return;
+        }
+        if (mode == GameplayMode.CHARACTER_OVERLAY) {
+            input.updateCharacterHover();
+        }
+    }
+
     private void drawMapOverlay(SpriteBatch batch, float delta) {
         drawExplore(batch, false, delta);
         MapOverlayLayout layout = session.createMapOverlayLayout();
@@ -85,7 +93,6 @@ final class GameplaySceneDrawer {
     }
 
     private void drawCharacterOverlay(SpriteBatch batch, float delta) {
-        input.updateCharacterHover();
         drawExplore(batch, false, delta);
         renderer.renderCharacterOverlay(
                 batch,
@@ -104,10 +111,7 @@ final class GameplaySceneDrawer {
         CombatCardLayout layout = input.getCombatCardInput().getLayout();
         layout.applyBlend(blend);
 
-        batch.begin();
-        renderer.drawParallaxBackground(batch, false, delta, blend);
-        renderer.drawParallaxFloor(batch, blend);
-        batch.end();
+        drawBackgroundAndFloor(batch, false, delta, blend);
 
         CombatController combat = session.getCombatController();
         CombatEntity player = combat.getPlayer();
@@ -127,11 +131,15 @@ final class GameplaySceneDrawer {
 
     private void drawExplore(SpriteBatch batch, boolean running, float delta) {
         float blend = modeUpdater.getLayoutBlend();
+        drawBackgroundAndFloor(batch, running, delta, blend);
+        renderer.renderExploreForeground(session, running, blend, batch, uiFont);
+    }
+
+    private void drawBackgroundAndFloor(SpriteBatch batch, boolean running, float delta, float blend) {
         batch.begin();
         renderer.drawParallaxBackground(batch, running, delta, blend);
         renderer.drawParallaxFloor(batch, blend);
         batch.end();
-        renderer.renderExploreForeground(session, running, blend, batch, uiFont);
     }
 
     private static List<CombatEntity> buildCombatEntities(CombatController combat, CombatEntity player) {

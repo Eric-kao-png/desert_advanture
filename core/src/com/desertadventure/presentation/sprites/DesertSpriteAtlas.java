@@ -1,12 +1,12 @@
 package com.desertadventure.presentation.sprites;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Json;
+import com.desertadventure.infrastructure.gdx.AssetFiles;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +32,7 @@ public class DesertSpriteAtlas implements Disposable {
     private final Array<Texture> textures = new Array<>();
 
     public DesertSpriteAtlas() {
-        DesertSpriteSheetData data = new Json().fromJson(DesertSpriteSheetData.class, Gdx.files.internal(DATA_PATH));
+        DesertSpriteSheetData data = new Json().fromJson(DesertSpriteSheetData.class, AssetFiles.internal(DATA_PATH));
         if (data == null || data.sprites == null) {
             throw new IllegalStateException("Missing or empty sprite sheet data: " + DATA_PATH);
         }
@@ -68,7 +68,7 @@ public class DesertSpriteAtlas implements Disposable {
         if (w <= 0 || h <= 0) {
             throw new IllegalArgumentException("Invalid sprite size for " + entry.name);
         }
-        Pixmap atlas = new Pixmap(Gdx.files.internal(atlasPath));
+        Pixmap atlas = new Pixmap(AssetFiles.internal(atlasPath));
         int srcX = entry.left;
         int srcY = atlas.getHeight() - entry.top;
         Pixmap slice = new Pixmap(w, h, atlas.getFormat());

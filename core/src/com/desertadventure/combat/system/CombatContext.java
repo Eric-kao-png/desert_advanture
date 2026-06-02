@@ -3,6 +3,7 @@ package com.desertadventure.combat.system;
 import com.desertadventure.combat.card.ActionCardCategory;
 import com.desertadventure.combat.card.ActionCardInstance;
 import com.desertadventure.combat.model.CombatEntity;
+import com.desertadventure.combat.model.NegativeStatusType;
 
 import java.util.List;
 import java.util.Set;
@@ -62,8 +63,8 @@ public final class CombatContext {
         combat.halveEnemyHp();
     }
 
-    public void applyNegativeStatusToEnemies(String statusId, int turns) {
-        combat.applyNegativeStatusToEnemies(statusId, turns);
+    public void applyNegativeStatusToEnemies(NegativeStatusType type, int turns) {
+        combat.applyNegativeStatusToEnemies(type, turns);
     }
 
     @Override

@@ -8,7 +8,7 @@
       "cooldown": 1,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DealDamage", "amount": 2 }
+        { "template": "DEAL_DAMAGE", "amount": 2 }
       ]
     },
     {
@@ -18,7 +18,7 @@
       "cooldown": 2,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DealDamage", "amount": 3 }
+        { "template": "DEAL_DAMAGE", "amount": 3 }
       ]
     },
     {
@@ -28,7 +28,7 @@
       "cooldown": 4,
       "targeting": "SELF",
       "effects": [
-        { "template": "HealSelf", "amount": 4 }
+        { "template": "HEAL_SELF", "amount": 4 }
       ]
     },
     {
@@ -38,7 +38,7 @@
       "cooldown": 3,
       "targeting": "SELF",
       "effects": [
-        { "template": "AddShield", "amount": 4 }
+        { "template": "ADD_SHIELD", "amount": 4 }
       ]
     },
     {
@@ -49,11 +49,11 @@
       "targeting": "ENEMY",
       "effects": [
         {
-          "when": { "type": "TurnHasResolvedCategory", "category": "UTILITY", "negate": true },
-          "template": "DealDamage",
+          "when": { "type": "TURN_HAS_RESOLVED_CATEGORY", "category": "UTILITY", "negate": true },
+          "template": "DEAL_DAMAGE",
           "amount": 6
         },
-        { "template": "DealDamage", "amount": 3 }
+        { "template": "DEAL_DAMAGE", "amount": 3 }
       ]
     },
     {
@@ -63,7 +63,7 @@
       "cooldown": 5,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "HalveEnemyHp" }
+        { "template": "HALVE_ENEMY_HP" }
       ]
     },
     {
@@ -74,11 +74,11 @@
       "targeting": "ENEMY",
       "effects": [
         {
-          "when": { "type": "RoundEquals", "round": 1 },
-          "template": "DealDamage",
+          "when": { "type": "ROUND_EQUALS", "round": 1 },
+          "template": "DEAL_DAMAGE",
           "amount": 6
         },
-        { "template": "DealDamage", "amount": 3 }
+        { "template": "DEAL_DAMAGE", "amount": 3 }
       ]
     },
     {
@@ -88,7 +88,7 @@
       "cooldown": 2,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "ApplyNegativeStatus", "status": "POISON", "turns": 2 }
+        { "template": "APPLY_NEGATIVE_STATUS", "status": "POISON", "turns": 2 }
       ]
     }
   ]

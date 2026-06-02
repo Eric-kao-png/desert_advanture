@@ -1,17 +1,18 @@
 package com.desertadventure.player;
 
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.config.PlayerConfig;
 
 public class PlayerStats {
-    private int level = GameConfig.PLAYER_INITIAL_LEVEL;
+    private int level = PlayerConfig.INITIAL_LEVEL;
     private int experience;
-    private int experienceToNext = GameConfig.PLAYER_INITIAL_EXPERIENCE_TO_NEXT;
-    private float maxHp = GameConfig.PLAYER_INITIAL_MAX_HP;
-    private float hp = GameConfig.PLAYER_INITIAL_MAX_HP;
-    private int attack = GameConfig.PLAYER_INITIAL_ATTACK;
-    private int defense = GameConfig.PLAYER_INITIAL_DEFENSE;
+    private int experienceToNext = PlayerConfig.INITIAL_EXPERIENCE_TO_NEXT;
+    private float maxHp = PlayerConfig.INITIAL_MAX_HP;
+    private float hp = PlayerConfig.INITIAL_MAX_HP;
+    private int attack = PlayerConfig.INITIAL_ATTACK;
+    private int defense = PlayerConfig.INITIAL_DEFENSE;
     private int stepBudgetBonus;
-    private float moveSpeed = GameConfig.PLAYER_SPEED;
+    private float moveSpeed = PlayerConfig.SPEED;
 
     public int getLevel() {
         return level;
@@ -84,23 +85,23 @@ public class PlayerStats {
 
     private void levelUp() {
         level++;
-        maxHp += GameConfig.PLAYER_LEVEL_HP_GAIN;
+        maxHp += PlayerConfig.LEVEL_HP_GAIN;
         hp = maxHp;
-        attack += GameConfig.PLAYER_LEVEL_ATTACK_GAIN;
-        defense += GameConfig.PLAYER_LEVEL_DEFENSE_GAIN;
-        stepBudgetBonus += GameConfig.PLAYER_LEVEL_STEP_BONUS;
-        experienceToNext = (int) (experienceToNext * GameConfig.PLAYER_LEVEL_EXP_MULTIPLIER);
+        attack += PlayerConfig.LEVEL_ATTACK_GAIN;
+        defense += PlayerConfig.LEVEL_DEFENSE_GAIN;
+        stepBudgetBonus += PlayerConfig.LEVEL_STEP_BONUS;
+        experienceToNext = (int) (experienceToNext * PlayerConfig.LEVEL_EXP_MULTIPLIER);
     }
 
     public void resetForNewGame() {
-        level = GameConfig.PLAYER_INITIAL_LEVEL;
+        level = PlayerConfig.INITIAL_LEVEL;
         experience = 0;
-        experienceToNext = GameConfig.PLAYER_INITIAL_EXPERIENCE_TO_NEXT;
-        maxHp = GameConfig.PLAYER_INITIAL_MAX_HP;
-        hp = GameConfig.PLAYER_INITIAL_MAX_HP;
-        attack = GameConfig.PLAYER_INITIAL_ATTACK;
-        defense = GameConfig.PLAYER_INITIAL_DEFENSE;
+        experienceToNext = PlayerConfig.INITIAL_EXPERIENCE_TO_NEXT;
+        maxHp = PlayerConfig.INITIAL_MAX_HP;
+        hp = PlayerConfig.INITIAL_MAX_HP;
+        attack = PlayerConfig.INITIAL_ATTACK;
+        defense = PlayerConfig.INITIAL_DEFENSE;
         stepBudgetBonus = 0;
-        moveSpeed = GameConfig.PLAYER_SPEED;
+        moveSpeed = PlayerConfig.SPEED;
     }
 }

@@ -1,8 +1,8 @@
 package com.desertadventure.combat.card.data;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
+import com.desertadventure.infrastructure.gdx.AssetFiles;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +15,7 @@ public final class GdxCardRepositoryLoader {
     }
 
     public static CardRepository loadDefault() {
-        FileHandle handle = Gdx.files.internal(MANIFEST_PATH);
+        FileHandle handle = AssetFiles.internal(MANIFEST_PATH);
         if (!handle.exists()) {
             throw new IllegalStateException("Card manifest not found: " + MANIFEST_PATH);
         }

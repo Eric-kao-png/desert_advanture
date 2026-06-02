@@ -6,10 +6,10 @@ package com.desertadventure.combat.card.data;
  */
 public final class CardEffectStepDef {
     public CardEffectConditionDef when;
-    public String template;
+    public com.desertadventure.combat.system.effects.EffectTemplateId template;
 
     public Integer amount;
-    public String status;
+    public com.desertadventure.combat.model.NegativeStatusType status;
     public Integer turns;
 }
 

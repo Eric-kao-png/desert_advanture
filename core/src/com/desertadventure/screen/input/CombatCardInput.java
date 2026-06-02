@@ -2,6 +2,7 @@ package com.desertadventure.screen.input;
 
 import com.badlogic.gdx.Gdx;
 import com.desertadventure.combat.card.CombatPhase;
+import com.desertadventure.combat.system.CombatController;
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.config.GameInputBindings;
 import com.desertadventure.presentation.GameViewport;
@@ -28,24 +29,38 @@ public final class CombatCardInput {
             return;
         }
         var combat = session.getCombatController();
-        combat.update(delta);
 
         float worldX = viewport.pointerWorldX();
         float worldY = viewport.pointerWorldY();
 
         if (combat.getPhase() != CombatPhase.PLANNING) {
-            pointerWasDown = Gdx.input.isTouched();
-            resetHandScrollGesture();
-            layout.rebuildHand(combat);
-            layout.updateHover(worldX, worldY);
+            handleNonPlanningPhase(combat, worldX, worldY);
             return;
         }
 
-        if (GameInputBindings.justConfirmed()) {
-            combat.confirmPlanning();
+        if (handlePlanningHotkeys(combat)) {
             return;
         }
 
+        handlePlanningPointer(session, worldX, worldY);
+        rebuildAndUpdateHover(combat, worldX, worldY);
+    }
+
+    private void handleNonPlanningPhase(CombatController combat, float worldX, float worldY) {
+        pointerWasDown = Gdx.input.isTouched();
+        resetHandScrollGesture();
+        rebuildAndUpdateHover(combat, worldX, worldY);
+    }
+
+    private boolean handlePlanningHotkeys(CombatController combat) {
+        if (!GameInputBindings.justConfirmed()) {
+            return false;
+        }
+        combat.confirmPlanning();
+        return true;
+    }
+
+    private void handlePlanningPointer(GameSession session, float worldX, float worldY) {
         boolean pointerDown = Gdx.input.isTouched();
 
         if (pointerDown) {
@@ -62,6 +77,9 @@ public final class CombatCardInput {
         }
 
         pointerWasDown = pointerDown;
+    }
+
+    private void rebuildAndUpdateHover(CombatController combat, float worldX, float worldY) {
         layout.rebuildHand(combat);
         layout.updateHover(worldX, worldY);
     }

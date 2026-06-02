@@ -104,6 +104,7 @@ public class CombatFlowIntegrationTest {
         // Resolve slots until combat ends (player slot may not be first due to per-round slot plan).
         for (int i = 0; i < 4 && outcome.get() == null; i++) {
             combat.update(999f);
+            combat.finalizePendingOutcome();
         }
 
         assertEquals(CombatOutcome.BOSS_VICTORY, outcome.get(), "Combat should end with boss victory (boss mode test)");
@@ -131,6 +132,7 @@ public class CombatFlowIntegrationTest {
         // Each update resolves at most one slot; run enough updates for 4 slots.
         for (int i = 0; i < 4; i++) {
             combat.update(999f);
+            combat.finalizePendingOutcome();
         }
     }
 
@@ -167,7 +169,7 @@ public class CombatFlowIntegrationTest {
         def.cooldown = cooldown;
         def.targeting = CardTargetingId.ENEMY;
         CardEffectStepDef step = new CardEffectStepDef();
-        step.template = "DealDamage";
+        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
         step.amount = damage;
         def.effects = List.of(step);
         return def;
@@ -181,8 +183,8 @@ public class CombatFlowIntegrationTest {
         def.cooldown = 2;
         def.targeting = CardTargetingId.ENEMY;
         CardEffectStepDef step = new CardEffectStepDef();
-        step.template = "ApplyNegativeStatus";
-        step.status = "POISON";
+        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
+        step.status = com.desertadventure.combat.model.NegativeStatusType.POISON;
         step.turns = 2;
         def.effects = List.of(step);
         return def;

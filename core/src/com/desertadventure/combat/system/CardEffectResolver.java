@@ -7,30 +7,32 @@ import com.desertadventure.combat.card.data.CardDef;
 import com.desertadventure.combat.card.data.CardEffectConditionDef;
 import com.desertadventure.combat.card.data.CardEffectStepDef;
 import com.desertadventure.combat.card.data.CardCategoryId;
+import com.desertadventure.combat.system.effects.ConditionType;
+import com.desertadventure.combat.system.effects.EffectTemplateId;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /** Resolves JSON-defined cards by invoking effect templates with a {@link CombatContext}. */
 final class CardEffectResolver {
-    private static final String TEMPLATE_DEAL_DAMAGE = "DealDamage";
-    private static final String TEMPLATE_HEAL_SELF = "HealSelf";
-    private static final String TEMPLATE_ADD_SHIELD = "AddShield";
-    private static final String TEMPLATE_HALVE_ENEMY_HP = "HalveEnemyHp";
-    private static final String TEMPLATE_APPLY_NEGATIVE_STATUS = "ApplyNegativeStatus";
-
-    private static final String COND_ROUND_EQUALS = "RoundEquals";
-    private static final String COND_TURN_HAS_RESOLVED_CATEGORY = "TurnHasResolvedCategory";
-
-    private final Map<String, CardEffectTemplate> templates = new HashMap<>();
+    private final Map<EffectTemplateId, CardEffectTemplate> templates = new HashMap<>();
+    private final Map<ConditionType, ConditionMatcher> conditions = new HashMap<>();
 
     CardEffectResolver() {
-        templates.put(TEMPLATE_DEAL_DAMAGE, (ctx, step) -> ctx.dealDamageToEnemies(step.amount));
-        templates.put(TEMPLATE_HEAL_SELF, (ctx, step) -> ctx.healPlayer(step.amount));
-        templates.put(TEMPLATE_ADD_SHIELD, (ctx, step) -> ctx.addPlayerShield(step.amount));
-        templates.put(TEMPLATE_HALVE_ENEMY_HP, (ctx, step) -> ctx.halveEnemyHp());
-        templates.put(TEMPLATE_APPLY_NEGATIVE_STATUS, (ctx, step) ->
+        registerTemplate(EffectTemplateId.DEAL_DAMAGE, (ctx, step) -> ctx.dealDamageToEnemies(step.amount));
+        registerTemplate(EffectTemplateId.HEAL_SELF, (ctx, step) -> ctx.healPlayer(step.amount));
+        registerTemplate(EffectTemplateId.ADD_SHIELD, (ctx, step) -> ctx.addPlayerShield(step.amount));
+        registerTemplate(EffectTemplateId.HALVE_ENEMY_HP, (ctx, step) -> ctx.halveEnemyHp());
+        registerTemplate(EffectTemplateId.APPLY_NEGATIVE_STATUS, (ctx, step) ->
                 ctx.applyNegativeStatusToEnemies(step.status, step.turns));
+
+        registerCondition(ConditionType.ROUND_EQUALS,
+                (ctx, when) -> when.round != null && ctx.roundNumber() == when.round);
+        registerCondition(ConditionType.TURN_HAS_RESOLVED_CATEGORY, (ctx, when) -> {
+            ActionCardCategory category = ActionCardCategory.fromData(
+                    when.category != null ? when.category : CardCategoryId.UTILITY);
+            return ctx.turnHasResolvedCategory(category);
+        });
     }
 
     void resolve(CombatContext ctx, ActionCardType type) {
@@ -65,22 +67,32 @@ final class CardEffectResolver {
     }
 
     private boolean matches(CombatContext ctx, CardEffectConditionDef when) {
-        String type = when.type;
         boolean negate = Boolean.TRUE.equals(when.negate);
-        boolean result = switch (type) {
-            case COND_ROUND_EQUALS -> when.round != null && ctx.roundNumber() == when.round;
-            case COND_TURN_HAS_RESOLVED_CATEGORY -> {
-                ActionCardCategory category = ActionCardCategory.fromData(
-                        when.category != null ? when.category : CardCategoryId.UTILITY);
-                yield ctx.turnHasResolvedCategory(category);
-            }
-            default -> false;
-        };
+        ConditionMatcher matcher = conditions.get(when.type);
+        boolean result = matcher != null && matcher.matches(ctx, when);
         return negate ? !result : result;
+    }
+
+    void registerTemplate(EffectTemplateId templateId, CardEffectTemplate template) {
+        if (templateId == null || template == null) {
+            throw new IllegalArgumentException("templateId/template must be non-null");
+        }
+        templates.put(templateId, template);
+    }
+
+    void registerCondition(ConditionType conditionType, ConditionMatcher matcher) {
+        if (conditionType == null || matcher == null) {
+            throw new IllegalArgumentException("conditionType/matcher must be non-null");
+        }
+        conditions.put(conditionType, matcher);
     }
 
     private interface CardEffectTemplate {
         void apply(CombatContext ctx, CardEffectStepDef step);
+    }
+
+    private interface ConditionMatcher {
+        boolean matches(CombatContext ctx, CardEffectConditionDef when);
     }
 }
 
