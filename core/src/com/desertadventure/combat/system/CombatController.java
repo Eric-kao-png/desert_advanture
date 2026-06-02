@@ -163,7 +163,19 @@ public class CombatController {
             float groundY,
             ActionCardDeck actionDeck,
             Consumer<CombatOutcome> onEnd) {
-        initializeCombatSession(distanceBand, boss, arenaWidth, groundY, actionDeck, onEnd);
+        startCombat(distanceBand, boss, null, arenaWidth, groundY, actionDeck, onEnd);
+    }
+
+    public void startCombat(
+            int distanceBand,
+            boolean boss,
+            EnemyArchetypeId tileEncounterArchetype,
+            float arenaWidth,
+            float groundY,
+            ActionCardDeck actionDeck,
+            Consumer<CombatOutcome> onEnd) {
+        initializeCombatSession(
+                distanceBand, boss, tileEncounterArchetype, arenaWidth, groundY, actionDeck, onEnd);
     }
 
     public CombatEntity getPlayer() {
@@ -180,6 +192,17 @@ public class CombatController {
 
     public EnemyArchetypeId getCurrentEnemyArchetype() {
         return currentEnemyArchetype;
+    }
+
+    /** English label for the non-player opponent; null for player-only views. */
+    public String getOpponentDisplayName() {
+        if (bossFight) {
+            return "Boss";
+        }
+        if (currentEnemyArchetype == null) {
+            return null;
+        }
+        return EnemyArchetypeRegistry.getRequired(currentEnemyArchetype).displayName();
     }
 
     /** Archetype of the normal enemy defeated in the last VICTORY; null if none yet. */
@@ -709,6 +732,7 @@ public class CombatController {
     private void initializeCombatSession(
             int distanceBand,
             boolean boss,
+            EnemyArchetypeId tileEncounterArchetype,
             float arenaWidth,
             float groundY,
             ActionCardDeck actionDeck,
@@ -731,7 +755,9 @@ public class CombatController {
         selectedInstanceId = null;
         resolveTimer = 0f;
 
-        currentEnemyArchetype = boss ? null : EnemyArchetypeId.DESERT_ZOMBIE;
+        currentEnemyArchetype = boss
+                ? null
+                : EnemyArchetypeRegistry.resolveNormalEncounter(tileEncounterArchetype, enemyHpRng);
         if (currentEnemyArchetype != null) {
             EnemyArchetypeDef archetype = EnemyArchetypeRegistry.getRequired(currentEnemyArchetype);
             enemyDeck = ActionCardDeck.fromCardTypes(archetype.deckCardTypes());

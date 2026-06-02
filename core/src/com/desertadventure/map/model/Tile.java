@@ -1,9 +1,13 @@
 package com.desertadventure.map.model;
 
+import com.desertadventure.combat.enemy.EnemyArchetypeId;
+
 public class Tile {
     private final GridPos position;
     private TileType type;
     private String eventId;
+    /** Fixed normal-enemy type for {@link TileType#COMBAT}; null uses random encounter roll at fight start. */
+    private EnemyArchetypeId enemyArchetype;
     private boolean cycleCleared;
     private boolean itemCollectedThisCycle;
 
@@ -30,6 +34,14 @@ public class Tile {
 
     public void setEventId(String eventId) {
         this.eventId = eventId;
+    }
+
+    public EnemyArchetypeId getEnemyArchetype() {
+        return enemyArchetype;
+    }
+
+    public void setEnemyArchetype(EnemyArchetypeId enemyArchetype) {
+        this.enemyArchetype = enemyArchetype;
     }
 
     public boolean isCycleCleared() {

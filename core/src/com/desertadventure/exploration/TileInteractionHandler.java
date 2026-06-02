@@ -15,7 +15,10 @@ public final class TileInteractionHandler {
         switch (tile.getType()) {
             case ITEM -> handleItem(tile, duringMove, ctx);
             case EVENT -> handleEvent(tile, duringMove, ctx);
-            case COMBAT -> ctx.callbacks.setMode(GameplayMode.COMBAT);
+            case COMBAT -> {
+                ctx.callbacks.beginCombatEncounter(tile.getEnemyArchetype());
+                ctx.callbacks.setMode(GameplayMode.COMBAT);
+            }
             case BOSS_SUMMON -> handleBossSummon(tile, duringMove, ctx);
             default -> ctx.finish(duringMove);
         }

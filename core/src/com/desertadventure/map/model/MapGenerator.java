@@ -1,5 +1,7 @@
 package com.desertadventure.map.model;
 
+import com.desertadventure.combat.enemy.EnemyArchetypeId;
+import com.desertadventure.combat.enemy.EnemyArchetypeRegistry;
 import com.desertadventure.config.GameConfig;
 
 import java.util.Random;
@@ -73,7 +75,7 @@ public final class MapGenerator {
                 }
                 int roll = random.nextInt(rollMax);
                 if (roll < combatRoll) {
-                    tile.setType(TileType.COMBAT);
+                    setCombatTile(map, wx, wy, EnemyArchetypeRegistry.pickForMapCoordinate(wx, wy));
                 } else if (roll < itemRoll) {
                     tile.setType(TileType.ITEM);
                 }
@@ -90,8 +92,19 @@ public final class MapGenerator {
                 {3, 0}, {-3, 0}, {0, 3}, {0, -3},
                 {4, 0}, {-4, 0}, {3, 1}, {-3, -1},
         };
-        for (int[] offset : offsets) {
-            setTile(map, offset[0], offset[1], TileType.COMBAT);
+        for (int i = 0; i < offsets.length; i++) {
+            int[] offset = offsets[i];
+            EnemyArchetypeId archetype = i % 2 == 0
+                    ? EnemyArchetypeId.WANDERING_WIZARD
+                    : EnemyArchetypeId.DESERT_ZOMBIE;
+            setCombatTile(map, offset[0], offset[1], archetype);
+        }
+    }
+
+    private static void setCombatTile(GameMap map, int x, int y, EnemyArchetypeId archetype) {
+        setTile(map, x, y, TileType.COMBAT);
+        if (map.isInside(new GridPos(x, y))) {
+            map.getTile(x, y).setEnemyArchetype(archetype);
         }
     }
 }

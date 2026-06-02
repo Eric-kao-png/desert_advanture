@@ -1,5 +1,6 @@
 package com.desertadventure.state;
 
+import com.desertadventure.combat.enemy.EnemyArchetypeId;
 import com.desertadventure.exploration.StepBudgetService;
 import com.desertadventure.map.model.GameMap;
 import com.desertadventure.map.model.GridPos;
@@ -24,6 +25,9 @@ public interface ExplorationCallbacks {
     void addScrollOffset(float amount);
 
     void setPendingMessage(String message);
+
+    /** Stores the combat tile's enemy archetype until {@link GameSession#consumePendingCombatArchetype()}. */
+    void beginCombatEncounter(EnemyArchetypeId tileArchetype);
 
     void handleTileInteraction(Tile tile, boolean duringMove);
 

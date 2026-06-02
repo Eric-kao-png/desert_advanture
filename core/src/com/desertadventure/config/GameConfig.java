@@ -188,6 +188,8 @@ public final class GameConfig {
     /** HP bar above combat entity sprites (width = max(entity width × scale, min width)). */
     public static final float COMBAT_HP_BAR_HEIGHT = 12f;
     public static final float COMBAT_HP_BAR_GAP = 8f;
+    /** Gap between opponent name label and the top of the overhead bar stack. */
+    public static final float COMBAT_OPPONENT_NAME_GAP = 4f;
     public static final float COMBAT_SHIELD_BAR_HEIGHT = 10f;
     /** Vertical gap between the top of the HP bar and the bottom of the shield bar. */
     public static final float COMBAT_SHIELD_BAR_GAP = 4f;

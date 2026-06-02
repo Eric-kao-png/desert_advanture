@@ -1,6 +1,7 @@
 package com.desertadventure.state;
 
 import com.desertadventure.combat.CombatOutcome;
+import com.desertadventure.combat.enemy.EnemyArchetypeId;
 import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardDeckResetPolicy;
 import com.desertadventure.combat.card.DefaultActionCardDeckResetPolicy;
@@ -48,6 +49,7 @@ public class GameSession implements ExplorationCallbacks {
     private float stormTimer;
     private float scrollOffset;
     private boolean bossAvailableThisCycle;
+    private EnemyArchetypeId pendingCombatArchetype;
 
     public GameSession() {
         initializeCardsIfNeeded();
@@ -276,6 +278,18 @@ public class GameSession implements ExplorationCallbacks {
     @Override
     public void setPendingMessage(String message) {
         messageFeed.push(message);
+    }
+
+    @Override
+    public void beginCombatEncounter(EnemyArchetypeId tileArchetype) {
+        pendingCombatArchetype = tileArchetype;
+    }
+
+    /** Archetype from the combat tile; cleared after combat session starts. */
+    public EnemyArchetypeId consumePendingCombatArchetype() {
+        EnemyArchetypeId archetype = pendingCombatArchetype;
+        pendingCombatArchetype = null;
+        return archetype;
     }
 
     @Override

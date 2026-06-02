@@ -1,5 +1,6 @@
 package com.desertadventure.presentation;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -94,6 +95,22 @@ public final class CombatHpBarDrawer {
 
     public static void drawShieldText(SpriteBatch batch, BitmapFont font, BarBounds shieldBar, int shield) {
         drawValueTextLeftOfBar(batch, font, shieldBar, Integer.toString(shield));
+    }
+
+    /** Centered label above the top of the HP/shield bar stack. */
+    public static void drawOpponentNameAboveBar(
+            SpriteBatch batch, BitmapFont font, CombatEntity entity, String displayName) {
+        if (displayName == null || displayName.isEmpty()) {
+            return;
+        }
+        BarBounds hpBar = layout(entity);
+        BarBounds topBar = entity.getShield() > 0 ? layoutShieldBar(hpBar) : hpBar;
+        GLYPH.setText(font, displayName);
+        float textX = topBar.x + (topBar.width - GLYPH.width) / 2f;
+        float textY = topBar.y + topBar.height + GameConfig.COMBAT_OPPONENT_NAME_GAP;
+        font.setColor(UiColors.SECTION_LABEL);
+        font.draw(batch, displayName, textX, textY);
+        font.setColor(Color.WHITE);
     }
 
     private static void drawValueTextLeftOfBar(

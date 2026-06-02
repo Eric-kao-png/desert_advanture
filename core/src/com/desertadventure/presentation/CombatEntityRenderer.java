@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.desertadventure.combat.model.CombatEntity;
+import com.desertadventure.combat.system.CombatController;
 
 import java.util.List;
 
@@ -38,10 +39,14 @@ final class CombatEntityRenderer {
         }
     }
 
-    void drawTexts(SpriteBatch batch, List<CombatEntity> entities, BitmapFont font) {
+    void drawTexts(SpriteBatch batch, List<CombatEntity> entities, BitmapFont font, CombatController combat) {
+        String opponentName = combat.getOpponentDisplayName();
         for (CombatEntity entity : entities) {
             if (!GameplayRenderer.shouldDrawCombatEntity(entity)) {
                 continue;
+            }
+            if (entity.getKind() != CombatEntity.Kind.PLAYER && opponentName != null) {
+                CombatHpBarDrawer.drawOpponentNameAboveBar(batch, font, entity, opponentName);
             }
             CombatHpBarDrawer.drawHpText(batch, font, entity);
             CombatStatusDrawer.drawText(batch, font, entity);

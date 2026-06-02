@@ -111,6 +111,7 @@ final class GameplayModeUpdater {
         session.getCombatController().startCombat(
                 session.getCurrentDistanceBand(),
                 boss,
+                boss ? null : session.consumePendingCombatArchetype(),
                 GameConfig.VIEW_WIDTH,
                 GameConfig.COMBAT_GROUND_Y,
                 session.getActionCardDeck(),

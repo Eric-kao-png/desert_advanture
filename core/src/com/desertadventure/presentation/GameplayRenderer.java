@@ -134,7 +134,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         batch.setProjectionMatrix(screenProjection);
         batch.begin();
         playerSprites.drawCombatPlayerSprite(combat, batch);
-        combatEntities.drawTexts(batch, entities, font);
+        combatEntities.drawTexts(batch, entities, font, combat);
         batch.end();
     }
 
