@@ -222,8 +222,14 @@ public final class GameConfig {
     public static final int CARD_THRUST_COOLDOWN_TURNS = 3;
 
     public static final int CARD_POISON_DURATION_TURNS = 2;
-    public static final int CARD_POISON_DAMAGE_PER_ROUND = 1;
+    public static final int CARD_POISON_DAMAGE_PER_ROUND = 2;
     public static final int CARD_POISON_COOLDOWN_TURNS = 2;
+
+    /** Player slot pair roll weights per round (higher = more likely). */
+    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_13 = 70;
+    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_24 = 20;
+    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_12 = 5;
+    public static final int COMBAT_PLAYER_SLOTS_WEIGHT_34 = 5;
 
     /** Layout blend endpoints at explore (0) — used when entering combat. */
     public static final float COMBAT_SLOT_WIDTH_EXPLORE = 100f;

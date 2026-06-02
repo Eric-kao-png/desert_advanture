@@ -13,7 +13,7 @@
     },
     {
       "id": "STRONG_ATTACK",
-      "name": "Strong Attack",
+      "name": "Swift Strike",
       "category": "OFFENSE",
       "cooldown": 2,
       "targeting": "ENEMY",
@@ -43,7 +43,7 @@
     },
     {
       "id": "FULL_POWER_ATTACK",
-      "name": "Full Power",
+      "name": "Assault",
       "category": "OFFENSE",
       "cooldown": 3,
       "targeting": "ENEMY",
@@ -68,7 +68,7 @@
     },
     {
       "id": "THRUST",
-      "name": "Thrust",
+      "name": "Ambush",
       "category": "OFFENSE",
       "cooldown": 3,
       "targeting": "ENEMY",
@@ -83,7 +83,7 @@
     },
     {
       "id": "POISON",
-      "name": "Poison",
+      "name": "Poison magic",
       "category": "UTILITY",
       "cooldown": 2,
       "targeting": "ENEMY",

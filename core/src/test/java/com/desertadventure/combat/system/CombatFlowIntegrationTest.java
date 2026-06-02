@@ -50,13 +50,13 @@ public class CombatFlowIntegrationTest {
         combat.getEnemies().get(0).setHp(3f);
 
         int poisonId = findFirstInstanceId(deck, ActionCardType.POISON);
-        combat.assignToPlayerSlot(0, poisonId);
+        combat.assignToPlayerSlot(firstPlayerSlot(combat), poisonId);
         combat.confirmPlanning();
 
         resolveFullRound(combat);
 
         var enemy = combat.getEnemies().get(0);
-        assertEquals(2f, enemy.getHp(), 0.001f, "Poison should tick for 1 damage at round end");
+        assertEquals(1f, enemy.getHp(), 0.001f, "Poison should tick for 2 damage at round end");
         assertEquals(1, enemy.getNegativeTurnsRemaining(), "Poison duration should tick down at round end");
     }
 
@@ -74,7 +74,7 @@ public class CombatFlowIntegrationTest {
         combat.getEnemies().get(0).setHp(3f);
 
         int attackId = findFirstInstanceId(deck, ActionCardType.ATTACK);
-        combat.assignToPlayerSlot(0, attackId);
+        combat.assignToPlayerSlot(firstPlayerSlot(combat), attackId);
         combat.confirmPlanning();
 
         resolveFullRound(combat);
@@ -98,10 +98,13 @@ public class CombatFlowIntegrationTest {
         combat.getEnemies().get(0).setHp(1f);
 
         int attackId = findFirstInstanceId(deck, ActionCardType.ATTACK);
-        combat.assignToPlayerSlot(0, attackId);
+        combat.assignToPlayerSlot(firstPlayerSlot(combat), attackId);
         combat.confirmPlanning();
 
-        combat.update(999f); // resolve slot 1
+        // Resolve slots until combat ends (player slot may not be first due to per-round slot plan).
+        for (int i = 0; i < 4 && outcome.get() == null; i++) {
+            combat.update(999f);
+        }
 
         assertEquals(CombatOutcome.BOSS_VICTORY, outcome.get(), "Combat should end with boss victory (boss mode test)");
         ActionCardInstance instance = deck.findById(attackId);
@@ -138,6 +141,15 @@ public class CombatFlowIntegrationTest {
             }
         }
         throw new IllegalStateException("Missing card instance: " + type);
+    }
+
+    private static int firstPlayerSlot(CombatController combat) {
+        for (int i = 0; i < 4; i++) {
+            if (combat.isPlayerSlot(i)) {
+                return i;
+            }
+        }
+        throw new IllegalStateException("No player slot available");
     }
 
     private static Map<String, CardDef> minimalDefs() {

@@ -21,10 +21,6 @@ import java.util.function.Consumer;
 /** Turn-based 1v1 card combat (PLANNING → RESOLVING slots 1–4 → win/loss / next round). */
 public class CombatController {
     private static final int SLOT_COUNT = 4;
-    private static final int PLAYER_SLOT_A = 0;
-    private static final int PLAYER_SLOT_B = 2;
-    private static final int ENEMY_SLOT_A = 1;
-    private static final int ENEMY_SLOT_B = 3;
 
     private final PlayerStats playerStats;
     private CombatEntity player;
@@ -45,6 +41,10 @@ public class CombatController {
     private boolean roundEndCooldownsApplied;
     private Integer selectedInstanceId;
     private final CardEffectResolver effectResolver = new CardEffectResolver();
+
+    /** Which two slots the player may use this round (0-based indices). */
+    private int playerSlotA = 0;
+    private int playerSlotB = 2;
 
     public CombatController(PlayerStats playerStats) {
         this.playerStats = playerStats;
@@ -97,6 +97,7 @@ public class CombatController {
         resolveTimer = 0f;
         player = createPlayerEntity(arenaWidth, groundY);
         enemies.add(createOpponentEntity(distanceBand, boss, arenaWidth, groundY));
+        rollPlayerSlotsForPlanning();
     }
 
     public CombatEntity getPlayer() {
@@ -134,11 +135,15 @@ public class CombatController {
     }
 
     public boolean isPlayerSlot(int slotIndex) {
-        return slotIndex == PLAYER_SLOT_A || slotIndex == PLAYER_SLOT_B;
+        return slotIndex == playerSlotA || slotIndex == playerSlotB;
     }
 
     private boolean isEnemySlot(int slotIndex) {
-        return slotIndex == ENEMY_SLOT_A || slotIndex == ENEMY_SLOT_B;
+        return slotIndex >= 0 && slotIndex < SLOT_COUNT && !isPlayerSlot(slotIndex);
+    }
+
+    private int otherPlayerSlot(int slotIndex) {
+        return slotIndex == playerSlotA ? playerSlotB : playerSlotA;
     }
 
     /** Cards shown in the hand row (includes cooldown; excludes slot-assigned). */
@@ -193,7 +198,7 @@ public class CombatController {
         if (card == null || card.isOnCooldown()) {
             return;
         }
-        int otherPlayerSlot = slotIndex == PLAYER_SLOT_A ? PLAYER_SLOT_B : PLAYER_SLOT_A;
+        int otherPlayerSlot = otherPlayerSlot(slotIndex);
         Integer otherId = slotInstanceIds[otherPlayerSlot];
         if (otherId != null && otherId == instanceId) {
             return;
@@ -334,8 +339,38 @@ public class CombatController {
         }
 
         roundNumber++;
+        rollPlayerSlotsForPlanning();
         phase = CombatPhase.PLANNING;
         selectedInstanceId = null;
+    }
+
+    private void rollPlayerSlotsForPlanning() {
+        int w13 = GameConfig.COMBAT_PLAYER_SLOTS_WEIGHT_13;
+        int w24 = GameConfig.COMBAT_PLAYER_SLOTS_WEIGHT_24;
+        int w12 = GameConfig.COMBAT_PLAYER_SLOTS_WEIGHT_12;
+        int w34 = GameConfig.COMBAT_PLAYER_SLOTS_WEIGHT_34;
+        int total = Math.max(1, w13 + w24 + w12 + w34);
+        int roll = ThreadLocalRandom.current().nextInt(total);
+        if (roll < w13) {
+            setPlayerSlots(0, 2); // 1 & 3
+        } else if (roll < w13 + w24) {
+            setPlayerSlots(1, 3); // 2 & 4
+        } else if (roll < w13 + w24 + w12) {
+            setPlayerSlots(0, 1); // 1 & 2
+        } else {
+            setPlayerSlots(2, 3); // 3 & 4
+        }
+    }
+
+    private void setPlayerSlots(int a, int b) {
+        playerSlotA = a;
+        playerSlotB = b;
+        // Clear any previously assigned cards in now-invalid player slots.
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            if (slotInstanceIds[i] != null && !isPlayerSlot(i)) {
+                slotInstanceIds[i] = null;
+            }
+        }
     }
 
     /**
