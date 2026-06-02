@@ -13,7 +13,7 @@ import com.desertadventure.presentation.sprites.GridSpriteSheetAnimation;
  * <p>Behavior is intentionally identical to the previous inlined implementation in {@link GameplayRenderer}.</p>
  */
 final class PlayerSpriteRenderer {
-    private static final String PLAYER_SHEET_PATH = "sprites/Warrior_SheetnoEffect.png";
+    private static final String PLAYER_SHEET_PATH = "sprites/warrior.png";
     /** Source frame size in the sprite sheet (do not change; affects region slicing). */
     private static final int PLAYER_FRAME_W = 69;
     private static final int PLAYER_FRAME_H = 44;
