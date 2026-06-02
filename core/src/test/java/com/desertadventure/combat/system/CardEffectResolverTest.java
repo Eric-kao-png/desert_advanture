@@ -10,6 +10,7 @@ import com.desertadventure.combat.card.data.CardEffectConditionDef;
 import com.desertadventure.combat.card.data.CardEffectStepDef;
 import com.desertadventure.combat.card.data.CardTargetingId;
 import com.desertadventure.combat.card.data.InMemoryCardRepository;
+import com.desertadventure.combat.system.support.CombatTestCardDefs;
 import com.desertadventure.player.PlayerStats;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -333,19 +334,19 @@ public class CardEffectResolverTest {
 
     private static Map<String, CardDef> minimalDefs() {
         Map<String, CardDef> defs = new HashMap<>();
-        defs.put("ATTACK", simpleDamageDef("ATTACK", "Attack", 1, 2));
-        defs.put("SWIFT_STRIKE", simpleDamageDef("SWIFT_STRIKE", "Swift Strike", 2, 3));
-        defs.put("HEAL", simpleHealDef());
-        defs.put("SHIELD", simpleShieldDef());
+        defs.put("ATTACK", CombatTestCardDefs.damageDef("ATTACK", "Attack", 1, 2));
+        defs.put("SWIFT_STRIKE", CombatTestCardDefs.damageDef("SWIFT_STRIKE", "Swift Strike", 2, 3));
+        defs.put("HEAL", CombatTestCardDefs.healDef());
+        defs.put("SHIELD", CombatTestCardDefs.shieldDef());
         defs.put("ASSAULT", fullPowerDef());
         defs.put("AMBUSH", thrustDef());
         defs.put("LIFE_MAGIC", lifeMagicDef());
-        defs.put("POISON_MAGIC", poisonDef());
-        defs.put("CLAW", simpleDamageDef("CLAW", "Claw", 2, 3));
-        defs.put("CHARGED_SLASH", chargedSlashDef());
-        defs.put("BLADE", bladeDef());
-        defs.put("GREAT_BLADE", greatBladeDef());
-        defs.put("VAMPIRISM", vampirismDef());
+        defs.put("POISON_MAGIC", CombatTestCardDefs.poisonDef());
+        defs.put("CLAW", CombatTestCardDefs.damageDef("CLAW", "Claw", 2, 3));
+        defs.put("CHARGED_SLASH", CombatTestCardDefs.chargedSlashDef());
+        defs.put("BLADE", CombatTestCardDefs.bladeDef());
+        defs.put("GREAT_BLADE", CombatTestCardDefs.greatBladeDef());
+        defs.put("VAMPIRISM", CombatTestCardDefs.vampirismDef());
         defs.put("PURIFY", purifyDef());
         defs.put("MAGIC_BOLT", simpleDamageIgnoreShieldDef());
         defs.put("POISON_BOLT", poisonBoltDef());
@@ -354,48 +355,6 @@ public class CardEffectResolverTest {
         defs.put("ARROW", arrowDef());
         defs.put("POISON_ARROW", poisonArrowDef());
         return defs;
-    }
-
-    private static CardDef simpleDamageDef(String id, String name, int cooldown, int damage) {
-        CardDef def = new CardDef();
-        def.id = id;
-        def.name = name;
-        def.category = CardCategoryId.OFFENSE;
-        def.cooldown = cooldown;
-        def.targeting = CardTargetingId.ENEMY;
-        CardEffectStepDef step = new CardEffectStepDef();
-        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        step.amount = damage;
-        def.effects = List.of(step);
-        return def;
-    }
-
-    private static CardDef simpleHealDef() {
-        CardDef def = new CardDef();
-        def.id = "HEAL";
-        def.name = "Heal";
-        def.category = CardCategoryId.UTILITY;
-        def.cooldown = 4;
-        def.targeting = CardTargetingId.SELF;
-        CardEffectStepDef step = new CardEffectStepDef();
-        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.HEAL_SELF;
-        step.amount = 4;
-        def.effects = List.of(step);
-        return def;
-    }
-
-    private static CardDef simpleShieldDef() {
-        CardDef def = new CardDef();
-        def.id = "SHIELD";
-        def.name = "Shield";
-        def.category = CardCategoryId.UTILITY;
-        def.cooldown = 3;
-        def.targeting = CardTargetingId.SELF;
-        CardEffectStepDef step = new CardEffectStepDef();
-        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.ADD_SHIELD;
-        step.amount = 4;
-        def.effects = List.of(step);
-        return def;
     }
 
     private static CardDef fullPowerDef() {
@@ -438,22 +397,6 @@ public class CardEffectResolverTest {
         return def;
     }
 
-    private static CardDef poisonDef() {
-        CardDef def = new CardDef();
-        def.id = "POISON_MAGIC";
-        def.name = "Poison Magic";
-        def.category = CardCategoryId.UTILITY;
-        def.cooldown = 2;
-        def.targeting = CardTargetingId.ENEMY;
-
-        CardEffectStepDef step = new CardEffectStepDef();
-        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
-        step.status = com.desertadventure.combat.model.NegativeStatusType.POISON;
-        step.turns = 2;
-        def.effects = List.of(step);
-        return def;
-    }
-
     private static CardDef thrustDef() {
         CardDef def = new CardDef();
         def.id = "AMBUSH";
@@ -476,73 +419,6 @@ public class CardEffectResolverTest {
         fallback.amount = 3;
 
         def.effects = List.of(conditional, fallback);
-        return def;
-    }
-
-    private static CardDef chargedSlashDef() {
-        CardDef def = new CardDef();
-        def.id = "CHARGED_SLASH";
-        def.name = "Charged Slash";
-        def.category = CardCategoryId.OFFENSE;
-        def.cooldown = 3;
-        def.targeting = CardTargetingId.ENEMY;
-
-        CardEffectConditionDef cond = new CardEffectConditionDef();
-        cond.type = com.desertadventure.combat.system.effects.ConditionType.SLOT_INDEX_EQUALS;
-        cond.slotIndex = 3;
-
-        CardEffectStepDef conditional = new CardEffectStepDef();
-        conditional.when = cond;
-        conditional.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        conditional.amount = 6;
-
-        CardEffectStepDef fallback = new CardEffectStepDef();
-        fallback.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        fallback.amount = 3;
-
-        def.effects = List.of(conditional, fallback);
-        return def;
-    }
-
-    private static CardDef bladeDef() {
-        CardDef def = new CardDef();
-        def.id = "BLADE";
-        def.name = "Blade";
-        def.category = CardCategoryId.OFFENSE;
-        def.cooldown = 3;
-        def.targeting = CardTargetingId.ENEMY;
-
-        CardEffectStepDef damage = new CardEffectStepDef();
-        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        damage.amount = 3;
-
-        CardEffectStepDef status = new CardEffectStepDef();
-        status.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
-        status.status = com.desertadventure.combat.model.NegativeStatusType.BLEED;
-        status.turns = 2;
-
-        def.effects = List.of(damage, status);
-        return def;
-    }
-
-    private static CardDef greatBladeDef() {
-        CardDef def = new CardDef();
-        def.id = "GREAT_BLADE";
-        def.name = "Great Blade";
-        def.category = CardCategoryId.OFFENSE;
-        def.cooldown = 3;
-        def.targeting = CardTargetingId.ENEMY;
-
-        CardEffectStepDef damage = new CardEffectStepDef();
-        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        damage.amount = 3;
-
-        CardEffectStepDef status = new CardEffectStepDef();
-        status.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
-        status.status = com.desertadventure.combat.model.NegativeStatusType.FEAR;
-        status.turns = 2;
-
-        def.effects = List.of(damage, status);
         return def;
     }
 
@@ -641,7 +517,7 @@ public class CardEffectResolverTest {
     }
 
     private static CardDef arrowDef() {
-        return simpleDamageDef("ARROW", "Arrow", 2, 3);
+        return CombatTestCardDefs.damageDef("ARROW", "Arrow", 2, 3);
     }
 
     private static CardDef poisonArrowDef() {
@@ -662,26 +538,6 @@ public class CardEffectResolverTest {
         poison.turns = 2;
 
         def.effects = List.of(damage, poison);
-        return def;
-    }
-
-    private static CardDef vampirismDef() {
-        CardDef def = new CardDef();
-        def.id = "VAMPIRISM";
-        def.name = "Vampirism";
-        def.category = CardCategoryId.OFFENSE;
-        def.cooldown = 3;
-        def.targeting = CardTargetingId.ENEMY;
-
-        CardEffectStepDef damage = new CardEffectStepDef();
-        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        damage.amount = 3;
-
-        CardEffectStepDef heal = new CardEffectStepDef();
-        heal.template = com.desertadventure.combat.system.effects.EffectTemplateId.HEAL_SELF;
-        heal.amount = 3;
-
-        def.effects = List.of(damage, heal);
         return def;
     }
 

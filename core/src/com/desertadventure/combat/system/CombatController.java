@@ -290,17 +290,7 @@ public class CombatController {
 
     /** Cards shown in the hand row (includes cooldown; excludes slot-assigned). */
     public List<ActionCardInstance> getVisibleHand() {
-        List<ActionCardInstance> hand = new ArrayList<>();
-        if (deck == null) {
-            return hand;
-        }
-        Set<Integer> assigned = assignedInstanceIds();
-        for (ActionCardInstance instance : deck.getInstances()) {
-            if (!assigned.contains(instance.getInstanceId())) {
-                hand.add(instance);
-            }
-        }
-        return hand;
+        return collectUnassignedHandCards(false);
     }
 
     public boolean canAssignCard(ActionCardInstance instance) {
@@ -312,13 +302,20 @@ public class CombatController {
 
     /** Assignable hand cards only (not on cooldown, not in a slot). */
     public List<ActionCardInstance> getHandCandidates() {
+        return collectUnassignedHandCards(true);
+    }
+
+    private List<ActionCardInstance> collectUnassignedHandCards(boolean excludeCooldown) {
         List<ActionCardInstance> hand = new ArrayList<>();
         if (deck == null) {
             return hand;
         }
         Set<Integer> assigned = assignedInstanceIds();
         for (ActionCardInstance instance : deck.getInstances()) {
-            if (instance == null || instance.isOnCooldown()) {
+            if (instance == null) {
+                continue;
+            }
+            if (excludeCooldown && instance.isOnCooldown()) {
                 continue;
             }
             if (assigned.contains(instance.getInstanceId())) {
@@ -540,12 +537,9 @@ public class CombatController {
     void dealDamageToEnemy(float amount, DamageSource source) {
         for (CombatEntity enemy : enemies) {
             if (enemy.isAlive()) {
-                float finalAmount = amount;
-                if (source == DamageSource.OFFENSE_CARD
-                        && enemy.getNegativeStatusType() == NegativeStatusType.FEAR
-                        && enemy.getNegativeTurnsRemaining() > 0) {
-                    finalAmount += 1f;
-                }
+                float finalAmount = source == DamageSource.OFFENSE_CARD
+                        ? offenseDamageWithFearBonus(amount, enemy)
+                        : amount;
                 enemy.takeDamage(finalAmount);
             }
         }
@@ -592,14 +586,17 @@ public class CombatController {
     void dealDamageToEnemyIgnoringShield(float amount) {
         for (CombatEntity enemy : enemies) {
             if (enemy.isAlive()) {
-                float finalAmount = amount;
-                if (enemy.getNegativeStatusType() == NegativeStatusType.FEAR
-                        && enemy.getNegativeTurnsRemaining() > 0) {
-                    finalAmount += 1f;
-                }
-                enemy.takeDamageIgnoringShield(finalAmount);
+                enemy.takeDamageIgnoringShield(offenseDamageWithFearBonus(amount, enemy));
             }
         }
+    }
+
+    private static float offenseDamageWithFearBonus(float amount, CombatEntity enemy) {
+        if (enemy.getNegativeStatusType() == NegativeStatusType.FEAR
+                && enemy.getNegativeTurnsRemaining() > 0) {
+            return amount + 1f;
+        }
+        return amount;
     }
 
     void dealDamageToPlayer(float amount) {

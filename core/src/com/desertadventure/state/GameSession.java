@@ -5,10 +5,6 @@ import com.desertadventure.combat.enemy.EnemyArchetypeId;
 import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardDeckResetPolicy;
 import com.desertadventure.combat.card.DefaultActionCardDeckResetPolicy;
-import com.desertadventure.combat.card.data.CardDatabase;
-import com.desertadventure.combat.card.data.GdxCardRepositoryLoader;
-import com.desertadventure.combat.enemy.data.EnemyArchetypeDatabase;
-import com.desertadventure.combat.enemy.data.GdxEnemyArchetypeLoader;
 import com.desertadventure.combat.system.CombatController;
 import com.desertadventure.config.GameMessages;
 import com.desertadventure.event.RequiredEventTracker;
@@ -54,7 +50,7 @@ public class GameSession implements ExplorationCallbacks {
     private EnemyArchetypeId pendingCombatArchetype;
 
     public GameSession() {
-        initializeGameDataIfNeeded();
+        GameDataBootstrap.initializeIfNeeded();
         map = MapGenerator.createWorld();
         travel = new TravelMovement(this);
         eventTracker = new RequiredEventTracker(permanentProgress);
@@ -63,15 +59,6 @@ public class GameSession implements ExplorationCallbacks {
         combatOutcomes = createCombatOutcomeApplier();
         tileContext = createTileInteractionContext();
         initializeNewSessionState();
-    }
-
-    private static void initializeGameDataIfNeeded() {
-        if (!CardDatabase.isInitialized()) {
-            CardDatabase.initialize(GdxCardRepositoryLoader.loadDefault());
-        }
-        if (!EnemyArchetypeDatabase.isInitialized()) {
-            EnemyArchetypeDatabase.initialize(GdxEnemyArchetypeLoader.loadDefault());
-        }
     }
 
     private void initializeNewSessionState() {

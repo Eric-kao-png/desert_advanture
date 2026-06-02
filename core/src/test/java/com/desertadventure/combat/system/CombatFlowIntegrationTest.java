@@ -4,19 +4,15 @@ import com.desertadventure.combat.CombatOutcome;
 import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardInstance;
 import com.desertadventure.combat.card.ActionCardType;
-import com.desertadventure.combat.card.data.CardCategoryId;
 import com.desertadventure.combat.card.data.CardDatabase;
-import com.desertadventure.combat.card.data.CardDef;
-import com.desertadventure.combat.card.data.CardEffectStepDef;
-import com.desertadventure.combat.card.data.CardTargetingId;
 import com.desertadventure.combat.card.data.InMemoryCardRepository;
+import com.desertadventure.combat.system.support.CombatTestCardDefs;
+import com.desertadventure.combat.system.support.SequencedPlanRoller;
 import com.desertadventure.player.PlayerStats;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class CombatFlowIntegrationTest {
     @BeforeEach
     void setUpCards() {
-        CardDatabase.initialize(new InMemoryCardRepository(minimalDefs()));
+        CardDatabase.initialize(new InMemoryCardRepository(CombatTestCardDefs.combatFlowMinimalDefs()));
     }
 
     @Test
@@ -197,7 +193,8 @@ public class CombatFlowIntegrationTest {
     void chargedSlash_slot4Condition_deals6WhenResolvedInSlotIndex3() {
         PlayerStats stats = new PlayerStats();
         // Force slot index 3 (slot 4) to be a player slot for this round.
-        SequencedPlanRoller roller = new SequencedPlanRoller(new com.desertadventure.combat.system.slots.PlayerSlotPlan(3, 0));
+        SequencedPlanRoller roller = new SequencedPlanRoller(
+                new com.desertadventure.combat.system.slots.PlayerSlotPlan(3, 0));
         CombatController combat = new CombatController(stats, roller);
 
         ActionCardDeck deck = new ActionCardDeck();
@@ -243,126 +240,5 @@ public class CombatFlowIntegrationTest {
         throw new IllegalStateException("No player slot available");
     }
 
-    private static Map<String, CardDef> minimalDefs() {
-        Map<String, CardDef> defs = new HashMap<>();
-        defs.put("ATTACK", damageDef("ATTACK", "Attack", 1, 2));
-        defs.put("POISON_MAGIC", poisonDef());
-        defs.put("BLADE", bladeDef());
-        defs.put("GREAT_BLADE", greatBladeDef());
-        defs.put("CHARGED_SLASH", chargedSlashDef());
-        return defs;
-    }
-
-    private static CardDef damageDef(String id, String name, int cooldown, int damage) {
-        CardDef def = new CardDef();
-        def.id = id;
-        def.name = name;
-        def.category = CardCategoryId.OFFENSE;
-        def.cooldown = cooldown;
-        def.targeting = CardTargetingId.ENEMY;
-        CardEffectStepDef step = new CardEffectStepDef();
-        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        step.amount = damage;
-        def.effects = List.of(step);
-        return def;
-    }
-
-    private static CardDef poisonDef() {
-        CardDef def = new CardDef();
-        def.id = "POISON_MAGIC";
-        def.name = "Poison Magic";
-        def.category = CardCategoryId.UTILITY;
-        def.cooldown = 2;
-        def.targeting = CardTargetingId.ENEMY;
-        CardEffectStepDef step = new CardEffectStepDef();
-        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
-        step.status = com.desertadventure.combat.model.NegativeStatusType.POISON;
-        step.turns = 2;
-        def.effects = List.of(step);
-        return def;
-    }
-
-    private static CardDef bladeDef() {
-        CardDef def = new CardDef();
-        def.id = "BLADE";
-        def.name = "Blade";
-        def.category = CardCategoryId.OFFENSE;
-        def.cooldown = 3;
-        def.targeting = CardTargetingId.ENEMY;
-
-        CardEffectStepDef damage = new CardEffectStepDef();
-        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        damage.amount = 3;
-
-        CardEffectStepDef status = new CardEffectStepDef();
-        status.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
-        status.status = com.desertadventure.combat.model.NegativeStatusType.BLEED;
-        status.turns = 2;
-
-        def.effects = List.of(damage, status);
-        return def;
-    }
-
-    private static CardDef greatBladeDef() {
-        CardDef def = new CardDef();
-        def.id = "GREAT_BLADE";
-        def.name = "Great Blade";
-        def.category = CardCategoryId.OFFENSE;
-        def.cooldown = 3;
-        def.targeting = CardTargetingId.ENEMY;
-
-        CardEffectStepDef damage = new CardEffectStepDef();
-        damage.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        damage.amount = 3;
-
-        CardEffectStepDef status = new CardEffectStepDef();
-        status.template = com.desertadventure.combat.system.effects.EffectTemplateId.APPLY_NEGATIVE_STATUS;
-        status.status = com.desertadventure.combat.model.NegativeStatusType.FEAR;
-        status.turns = 2;
-
-        def.effects = List.of(damage, status);
-        return def;
-    }
-
-    private static CardDef chargedSlashDef() {
-        CardDef def = new CardDef();
-        def.id = "CHARGED_SLASH";
-        def.name = "Charged Slash";
-        def.category = CardCategoryId.OFFENSE;
-        def.cooldown = 3;
-        def.targeting = CardTargetingId.ENEMY;
-
-        var cond = new com.desertadventure.combat.card.data.CardEffectConditionDef();
-        cond.type = com.desertadventure.combat.system.effects.ConditionType.SLOT_INDEX_EQUALS;
-        cond.slotIndex = 3;
-
-        var conditional = new com.desertadventure.combat.card.data.CardEffectStepDef();
-        conditional.when = cond;
-        conditional.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        conditional.amount = 6;
-
-        var fallback = new com.desertadventure.combat.card.data.CardEffectStepDef();
-        fallback.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        fallback.amount = 3;
-
-        def.effects = List.of(conditional, fallback);
-        return def;
-    }
-
-    private static final class SequencedPlanRoller implements com.desertadventure.combat.system.slots.PlayerSlotRoller {
-        private final com.desertadventure.combat.system.slots.PlayerSlotPlan[] plans;
-        private int idx;
-
-        SequencedPlanRoller(com.desertadventure.combat.system.slots.PlayerSlotPlan... plans) {
-            this.plans = plans;
-        }
-
-        @Override
-        public com.desertadventure.combat.system.slots.PlayerSlotPlan rollPlan() {
-            int i = Math.min(idx, plans.length - 1);
-            idx++;
-            return plans[i];
-        }
-    }
 }
 

@@ -3,20 +3,16 @@ package com.desertadventure.combat.system;
 import com.desertadventure.combat.CombatOutcome;
 import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardType;
-import com.desertadventure.combat.card.data.CardCategoryId;
 import com.desertadventure.combat.card.data.CardDatabase;
-import com.desertadventure.combat.card.data.CardDef;
-import com.desertadventure.combat.card.data.CardEffectStepDef;
-import com.desertadventure.combat.card.data.CardTargetingId;
 import com.desertadventure.combat.card.data.InMemoryCardRepository;
 import com.desertadventure.combat.system.presentation.PlayerAttackAnimation;
+import com.desertadventure.combat.system.support.CombatTestCardDefs;
+import com.desertadventure.combat.system.support.SequencedPlanRoller;
 import com.desertadventure.player.PlayerStats;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CombatOutcomeFinalizeIntegrationTest {
     @BeforeEach
     void setUpCards() {
-        CardDatabase.initialize(new InMemoryCardRepository(minimalDefs()));
+        CardDatabase.initialize(new InMemoryCardRepository(CombatTestCardDefs.outcomeFinalizeMinimalDefs()));
     }
 
     @Test
@@ -112,27 +108,6 @@ public class CombatOutcomeFinalizeIntegrationTest {
         throw new IllegalStateException("No player slot available");
     }
 
-    private static Map<String, CardDef> minimalDefs() {
-        Map<String, CardDef> defs = new HashMap<>();
-        defs.put("ATTACK", damageDef("ATTACK", "Attack", 1, 2));
-        defs.put("SWIFT_STRIKE", damageDef("SWIFT_STRIKE", "Swift Strike", 2, 3));
-        return defs;
-    }
-
-    private static CardDef damageDef(String id, String name, int cooldown, int damage) {
-        CardDef def = new CardDef();
-        def.id = id;
-        def.name = name;
-        def.category = CardCategoryId.OFFENSE;
-        def.cooldown = cooldown;
-        def.targeting = CardTargetingId.ENEMY;
-        CardEffectStepDef step = new CardEffectStepDef();
-        step.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
-        step.amount = damage;
-        def.effects = List.of(step);
-        return def;
-    }
-
     private static final class FakeAttackAnimation implements PlayerAttackAnimation {
         boolean triggered;
         private boolean attacking;
@@ -158,20 +133,5 @@ public class CombatOutcomeFinalizeIntegrationTest {
         }
     }
 
-    private static final class SequencedPlanRoller implements com.desertadventure.combat.system.slots.PlayerSlotRoller {
-        private final com.desertadventure.combat.system.slots.PlayerSlotPlan[] plans;
-        private int idx;
-
-        SequencedPlanRoller(com.desertadventure.combat.system.slots.PlayerSlotPlan... plans) {
-            this.plans = plans;
-        }
-
-        @Override
-        public com.desertadventure.combat.system.slots.PlayerSlotPlan rollPlan() {
-            int i = Math.min(idx, plans.length - 1);
-            idx++;
-            return plans[i];
-        }
-    }
 }
 
