@@ -658,7 +658,7 @@ public class CombatController {
     }
 
     /**
-     * End-of-round: status effects, cooldowns (played cards get full CD then all instances tick once).
+     * End-of-round: status effects, cooldowns (tick existing CD, then played cards enter full CD).
      * Runs when a round completes normally or combat ends mid-resolve.
      */
     private void applyRoundEndEffects() {
@@ -691,6 +691,9 @@ public class CombatController {
             playedThisRound.clear();
             return;
         }
+        for (ActionCardInstance instance : actionDeck.getInstances()) {
+            instance.tickCooldown();
+        }
         for (int instanceId : new HashSet<>(playedThisRound)) {
             ActionCardInstance card = actionDeck.findById(instanceId);
             if (card != null) {
@@ -698,9 +701,6 @@ public class CombatController {
             }
         }
         playedThisRound.clear();
-        for (ActionCardInstance instance : actionDeck.getInstances()) {
-            instance.tickCooldown();
-        }
     }
 
     private void clearAllSlots() {

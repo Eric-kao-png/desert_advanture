@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
@@ -57,7 +58,7 @@ public class CombatFlowIntegrationTest {
     }
 
     @Test
-    void playedAttack_withCooldown1_isAvailableNextRound_becauseRoundEndCountsAsCooldownTurn() {
+    void playedAttack_withCooldown1_isUnavailableNextRound() {
         PlayerStats stats = new PlayerStats();
         CombatController combat = new CombatController(stats);
 
@@ -67,16 +68,17 @@ public class CombatFlowIntegrationTest {
         combat.startCombat(0, true, 800f, 120f, deck, ignored -> {
         });
 
-        combat.getEnemies().get(0).setHp(3f);
+        combat.getEnemies().get(0).setHp(999f);
 
         int attackId = findFirstInstanceId(deck, ActionCardType.ATTACK);
+        ActionCardInstance instance = deck.findById(attackId);
         combat.assignToPlayerSlot(firstPlayerSlot(combat), attackId);
         combat.confirmPlanning();
 
         resolveFullRound(combat);
 
-        ActionCardInstance instance = deck.findById(attackId);
-        assertEquals(0, instance.getCooldownRemaining(), "CD=1 should tick to 0 at the end of the same round");
+        assertEquals(1, instance.getCooldownRemaining(), "CD=1 should remain 1 until the next round ends");
+        assertFalse(combat.canAssignCard(instance), "CD=1 card must not be usable on the very next round");
     }
 
     @Test
@@ -105,7 +107,7 @@ public class CombatFlowIntegrationTest {
 
         assertEquals(CombatOutcome.BOSS_VICTORY, outcome.get(), "Combat should end with boss victory (boss mode test)");
         ActionCardInstance instance = deck.findById(attackId);
-        assertEquals(0, instance.getCooldownRemaining(), "Early end should still apply round-end cooldown tick");
+        assertEquals(1, instance.getCooldownRemaining(), "Early end should still apply full CD for played card");
     }
 
     @Test

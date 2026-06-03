@@ -138,9 +138,9 @@ class EnemyCardResolveIntegrationTest {
         int clawCooldownTurns = ActionCardType.CLAW.getCooldownTurns();
         boolean playedClawCoolingDown = combat.enemyDeckInstancesForTests().stream()
                 .filter(i -> i.getType() == ActionCardType.CLAW)
-                .anyMatch(i -> i.getCooldownRemaining() == clawCooldownTurns - 1);
+                .anyMatch(i -> i.getCooldownRemaining() == clawCooldownTurns);
         assertTrue(playedClawCoolingDown,
-                "played CLAW should be mid-cooldown after round-end set+tick (CD=" + clawCooldownTurns + ")");
+                "played CLAW should enter full cooldown after round end (CD=" + clawCooldownTurns + ")");
     }
 
     private static ActionCardInstance pickFirstOfType(List<ActionCardInstance> candidates, ActionCardType type) {
