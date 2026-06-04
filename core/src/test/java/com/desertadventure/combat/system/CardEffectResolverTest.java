@@ -255,6 +255,17 @@ public class CardEffectResolverTest {
     }
 
     @Test
+    void poisonBlade_deals3DamageAndAppliesPoisonFor2Turns() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1, 0), ActionCardType.POISON_BLADE);
+
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+        assertEquals(com.desertadventure.combat.model.NegativeStatusType.POISON, combat.appliedNegativeStatus);
+        assertEquals(2, combat.appliedNegativeStatusTurns);
+    }
+
+    @Test
     void vampirism_deals3_andHeals3() {
         FakeCombatController combat = new FakeCombatController();
 

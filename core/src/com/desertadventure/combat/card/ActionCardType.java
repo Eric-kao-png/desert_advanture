@@ -21,6 +21,7 @@ public enum ActionCardType {
     CHARGED_SLASH,
     BLADE,
     GREAT_BLADE,
+    POISON_BLADE,
     VAMPIRISM,
     PURIFY,
     MAGIC_BOLT,

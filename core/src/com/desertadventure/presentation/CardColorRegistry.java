@@ -38,6 +38,7 @@ public final class CardColorRegistry {
         BY_TYPE.put(ActionCardType.CHARGED_SLASH, CARD_STRONG);
         BY_TYPE.put(ActionCardType.BLADE, CARD_STRONG);
         BY_TYPE.put(ActionCardType.GREAT_BLADE, CARD_STRONG);
+        BY_TYPE.put(ActionCardType.POISON_BLADE, CARD_POISON);
         BY_TYPE.put(ActionCardType.VAMPIRISM, CARD_STRONG);
         BY_TYPE.put(ActionCardType.MAGIC_BOLT, CARD_STRONG);
         BY_TYPE.put(ActionCardType.POISON_BOLT, CARD_STRONG);
