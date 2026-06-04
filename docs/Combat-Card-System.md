@@ -53,7 +53,11 @@ LibGDX、`core` 模組的 1v1 卡牌戰鬥參考：回合流程、牌庫、資�
 
 ## 3. 行動卡資料（25 張）
 
-定義來源：`core/assets/cards/action_cards.json`（25 張，`ActionCardType` 與 JSON `id` 一一對應）。
+定義來源（合併載入）：
+- `core/assets/cards/offense_cards.json` — 攻擊牌（`category`: `OFFENSE`，19 張）
+- `core/assets/cards/change_cards.json` — 變化牌（`category`: `UTILITY`，6 張）
+
+`ActionCardType` 與各檔 JSON `id` 一一對應；執行時由 `CardManifestLoader` / `GdxCardRepositoryLoader` 合併為單一 `CardRepository`。
 
 **效果權威來源**：JSON 的 `effects` 陣列 + `CardEffectResolver` 模板（`EffectTemplateId` / `ConditionType`）。`ActionCardType` 僅提供顯示名稱、描述、分類、冷卻、目標等 **從 JSON 讀取** 的欄位，**不再** 以 enum switch 決定傷害數值。
 
@@ -188,7 +192,9 @@ Boss 關（`stage_boss`）：`CombatConfig.BOSS_BASE_HP`、`BOSS_HP_PER_DISTANCE
 
 | 路徑 | 用途 |
 |------|------|
-| `core/assets/cards/action_cards.json` | 25 張卡定義與效果步驟 |
+| `core/assets/cards/offense_cards.json` | 攻擊牌定義與效果步驟 |
+| `core/assets/cards/change_cards.json` | 變化牌定義與效果步驟 |
+| `combat/card/data/CardManifestLoader.java` | 合併多份 manifest |
 | `core/assets/enemies/enemy_archetypes.json` | 敵人 HP、牌組、戰利品表（loot 預留） |
 | `core/assets/stages/stages.json` | 線性關卡與原型 ID |
 | `combat/card/ActionCardType.java` | 卡 ID enum；顯示/分類/冷卻自 JSON |
@@ -211,7 +217,7 @@ Boss 關（`stage_boss`）：`CombatConfig.BOSS_BASE_HP`、`BOSS_HP_PER_DISTANCE
 
 ## 12. 擴充新卡
 
-1. 在 `action_cards.json` 新增一筆（`id` 與 enum 同名）。
+1. 在 `offense_cards.json` 或 `change_cards.json` 新增一筆（`category` 須與檔案一致；`id` 與 enum 同名）。
 2. 在 `ActionCardType` 新增 enum 常數。
 3. 使用既有 `EffectTemplateId` / `ConditionType`；若需新行為，在 `CardEffectResolver` 註冊模板或條件後於 JSON 引用。
 4. 以 `CardEffectResolverTest` 或整合測試覆蓋新步驟。

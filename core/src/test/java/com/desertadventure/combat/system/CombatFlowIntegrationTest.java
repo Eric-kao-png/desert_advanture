@@ -4,9 +4,7 @@ import com.desertadventure.combat.CombatOutcome;
 import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardInstance;
 import com.desertadventure.combat.card.ActionCardType;
-import com.desertadventure.combat.card.data.CardDatabase;
-import com.desertadventure.combat.card.data.InMemoryCardRepository;
-import com.desertadventure.combat.system.support.CombatTestCardDefs;
+import com.desertadventure.combat.system.support.CombatCardTestSupport;
 import com.desertadventure.combat.system.support.SequencedPlanRoller;
 
 import static com.desertadventure.combat.system.support.CombatIntegrationTestSupport.findFirstInstanceId;
@@ -31,8 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  */
 public class CombatFlowIntegrationTest {
     @BeforeEach
-    void setUpCards() {
-        CardDatabase.initialize(new InMemoryCardRepository(CombatTestCardDefs.combatFlowMinimalDefs()));
+    void setUpCards() throws Exception {
+        CombatCardTestSupport.initializeProductionCardDatabase();
     }
 
     @Test

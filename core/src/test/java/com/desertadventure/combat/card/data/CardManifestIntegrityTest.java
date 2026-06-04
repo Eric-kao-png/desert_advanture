@@ -1,36 +1,35 @@
 package com.desertadventure.combat.card.data;
 
-import com.badlogic.gdx.utils.Json;
 import com.desertadventure.combat.card.ActionCardType;
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * JSON-driven data integrity checks for action cards.
  *
- * <p>Reads the manifest from the repository (without using Gdx.files / LibGDX runtime init).</p>
+ * <p>Reads offense + change manifests from the repository (without LibGDX init).</p>
  */
 public class CardManifestIntegrityTest {
     @Test
-    void actionCardsManifest_hasUniqueNonBlankIds_andCoversAllActionCardTypes() throws Exception {
-        Path manifestPath = resolveManifestPath();
-        assertTrue(Files.exists(manifestPath), "Missing manifest file: " + manifestPath);
+    void cardManifests_haveUniqueNonBlankIds_andCoversAllActionCardTypes() throws Exception {
+        Path cwd = Path.of(System.getProperty("user.dir"));
+        var files = CardManifestLoader.resolveDefaultManifestFiles(cwd);
+        for (Path file : files) {
+            assertTrue(java.nio.file.Files.exists(file), "Missing manifest file: " + file);
+        }
 
-        String jsonText = Files.readString(manifestPath, StandardCharsets.UTF_8);
-        CardManifest manifest = new Json().fromJson(CardManifest.class, jsonText);
-        assertNotNull(manifest);
-        assertNotNull(manifest.cards);
+        Map<String, CardDef> defs = CardManifestLoader.loadMergedFromFiles(files);
 
         Set<String> ids = new HashSet<>();
-        for (CardDef def : manifest.cards) {
+        for (CardDef def : defs.values()) {
             assertNotNull(def, "manifest contains null card");
             assertNotNull(def.id, "card id must not be null");
             assertTrue(!def.id.isBlank(), "card id must not be blank");
@@ -39,24 +38,33 @@ public class CardManifestIntegrityTest {
             assertTrue(!def.description.isBlank(), "card description must not be blank: " + def.id);
         }
 
+        assertEquals(ActionCardType.values().length, ids.size(),
+                "manifest card count should match ActionCardType enum");
+
         for (ActionCardType type : ActionCardType.values()) {
             assertTrue(ids.contains(type.name()), "manifest missing card id for ActionCardType: " + type.name());
         }
     }
 
-    private static Path resolveManifestPath() {
-        // When running via Gradle, user.dir is typically the repo root.
+    @Test
+    void offenseManifest_containsOnlyOffenseCategory() throws Exception {
         Path cwd = Path.of(System.getProperty("user.dir"));
-        Path p1 = cwd.resolve("core/assets/cards/action_cards.json");
-        if (Files.exists(p1)) {
-            return p1;
+        Path offense = CardManifestLoader.resolveDefaultManifestFiles(cwd).get(0);
+        Map<String, CardDef> defs = CardManifestLoader.loadMergedFromFiles(java.util.List.of(offense));
+        for (CardDef def : defs.values()) {
+            assertEquals(CardCategoryId.OFFENSE, def.category,
+                    "offense_cards.json must only contain OFFENSE: " + def.id);
         }
-        // Fallback for IDE runs started from core/ module.
-        Path p2 = cwd.resolve("assets/cards/action_cards.json");
-        if (Files.exists(p2)) {
-            return p2;
+    }
+
+    @Test
+    void changeManifest_containsOnlyUtilityCategory() throws Exception {
+        Path cwd = Path.of(System.getProperty("user.dir"));
+        Path change = CardManifestLoader.resolveDefaultManifestFiles(cwd).get(1);
+        Map<String, CardDef> defs = CardManifestLoader.loadMergedFromFiles(java.util.List.of(change));
+        for (CardDef def : defs.values()) {
+            assertEquals(CardCategoryId.UTILITY, def.category,
+                    "change_cards.json must only contain UTILITY: " + def.id);
         }
-        return p1;
     }
 }
-

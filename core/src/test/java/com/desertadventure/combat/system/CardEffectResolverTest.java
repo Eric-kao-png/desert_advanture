@@ -25,9 +25,9 @@ public class CardEffectResolverTest {
     private CardEffectResolver resolver;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         resolver = new CardEffectResolver();
-        CardDatabase.initialize(new InMemoryCardRepository(minimalDefs()));
+        com.desertadventure.combat.system.support.CombatCardTestSupport.initializeProductionCardDatabase();
     }
 
     @Test

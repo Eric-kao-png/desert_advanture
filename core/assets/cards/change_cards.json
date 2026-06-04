@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": "HEAL",
+      "name": "治療",
+      "description": "恢復 4 點生命。",
+      "category": "UTILITY",
+      "cooldown": 4,
+      "targeting": "SELF",
+      "effects": [
+        {
+          "template": "HEAL_SELF",
+          "amount": 4
+        }
+      ]
+    },
+    {
+      "id": "SHIELD",
+      "name": "護盾",
+      "description": "獲得 4 點護盾。",
+      "category": "UTILITY",
+      "cooldown": 3,
+      "targeting": "SELF",
+      "effects": [
+        {
+          "template": "ADD_SHIELD",
+          "amount": 4
+        }
+      ]
+    },
+    {
+      "id": "LIFE_MAGIC",
+      "name": "生命魔術",
+      "description": "將敵人目前生命減半（無條件捨去）。",
+      "category": "UTILITY",
+      "cooldown": 5,
+      "targeting": "ENEMY",
+      "effects": [
+        {
+          "template": "HALVE_ENEMY_HP"
+        }
+      ]
+    },
+    {
+      "id": "POISON_MAGIC",
+      "name": "毒魔法",
+      "description": "施加中毒 2 回合（每回合結束時受到 1 點傷害）。",
+      "category": "UTILITY",
+      "cooldown": 2,
+      "targeting": "ENEMY",
+      "effects": [
+        {
+          "template": "APPLY_NEGATIVE_STATUS",
+          "status": "POISON",
+          "turns": 2
+        }
+      ]
+    },
+    {
+      "id": "PURIFY",
+      "name": "淨化",
+      "description": "清除自身異常狀態；若無異常狀態則改為恢復 2 點生命。",
+      "category": "UTILITY",
+      "cooldown": 2,
+      "targeting": "SELF",
+      "effects": [
+        {
+          "when": {
+            "type": "CASTER_HAS_NEGATIVE_STATUS"
+          },
+          "template": "CLEAR_SELF_NEGATIVE_STATUS"
+        },
+        {
+          "template": "HEAL_SELF",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "MAGIC_MIRROR",
+      "name": "魔法鏡",
+      "description": "將自身異常狀態轉移給敵人。",
+      "category": "UTILITY",
+      "cooldown": 3,
+      "targeting": "SELF",
+      "effects": [
+        {
+          "template": "TRANSFER_NEGATIVE_STATUS_TO_OPPONENT"
+        }
+      ]
+    }
+  ]
+}

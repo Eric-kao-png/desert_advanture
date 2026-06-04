@@ -9,7 +9,10 @@
       "cooldown": 1,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE", "amount": 2 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 2
+        }
       ]
     },
     {
@@ -20,7 +23,10 @@
       "cooldown": 2,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE", "amount": 3 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        }
       ]
     },
     {
@@ -31,7 +37,10 @@
       "cooldown": 3,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE", "amount": 4 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 4
+        }
       ]
     },
     {
@@ -43,11 +52,17 @@
       "targeting": "ENEMY",
       "effects": [
         {
-          "when": { "type": "SLOT_INDEX_EQUALS", "slotIndex": 0 },
+          "when": {
+            "type": "SLOT_INDEX_EQUALS",
+            "slotIndex": 0
+          },
           "template": "DEAL_DAMAGE",
           "amount": 6
         },
-        { "template": "DEAL_DAMAGE", "amount": 3 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        }
       ]
     },
     {
@@ -59,11 +74,17 @@
       "targeting": "ENEMY",
       "effects": [
         {
-          "when": { "type": "TURN_HAS_USED_CATEGORY", "category": "UTILITY" },
+          "when": {
+            "type": "TURN_HAS_USED_CATEGORY",
+            "category": "UTILITY"
+          },
           "template": "DEAL_DAMAGE",
           "amount": 6
         },
-        { "template": "DEAL_DAMAGE", "amount": 3 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        }
       ]
     },
     {
@@ -75,11 +96,16 @@
       "targeting": "ENEMY",
       "effects": [
         {
-          "when": { "type": "PREVIOUS_SLOT_PLAYER_OFFENSE" },
+          "when": {
+            "type": "PREVIOUS_SLOT_PLAYER_OFFENSE"
+          },
           "template": "DEAL_DAMAGE",
           "amount": 6
         },
-        { "template": "DEAL_DAMAGE", "amount": 3 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        }
       ]
     },
     {
@@ -90,30 +116,14 @@
       "cooldown": 3,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE", "amount": 2 },
-        { "template": "DEAL_DAMAGE", "amount": 2 }
-      ]
-    },
-    {
-      "id": "HEAL",
-      "name": "治療",
-      "description": "恢復 4 點生命。",
-      "category": "UTILITY",
-      "cooldown": 4,
-      "targeting": "SELF",
-      "effects": [
-        { "template": "HEAL_SELF", "amount": 4 }
-      ]
-    },
-    {
-      "id": "SHIELD",
-      "name": "護盾",
-      "description": "獲得 4 點護盾。",
-      "category": "UTILITY",
-      "cooldown": 3,
-      "targeting": "SELF",
-      "effects": [
-        { "template": "ADD_SHIELD", "amount": 4 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 2
+        },
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 2
+        }
       ]
     },
     {
@@ -125,22 +135,18 @@
       "targeting": "ENEMY",
       "effects": [
         {
-          "when": { "type": "TURN_HAS_USED_CATEGORY", "category": "UTILITY", "negate": true },
+          "when": {
+            "type": "TURN_HAS_USED_CATEGORY",
+            "category": "UTILITY",
+            "negate": true
+          },
           "template": "DEAL_DAMAGE",
           "amount": 6
         },
-        { "template": "DEAL_DAMAGE", "amount": 3 }
-      ]
-    },
-    {
-      "id": "LIFE_MAGIC",
-      "name": "生命魔術",
-      "description": "將敵人目前生命減半（無條件捨去）。",
-      "category": "UTILITY",
-      "cooldown": 5,
-      "targeting": "ENEMY",
-      "effects": [
-        { "template": "HALVE_ENEMY_HP" }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        }
       ]
     },
     {
@@ -152,22 +158,17 @@
       "targeting": "ENEMY",
       "effects": [
         {
-          "when": { "type": "ROUND_EQUALS", "round": 1 },
+          "when": {
+            "type": "ROUND_EQUALS",
+            "round": 1
+          },
           "template": "DEAL_DAMAGE",
           "amount": 6
         },
-        { "template": "DEAL_DAMAGE", "amount": 3 }
-      ]
-    },
-    {
-      "id": "POISON_MAGIC",
-      "name": "毒魔法",
-      "description": "施加中毒 2 回合（每回合結束時受到 1 點傷害）。",
-      "category": "UTILITY",
-      "cooldown": 2,
-      "targeting": "ENEMY",
-      "effects": [
-        { "template": "APPLY_NEGATIVE_STATUS", "status": "POISON", "turns": 2 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        }
       ]
     },
     {
@@ -178,7 +179,10 @@
       "cooldown": 2,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE", "amount": 3 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        }
       ]
     },
     {
@@ -190,11 +194,17 @@
       "targeting": "ENEMY",
       "effects": [
         {
-          "when": { "type": "SLOT_INDEX_EQUALS", "slotIndex": 3 },
+          "when": {
+            "type": "SLOT_INDEX_EQUALS",
+            "slotIndex": 3
+          },
           "template": "DEAL_DAMAGE",
           "amount": 6
         },
-        { "template": "DEAL_DAMAGE", "amount": 3 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        }
       ]
     },
     {
@@ -205,8 +215,15 @@
       "cooldown": 3,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE", "amount": 3 },
-        { "template": "APPLY_NEGATIVE_STATUS", "status": "BLEED", "turns": 2 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        },
+        {
+          "template": "APPLY_NEGATIVE_STATUS",
+          "status": "BLEED",
+          "turns": 2
+        }
       ]
     },
     {
@@ -217,8 +234,15 @@
       "cooldown": 3,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE", "amount": 3 },
-        { "template": "APPLY_NEGATIVE_STATUS", "status": "FEAR", "turns": 2 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        },
+        {
+          "template": "APPLY_NEGATIVE_STATUS",
+          "status": "FEAR",
+          "turns": 2
+        }
       ]
     },
     {
@@ -229,23 +253,14 @@
       "cooldown": 3,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE", "amount": 3 },
-        { "template": "HEAL_SELF", "amount": 3 }
-      ]
-    },
-    {
-      "id": "PURIFY",
-      "name": "淨化",
-      "description": "清除自身異常狀態；若無異常狀態則改為恢復 2 點生命。",
-      "category": "UTILITY",
-      "cooldown": 2,
-      "targeting": "SELF",
-      "effects": [
         {
-          "when": { "type": "CASTER_HAS_NEGATIVE_STATUS" },
-          "template": "CLEAR_SELF_NEGATIVE_STATUS"
+          "template": "DEAL_DAMAGE",
+          "amount": 3
         },
-        { "template": "HEAL_SELF", "amount": 2 }
+        {
+          "template": "HEAL_SELF",
+          "amount": 3
+        }
       ]
     },
     {
@@ -256,7 +271,10 @@
       "cooldown": 2,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE_IGNORE_SHIELD", "amount": 3 }
+        {
+          "template": "DEAL_DAMAGE_IGNORE_SHIELD",
+          "amount": 3
+        }
       ]
     },
     {
@@ -267,19 +285,13 @@
       "cooldown": 2,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE", "amount": 2 },
-        { "template": "APPLY_RANDOM_POISON" }
-      ]
-    },
-    {
-      "id": "MAGIC_MIRROR",
-      "name": "魔法鏡",
-      "description": "將自身異常狀態轉移給敵人。",
-      "category": "UTILITY",
-      "cooldown": 3,
-      "targeting": "SELF",
-      "effects": [
-        { "template": "TRANSFER_NEGATIVE_STATUS_TO_OPPONENT" }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 2
+        },
+        {
+          "template": "APPLY_RANDOM_POISON"
+        }
       ]
     },
     {
@@ -291,11 +303,16 @@
       "targeting": "ENEMY",
       "effects": [
         {
-          "when": { "type": "OPPONENT_HAS_NEGATIVE_STATUS" },
+          "when": {
+            "type": "OPPONENT_HAS_NEGATIVE_STATUS"
+          },
           "template": "DEAL_DAMAGE",
           "amount": 4
         },
-        { "template": "DEAL_DAMAGE", "amount": 3 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        }
       ]
     },
     {
@@ -306,7 +323,10 @@
       "cooldown": 2,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE", "amount": 3 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 3
+        }
       ]
     },
     {
@@ -317,8 +337,15 @@
       "cooldown": 2,
       "targeting": "ENEMY",
       "effects": [
-        { "template": "DEAL_DAMAGE", "amount": 2 },
-        { "template": "APPLY_CHANCE_POISON", "chancePercent": 50, "turns": 2 }
+        {
+          "template": "DEAL_DAMAGE",
+          "amount": 2
+        },
+        {
+          "template": "APPLY_CHANCE_POISON",
+          "chancePercent": 50,
+          "turns": 2
+        }
       ]
     }
   ]
