@@ -22,9 +22,10 @@ final class GameplayModeUpdater {
 
     void update(float delta) {
         GameplayMode mode = session.getMode();
-        detectModeTransitions(mode);
-        combatState.updateLayoutBlend(delta, mode);
-        applyLayoutBlendToInput();
+        if (mode.isCombat() && !combatState.lastMode.isCombat()) {
+            combatState.combatInitialized = false;
+        }
+
         syncCombatEntityGround();
         ensureCombatInitialized(mode);
 
@@ -45,37 +46,21 @@ final class GameplayModeUpdater {
         input.updateCombatInput(delta);
     }
 
-    private void detectModeTransitions(GameplayMode mode) {
-        if (mode.isCombat() && !combatState.lastMode.isCombat()) {
-            combatState.combatInitialized = false;
-        }
-    }
-
-    private void ensureCombatInitialized(GameplayMode mode) {
-        if (mode == GameplayMode.COMBAT && !combatState.combatInitialized) {
-            beginCombat(false);
-        } else if (mode == GameplayMode.BOSS_COMBAT && !combatState.combatInitialized) {
-            beginCombat(true);
-        }
-    }
-
     void ensureCombatInitializedForDraw(GameplayMode mode) {
         ensureCombatInitialized(mode);
     }
 
-    float getLayoutBlend() {
-        return combatState.layoutBlend;
-    }
-
-    private void applyLayoutBlendToInput() {
-        input.getCombatCardInput().getLayout().applyBlend(combatState.layoutBlend);
+    private void ensureCombatInitialized(GameplayMode mode) {
+        if (mode == GameplayMode.COMBAT && !combatState.combatInitialized) {
+            beginCombat();
+        }
     }
 
     private void syncCombatEntityGround() {
         if (!session.getCombatController().isActive()) {
             return;
         }
-        float groundY = CombatSceneLayout.entityGroundY(combatState.layoutBlend);
+        float groundY = CombatSceneLayout.entityGroundY();
         CombatEntity player = session.getCombatController().getPlayer();
         if (player != null) {
             player.setPosition(player.getX(), groundY);
@@ -85,17 +70,16 @@ final class GameplayModeUpdater {
         }
     }
 
-    private void beginCombat(boolean boss) {
+    private void beginCombat() {
         int stageIndex = session.getRunProgress().getCurrentStageIndex();
         session.getCombatController().startCombat(
                 stageIndex,
-                boss,
-                boss ? null : session.consumePendingCombatArchetype(),
+                session.isPendingBossFight(),
+                session.consumePendingEnemyArchetype(),
                 GameConfig.VIEW_WIDTH,
                 GameConfig.COMBAT_GROUND_Y,
                 session.getActionCardDeck(),
-                session::onCombatEnd
-        );
+                session::onCombatEnd);
         combatState.resetForCombatStart();
         combatState.combatInitialized = true;
     }

@@ -45,41 +45,33 @@ final class GameplaySceneDrawer {
         SpriteBatch batch = game.getBatch();
         renderer.setProjectionMatrix(viewport.getProjectionMatrix());
 
-        switch (mode) {
-            case HUB -> drawHub(batch, delta);
-            case COMBAT, BOSS_COMBAT -> drawCombat(batch, delta, mode);
-            case VICTORY -> game.setScreen(new VictoryScreen(game));
-            default -> drawHub(batch, delta);
+        if (mode == GameplayMode.HUB) {
+            drawHub(batch);
+        } else if (mode.isCombat()) {
+            drawCombat(batch, mode);
         }
     }
 
-    private void drawCombat(SpriteBatch batch, float delta, GameplayMode mode) {
+    private void drawCombat(SpriteBatch batch, GameplayMode mode) {
         modeUpdater.ensureCombatInitializedForDraw(mode);
-        float blend = modeUpdater.getLayoutBlend();
         CombatCardLayout layout = input.getCombatCardInput().getLayout();
-        layout.applyBlend(blend);
 
         CombatController combat = session.getCombatController();
         CombatEntity player = combat.getPlayer();
         if (player == null) {
             return;
         }
-        List<CombatEntity> entities = buildCombatEntities(combat, player);
+        List<CombatEntity> entities = new ArrayList<>();
+        entities.add(player);
+        entities.addAll(combat.getEnemies());
         renderer.renderCombatEntities(combat, entities, batch, uiFont);
         renderer.renderCombatHand(combat, layout, batch, uiFont);
         renderer.renderCombatSlotsAndControls(combat, layout, batch, uiFont);
     }
 
-    private void drawHub(SpriteBatch batch, float delta) {
+    private void drawHub(SpriteBatch batch) {
         batch.begin();
         input.getHubDrawer().draw(batch, uiFont, session);
         batch.end();
-    }
-
-    private static List<CombatEntity> buildCombatEntities(CombatController combat, CombatEntity player) {
-        List<CombatEntity> entities = new ArrayList<>();
-        entities.add(player);
-        entities.addAll(combat.getEnemies());
-        return entities;
     }
 }

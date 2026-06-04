@@ -1,6 +1,5 @@
 package com.desertadventure.combat.enemy;
 
-import com.desertadventure.combat.card.ActionCardRewards;
 import com.desertadventure.combat.card.ActionCardType;
 import com.desertadventure.combat.system.slots.RandomIntSource;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,15 +38,6 @@ class WanderingWizardArchetypeTest {
                 ActionCardType.MAGIC_ARROW,
                 ActionCardType.PURIFY);
         assertEquals(expected, Set.copyOf(def.lootPool()));
-    }
-
-    @Test
-    void wanderingWizard_victoryRoll_onlyFromLootPool() {
-        Set<ActionCardType> pool = Set.copyOf(
-                EnemyArchetypeRegistry.getRequired(EnemyArchetypeId.WANDERING_WIZARD).lootPool());
-        for (int i = 0; i < 30; i++) {
-            assertTrue(pool.contains(ActionCardRewards.rollVictoryCard(EnemyArchetypeId.WANDERING_WIZARD)));
-        }
     }
 
     @Test

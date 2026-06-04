@@ -1,9 +1,9 @@
 package com.desertadventure.combat.model;
 
-import com.badlogic.gdx.math.Rectangle;
 import com.desertadventure.config.GameConfig;
 
-public class CombatEntity {
+/** Combatant on the arena: HP, shield, and negative statuses. */
+public final class CombatEntity {
     public enum Kind {
         PLAYER, ENEMY, BOSS
     }
@@ -11,50 +11,32 @@ public class CombatEntity {
     private final Kind kind;
     private float x;
     private float y;
-    private float width;
-    private float height;
+    private final float width;
+    private final float height;
     private float hp;
-    private float maxHp;
-    private int attack;
-    private float speed;
-    private float contactDamageCooldown;
+    private final float maxHp;
     private boolean alive = true;
     private int shield;
-    private PositiveStatusType positiveType;
-    private int positiveTurnsRemaining;
     private NegativeStatusType negativeType;
     private int negativeTurnsRemaining;
 
-    public CombatEntity(Kind kind, float x, float y, float maxHp, int attack, float speed) {
+    public CombatEntity(Kind kind, float x, float y, float maxHp) {
         this.kind = kind;
         this.x = x;
         this.y = y;
         this.maxHp = maxHp;
         this.hp = maxHp;
-        this.attack = attack;
-        this.speed = speed;
-        applySizeByKind(kind);
+        float[] size = sizeFor(kind);
+        this.width = size[0];
+        this.height = size[1];
     }
 
-    private void applySizeByKind(Kind kind) {
-        switch (kind) {
-            case PLAYER -> {
-                width = GameConfig.PLAYER_WIDTH;
-                height = GameConfig.PLAYER_HEIGHT;
-            }
-            case ENEMY -> {
-                width = GameConfig.ENEMY_WIDTH;
-                height = GameConfig.ENEMY_HEIGHT;
-            }
-            case BOSS -> {
-                width = GameConfig.BOSS_WIDTH;
-                height = GameConfig.BOSS_HEIGHT;
-            }
-            default -> {
-                width = 40f;
-                height = 40f;
-            }
-        }
+    private static float[] sizeFor(Kind kind) {
+        return switch (kind) {
+            case PLAYER -> new float[] { GameConfig.PLAYER_WIDTH, GameConfig.PLAYER_HEIGHT };
+            case ENEMY -> new float[] { GameConfig.ENEMY_WIDTH, GameConfig.ENEMY_HEIGHT };
+            case BOSS -> new float[] { GameConfig.BOSS_WIDTH, GameConfig.BOSS_HEIGHT };
+        };
     }
 
     public Kind getKind() {
@@ -95,27 +77,8 @@ public class CombatEntity {
         return maxHp;
     }
 
-    public int getAttack() {
-        return attack;
-    }
-
-    public float getSpeed() {
-        return speed;
-    }
-
     public boolean isAlive() {
         return alive;
-    }
-
-    public Rectangle getBounds() {
-        return new Rectangle(x - width / 2f, y, width, height);
-    }
-
-    /** Hitbox extending forward (to the right) from the player. */
-    public Rectangle getForwardAttackHitbox(float depth, float hitHeight) {
-        float frontX = x + width * 0.2f;
-        float hitY = y + (height - hitHeight) * 0.5f;
-        return new Rectangle(frontX, hitY, depth, hitHeight);
     }
 
     public int getShield() {
@@ -127,14 +90,6 @@ public class CombatEntity {
             return;
         }
         shield += amount;
-    }
-
-    public PositiveStatusType getPositiveStatusType() {
-        return positiveType;
-    }
-
-    public int getPositiveTurnsRemaining() {
-        return positiveTurnsRemaining;
     }
 
     public NegativeStatusType getNegativeStatusType() {
@@ -154,16 +109,6 @@ public class CombatEntity {
         negativeTurnsRemaining = 0;
     }
 
-    /** Replaces any existing positive status. */
-    public void setPositiveStatus(PositiveStatusType type, int turns) {
-        if (!alive || type == null || turns <= 0) {
-            return;
-        }
-        positiveType = type;
-        positiveTurnsRemaining = turns;
-    }
-
-    /** Replaces any existing negative status. */
     public void setNegativeStatus(NegativeStatusType type, int turns) {
         if (!alive || type == null || turns <= 0) {
             return;
@@ -174,10 +119,7 @@ public class CombatEntity {
 
     public void clearCombatStatus() {
         shield = 0;
-        positiveType = null;
-        positiveTurnsRemaining = 0;
-        negativeType = null;
-        negativeTurnsRemaining = 0;
+        clearNegativeStatus();
     }
 
     public void takeDamage(float amount) {
@@ -189,13 +131,11 @@ public class CombatEntity {
             shield -= absorbed;
             amount -= absorbed;
         }
-        if (amount <= 0f) {
-            return;
+        if (amount > 0f) {
+            applyDirectDamage(amount);
         }
-        applyDirectDamage(amount);
     }
 
-    /** Status tick damage; does not consume shield. */
     public void takeStatusDamage(float amount) {
         if (!alive || amount <= 0f) {
             return;
@@ -203,7 +143,6 @@ public class CombatEntity {
         applyDirectDamage(amount);
     }
 
-    /** Card damage that bypasses shield (still respects alive check). */
     public void takeDamageIgnoringShield(float amount) {
         if (!alive || amount <= 0f) {
             return;
@@ -211,9 +150,6 @@ public class CombatEntity {
         applyDirectDamage(amount);
     }
 
-    /**
-     * Round-end status resolution: apply negative effects (e.g. poison damage), then tick durations.
-     */
     public void applyRoundEndStatusEffects(float poisonDamagePerRound) {
         if (!alive) {
             return;
@@ -225,22 +161,14 @@ public class CombatEntity {
                 takeStatusDamage(negativeTurnsRemaining);
             }
         }
-        tickStatusDurations();
+        tickNegativeDuration();
     }
 
-    private void tickStatusDurations() {
-        if (positiveTurnsRemaining > 0) {
-            positiveTurnsRemaining--;
-            if (positiveTurnsRemaining <= 0) {
-                positiveType = null;
-                positiveTurnsRemaining = 0;
-            }
-        }
+    private void tickNegativeDuration() {
         if (negativeTurnsRemaining > 0) {
             negativeTurnsRemaining--;
             if (negativeTurnsRemaining <= 0) {
-                negativeType = null;
-                negativeTurnsRemaining = 0;
+                clearNegativeStatus();
             }
         }
     }
@@ -250,26 +178,6 @@ public class CombatEntity {
             return;
         }
         hp = Math.min(maxHp, hp + amount);
-    }
-
-    public void update(float delta, float arenaWidth) {
-        if (contactDamageCooldown > 0f) {
-            contactDamageCooldown -= delta;
-        }
-        float halfW = width / 2f;
-        x = Math.max(halfW, Math.min(arenaWidth - halfW, x));
-    }
-
-    public boolean canDealContactDamage() {
-        return contactDamageCooldown <= 0f;
-    }
-
-    public void resetContactCooldown() {
-        contactDamageCooldown = 0.8f;
-    }
-
-    public void moveBy(float dx) {
-        x += dx;
     }
 
     private void applyDirectDamage(float amount) {

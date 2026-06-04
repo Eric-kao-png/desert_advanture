@@ -56,7 +56,7 @@ public class CardEffectResolverTest {
     void enemyCaster_heal_healsEnemy() {
         FakeCombatController combat = new FakeCombatController();
         var enemy = new com.desertadventure.combat.model.CombatEntity(
-                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f);
         enemy.setHp(3f);
         combat.enemies.add(enemy);
 
@@ -253,7 +253,7 @@ public class CardEffectResolverTest {
     void magicMirror_transfersPlayerDebuffToEnemy() {
         FakeCombatController combat = new FakeCombatController();
         var enemy = new com.desertadventure.combat.model.CombatEntity(
-                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f);
         combat.enemies.add(enemy);
         combat.playerEntity.setNegativeStatus(
                 com.desertadventure.combat.model.NegativeStatusType.BLEED, 2);
@@ -269,7 +269,7 @@ public class CardEffectResolverTest {
     void enemyCaster_magicMirror_transfersEnemyDebuffToPlayer() {
         FakeCombatController combat = new FakeCombatController();
         var enemy = new com.desertadventure.combat.model.CombatEntity(
-                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f);
         enemy.setNegativeStatus(com.desertadventure.combat.model.NegativeStatusType.POISON, 1);
         combat.enemies.add(enemy);
 
@@ -319,7 +319,7 @@ public class CardEffectResolverTest {
     void magicArrow_deals4WhenTargetHasDebuff_else3() {
         FakeCombatController combat = new FakeCombatController();
         var enemy = new com.desertadventure.combat.model.CombatEntity(
-                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+                com.desertadventure.combat.model.CombatEntity.Kind.ENEMY, 0f, 0f, 10f);
         enemy.setNegativeStatus(com.desertadventure.combat.model.NegativeStatusType.FEAR, 1);
         combat.enemies.add(enemy);
 
@@ -559,7 +559,7 @@ public class CardEffectResolverTest {
         final com.desertadventure.combat.model.CombatEntity playerEntity =
                 new com.desertadventure.combat.model.CombatEntity(
                         com.desertadventure.combat.model.CombatEntity.Kind.PLAYER,
-                        0f, 0f, 10f, 0, 0f);
+                        0f, 0f, 10f);
 
         FakeCombatController() {
             super(new PlayerStats());

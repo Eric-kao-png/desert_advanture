@@ -29,20 +29,18 @@ public final class CombatCardLayout {
 
     private int hoveredHandInstanceId = -1;
     private int hoveredSlotIndex = -1;
-    private float layoutBlend;
 
     public CombatCardLayout() {
-        applyBlend(0f);
+        refreshLayout();
     }
 
-    public void applyBlend(float blend) {
-        layoutBlend = blend;
-        slotY = CombatSceneLayout.slotY(blend);
-        slotW = CombatSceneLayout.slotWidth(blend);
-        slotH = CombatSceneLayout.slotHeight(blend);
-        handY = CombatSceneLayout.handY(blend);
-        cardW = CombatSceneLayout.cardWidth(blend);
-        cardH = CombatSceneLayout.cardHeight(blend);
+    public void refreshLayout() {
+        slotY = CombatSceneLayout.slotY();
+        slotW = CombatSceneLayout.slotWidth();
+        slotH = CombatSceneLayout.slotHeight();
+        handY = CombatSceneLayout.handY();
+        cardW = CombatSceneLayout.cardWidth();
+        cardH = CombatSceneLayout.cardHeight();
 
         float totalW = 4 * slotW + 3 * GameConfig.COMBAT_SLOT_GAP;
         float startX = (GameConfig.VIEW_WIDTH - totalW) / 2f;
@@ -67,10 +65,6 @@ public final class CombatCardLayout {
         changePanel.viewportW = GameConfig.VIEW_WIDTH - margin - changePanel.viewportX;
         changePanel.viewportY = panelY;
         changePanel.viewportH = panelH;
-    }
-
-    public float getLayoutBlend() {
-        return layoutBlend;
     }
 
     public void rebuildHand(CombatController combat) {

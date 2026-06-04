@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class TileArchetypeCombatStartTest {
+class StageCombatStartTest {
     @BeforeEach
     void setUpCards() throws Exception {
         CombatTestDataBootstrap.ensureProductionDatabases();
@@ -27,7 +27,7 @@ class TileArchetypeCombatStartTest {
         assertTrue(session.tryStartCurrentStageCombat());
 
         assertEquals(GameplayMode.COMBAT, session.getMode());
-        assertEquals(EnemyArchetypeId.DESERT_ZOMBIE, session.consumePendingCombatArchetype());
+        assertEquals(EnemyArchetypeId.DESERT_ZOMBIE, session.consumePendingEnemyArchetype());
 
         CombatController combat = session.getCombatController();
         combat.startCombat(
@@ -52,7 +52,7 @@ class TileArchetypeCombatStartTest {
         session.getRunProgress().advanceAfterVictory();
         assertTrue(session.tryStartCurrentStageCombat());
 
-        assertEquals(EnemyArchetypeId.WANDERING_WIZARD, session.consumePendingCombatArchetype());
+        assertEquals(EnemyArchetypeId.WANDERING_WIZARD, session.consumePendingEnemyArchetype());
 
         CombatController combat = session.getCombatController();
         combat.startCombat(
@@ -72,7 +72,7 @@ class TileArchetypeCombatStartTest {
     }
 
     @Test
-    void bossFight_ignoresTileArchetypeAndShowsBossLabel() {
+    void bossFight_ignoresStageArchetypeAndShowsBossLabel() {
         PlayerStats stats = new PlayerStats();
         CombatController combat = new CombatController(stats);
         combat.startCombat(

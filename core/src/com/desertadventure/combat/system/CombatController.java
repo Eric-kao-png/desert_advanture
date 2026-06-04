@@ -78,8 +78,6 @@ public class CombatController {
     private RandomIntSource cardEffectRng = defaultCardEffectRng();
     private final Integer[] enemySlotInstanceIds = new Integer[SLOT_COUNT];
     private final ActionCardType[] resolvedEnemySlotCards = new ActionCardType[SLOT_COUNT];
-    private EnemyArchetypeId lastDefeatedEnemyArchetype;
-
     public CombatController(PlayerStats playerStats) {
         this(playerStats, defaultPlayerSlotRoller(), defaultEnemyAi(), defaultEnemyHpRng());
     }
@@ -161,13 +159,13 @@ public class CombatController {
     public void startCombat(
             int stageIndex,
             boolean boss,
-            EnemyArchetypeId tileEncounterArchetype,
+            EnemyArchetypeId encounterArchetype,
             float arenaWidth,
             float groundY,
             ActionCardDeck actionDeck,
             Consumer<CombatOutcome> onEnd) {
         initializeCombatSession(
-                stageIndex, boss, tileEncounterArchetype, arenaWidth, groundY, actionDeck, onEnd);
+                stageIndex, boss, encounterArchetype, arenaWidth, groundY, actionDeck, onEnd);
     }
 
     public CombatEntity getPlayer() {
@@ -195,11 +193,6 @@ public class CombatController {
             return null;
         }
         return EnemyArchetypeRegistry.getRequired(currentEnemyArchetype).displayName();
-    }
-
-    /** Archetype of the normal enemy defeated in the last VICTORY; null if none yet. */
-    public EnemyArchetypeId getLastDefeatedEnemyArchetype() {
-        return lastDefeatedEnemyArchetype;
     }
 
     public ActionCardType getEnemyCardForSlot(int slotIndex) {
@@ -417,9 +410,6 @@ public class CombatController {
         }
         enemies.removeIf(enemy -> !enemy.isAlive());
         if (enemies.isEmpty()) {
-            if (!bossFight && currentEnemyArchetype != null) {
-                lastDefeatedEnemyArchetype = currentEnemyArchetype;
-            }
             return bossFight ? CombatOutcome.BOSS_VICTORY : CombatOutcome.VICTORY;
         }
         return null;
@@ -670,7 +660,7 @@ public class CombatController {
     private void initializeCombatSession(
             int stageIndex,
             boolean boss,
-            EnemyArchetypeId tileEncounterArchetype,
+            EnemyArchetypeId encounterArchetype,
             float arenaWidth,
             float groundY,
             ActionCardDeck actionDeck,
@@ -695,7 +685,7 @@ public class CombatController {
 
         currentEnemyArchetype = boss
                 ? null
-                : EnemyArchetypeRegistry.resolveNormalEncounter(tileEncounterArchetype, enemyHpRng);
+                : EnemyArchetypeRegistry.resolveNormalEncounter(encounterArchetype, enemyHpRng);
         if (currentEnemyArchetype != null) {
             EnemyArchetypeDef archetype = EnemyArchetypeRegistry.getRequired(currentEnemyArchetype);
             enemyDeck = ActionCardDeck.fromCardTypes(archetype.deckCardTypes());
@@ -712,7 +702,7 @@ public class CombatController {
     private CombatEntity createPlayerEntity(float arenaWidth, float groundY) {
         float playerX = arenaWidth * CombatConfig.COMBAT_PLAYER_X_RATIO;
         CombatEntity playerEntity = new CombatEntity(
-                CombatEntity.Kind.PLAYER, playerX, groundY, playerStats.getMaxHp(), playerStats.getAttack(), 0f);
+                CombatEntity.Kind.PLAYER, playerX, groundY, playerStats.getMaxHp());
         playerEntity.setHp(playerStats.getHp());
         playerEntity.clearCombatStatus();
         return playerEntity;
@@ -722,7 +712,7 @@ public class CombatController {
         if (boss) {
             float bossHp = CombatConfig.BOSS_BASE_HP + stageIndex * CombatConfig.BOSS_HP_PER_DISTANCE_BAND;
             float bossX = arenaWidth * CombatConfig.COMBAT_BOSS_X_RATIO;
-            CombatEntity bossEntity = new CombatEntity(CombatEntity.Kind.BOSS, bossX, groundY, bossHp, 0, 0f);
+            CombatEntity bossEntity = new CombatEntity(CombatEntity.Kind.BOSS, bossX, groundY, bossHp);
             bossEntity.clearCombatStatus();
             return bossEntity;
         }
@@ -730,7 +720,7 @@ public class CombatController {
         float enemyX = arenaWidth * CombatConfig.COMBAT_ENEMY_X_RATIO;
         EnemyArchetypeDef archetype = EnemyArchetypeRegistry.getRequired(currentEnemyArchetype);
         float enemyHp = archetype.rollMaxHp(enemyHpRng);
-        CombatEntity enemy = new CombatEntity(CombatEntity.Kind.ENEMY, enemyX, groundY, enemyHp, 0, 0f);
+        CombatEntity enemy = new CombatEntity(CombatEntity.Kind.ENEMY, enemyX, groundY, enemyHp);
         enemy.clearCombatStatus();
         return enemy;
     }

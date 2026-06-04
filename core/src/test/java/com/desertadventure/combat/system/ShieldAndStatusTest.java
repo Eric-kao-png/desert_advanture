@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class ShieldAndStatusTest {
     @Test
     void takeDamage_consumesShieldFirst_thenHp() {
-        CombatEntity e = new CombatEntity(CombatEntity.Kind.PLAYER, 0f, 0f, 10f, 0, 0f);
+        CombatEntity e = new CombatEntity(CombatEntity.Kind.PLAYER, 0f, 0f, 10f);
         e.clearCombatStatus();
         e.setHp(10f);
         e.addShield(3);
@@ -26,7 +26,7 @@ public class ShieldAndStatusTest {
 
     @Test
     void takeStatusDamage_bypassesShield() {
-        CombatEntity e = new CombatEntity(CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+        CombatEntity e = new CombatEntity(CombatEntity.Kind.ENEMY, 0f, 0f, 10f);
         e.clearCombatStatus();
         e.setHp(10f);
         e.addShield(999);
@@ -38,7 +38,7 @@ public class ShieldAndStatusTest {
 
     @Test
     void poison_roundEndDealsStatusDamage_bypassingShield_andTicksDurationToClear() {
-        CombatEntity e = new CombatEntity(CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+        CombatEntity e = new CombatEntity(CombatEntity.Kind.ENEMY, 0f, 0f, 10f);
         e.clearCombatStatus();
         e.setHp(10f);
         e.addShield(5);
@@ -54,7 +54,7 @@ public class ShieldAndStatusTest {
 
     @Test
     void negativeStatus_isSingleSlot_newStatusOverwritesTypeAndTurns() {
-        CombatEntity e = new CombatEntity(CombatEntity.Kind.ENEMY, 0f, 0f, 10f, 0, 0f);
+        CombatEntity e = new CombatEntity(CombatEntity.Kind.ENEMY, 0f, 0f, 10f);
         e.clearCombatStatus();
 
         e.setNegativeStatus(NegativeStatusType.POISON, 2);

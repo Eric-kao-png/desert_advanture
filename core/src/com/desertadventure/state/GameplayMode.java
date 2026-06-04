@@ -2,12 +2,10 @@ package com.desertadventure.state;
 
 public enum GameplayMode {
     HUB,
-    COMBAT,
-    BOSS_COMBAT,
-    VICTORY;
+    COMBAT;
 
     public boolean isCombat() {
-        return this == COMBAT || this == BOSS_COMBAT;
+        return this == COMBAT;
     }
 
     public boolean isHub() {

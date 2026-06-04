@@ -3,25 +3,20 @@ package com.desertadventure.run;
 import com.desertadventure.combat.CombatOutcome;
 import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardType;
-import com.desertadventure.combat.enemy.EnemyArchetypeId;
 import com.desertadventure.player.PlayerStats;
 import com.desertadventure.state.GameplayMode;
-import com.desertadventure.state.PermanentProgress;
 import com.desertadventure.combat.system.support.CombatTestDataBootstrap;
-import com.desertadventure.state.SessionModeAccess;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StageRunCoordinatorTest {
-    private StageCatalog catalog;
     private RunProgress runProgress;
     private PlayerStats playerStats;
     private ActionCardDeck deck;
@@ -33,17 +28,12 @@ class StageRunCoordinatorTest {
         CombatTestDataBootstrap.ensureProductionDatabases();
         var path = com.desertadventure.run.data.StageManifestLoader.resolveManifestPath();
         String json = Files.readString(path, StandardCharsets.UTF_8);
-        catalog = com.desertadventure.run.data.StageManifestLoader.loadFromJson(json, path.toString());
+        StageCatalog catalog = com.desertadventure.run.data.StageManifestLoader.loadFromJson(json, path.toString());
         runProgress = new RunProgress(catalog);
         playerStats = new PlayerStats();
         deck = ActionCardDeck.fromCardTypes(List.of(ActionCardType.ATTACK, ActionCardType.HEAL));
         mode = new TestMode();
-        coordinator = new StageRunCoordinator(
-                runProgress,
-                playerStats,
-                new PermanentProgress(),
-                deck,
-                mode);
+        coordinator = new StageRunCoordinator(runProgress, playerStats, deck, mode::setMode);
     }
 
     @Test
@@ -62,7 +52,7 @@ class StageRunCoordinatorTest {
         runProgress.advanceAfterVictory();
         assertEquals(2, runProgress.getCurrentStageIndex());
 
-        coordinator.apply(CombatOutcome.DEFEAT, null);
+        coordinator.apply(CombatOutcome.DEFEAT);
 
         assertEquals(0, runProgress.getCurrentStageIndex());
         assertEquals(0, deck.findById(1).getCooldownRemaining());
@@ -80,19 +70,16 @@ class StageRunCoordinatorTest {
         assertEquals(2, deck.getInstances().size());
     }
 
-    private static final class TestMode implements SessionModeAccess {
+    private static final class TestMode implements RunModeSetter {
         private GameplayMode mode = GameplayMode.HUB;
-        private final List<GameplayMode> history = new ArrayList<>();
 
         @Override
-        public GameplayMode get() {
-            return mode;
+        public void setMode(GameplayMode mode) {
+            this.mode = mode;
         }
 
-        @Override
-        public void set(GameplayMode mode) {
-            this.mode = mode;
-            history.add(mode);
+        GameplayMode get() {
+            return mode;
         }
     }
 }

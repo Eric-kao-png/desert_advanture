@@ -53,9 +53,5 @@ public final class CombatConfig {
 
     // --- Combat UI timing ---
     public static final float RESOLVE_SLOT_SECONDS = 0.45f;
-    public static final float LAYOUT_BLEND_SECONDS = 0.4f;
-
-    // --- Rewards ---
-    public static final int VICTORY_EXPERIENCE = 20;
 }
 
