@@ -13,6 +13,8 @@ import com.desertadventure.combat.enemy.EnemyArchetypeRegistry;
 import com.desertadventure.combat.enemy.RandomEnemyAi;
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.combat.model.NegativeStatusType;
+import com.desertadventure.combat.model.PositiveStatusType;
+import com.desertadventure.combat.status.StatusEffectRuntime;
 import com.desertadventure.config.CombatConfig;
 import com.desertadventure.combat.system.slots.PlayerSlotPlan;
 import com.desertadventure.combat.system.slots.PlayerSlotRoller;
@@ -437,7 +439,16 @@ public class CombatController {
     }
 
     void dealDamageToEnemy(float amount, DamageSource source) {
-        damageAliveEnemies(amount, source, false);
+        boolean ignoreShield = source == DamageSource.OFFENSE_CARD
+                && player != null
+                && StatusEffectRuntime.casterIgnoresShieldOnOffense(player);
+        damageAliveEnemies(amount, source, ignoreShield);
+        if (source == DamageSource.OFFENSE_CARD && player != null && player.isAlive()) {
+            float heal = StatusEffectRuntime.outgoingOffenseHealCaster(player);
+            if (heal > 0f) {
+                healPlayer(heal);
+            }
+        }
     }
 
     void healPlayer(float amount) {
@@ -470,8 +481,20 @@ public class CombatController {
         }
     }
 
+    void applyPositiveStatusToPlayer(PositiveStatusType type, int turns) {
+        if (player != null && player.isAlive()) {
+            player.setPositiveStatus(type, turns);
+        }
+    }
+
     void dealDamageToEnemyIgnoringShield(float amount) {
         damageAliveEnemies(amount, DamageSource.OFFENSE_CARD, true);
+        if (player != null && player.isAlive()) {
+            float heal = StatusEffectRuntime.outgoingOffenseHealCaster(player);
+            if (heal > 0f) {
+                healPlayer(heal);
+            }
+        }
     }
 
     private void damageAliveEnemies(float amount, DamageSource source, boolean ignoreShield) {
@@ -488,7 +511,21 @@ public class CombatController {
     }
 
     void dealDamageToPlayer(float amount) {
-        if (player == null) {
+        dealDamageToPlayer(amount, DamageSource.OTHER);
+    }
+
+    void dealDamageToPlayer(float amount, DamageSource source) {
+        if (player == null || !player.isAlive()) {
+            return;
+        }
+        if (source == DamageSource.OFFENSE_CARD) {
+            StatusEffectRuntime.IncomingOffenseToSelfResult resolved =
+                    StatusEffectRuntime.resolveIncomingOffenseToSelf(amount, player);
+            if (resolved.damageToBearer() > 0f) {
+                player.takeDamage(resolved.damageToBearer());
+                syncPlayerStatsHp();
+            }
+            applyRetaliationToAttacker(resolved.retaliateAttacker());
             return;
         }
         player.takeDamage(amount);
@@ -496,11 +533,35 @@ public class CombatController {
     }
 
     void dealDamageToPlayerIgnoringShield(float amount) {
-        if (player == null) {
+        dealDamageToPlayerIgnoringShield(amount, DamageSource.OTHER);
+    }
+
+    void dealDamageToPlayerIgnoringShield(float amount, DamageSource source) {
+        if (player == null || !player.isAlive()) {
+            return;
+        }
+        if (source == DamageSource.OFFENSE_CARD) {
+            StatusEffectRuntime.IncomingOffenseToSelfResult resolved =
+                    StatusEffectRuntime.resolveIncomingOffenseToSelf(amount, player);
+            if (resolved.damageToBearer() > 0f) {
+                player.takeDamageIgnoringShield(resolved.damageToBearer());
+                syncPlayerStatsHp();
+            }
+            applyRetaliationToAttacker(resolved.retaliateAttacker());
             return;
         }
         player.takeDamageIgnoringShield(amount);
         syncPlayerStatsHp();
+    }
+
+    private void applyRetaliationToAttacker(float amount) {
+        if (amount <= 0f) {
+            return;
+        }
+        CombatEntity attacker = CombatEntityRoster.firstAliveEnemy(enemies);
+        if (attacker != null && attacker.isAlive()) {
+            attacker.takeDamageIgnoringShield(amount);
+        }
     }
 
     private void finishRound() {
@@ -593,7 +654,7 @@ public class CombatController {
 
     private void resolveEnemySlot() {
         if (enemySlots.isBossEncounter()) {
-            dealDamageToPlayer(2);
+            dealDamageToPlayer(2f, DamageSource.OTHER);
             return;
         }
         ActionCardInstance card = enemySlots.resolveCardForSlot(resolvingSlotIndex);

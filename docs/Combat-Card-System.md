@@ -51,11 +51,11 @@ LibGDX、`core` 模組的 1v1 卡牌戰鬥參考：回合流程、牌庫、資�
 
 ---
 
-## 3. 行動卡資料（26 張）
+## 3. 行動卡資料（31 張）
 
 定義來源（合併載入）：
 - `core/assets/cards/offense_cards.json` — 攻擊牌（`category`: `OFFENSE`，20 張）
-- `core/assets/cards/change_cards.json` — 變化牌（`category`: `UTILITY`，6 張）
+- `core/assets/cards/change_cards.json` — 變化牌（`category`: `UTILITY`，11 張）
 
 `ActionCardType` 與各檔 JSON `id` 一一對應；執行時由 `CardManifestLoader` / `GdxCardRepositoryLoader` 合併為單一 `CardRepository`。
 
@@ -66,11 +66,11 @@ LibGDX、`core` 模組的 1v1 卡牌戰鬥參考：回合流程、牌庫、資�
 | 分類 | JSON `category` | 張數概略 | 代表效果 |
 |------|-----------------|----------|----------|
 | 攻擊牌 | `OFFENSE` | 約 19 | 直接傷害、條件加傷（格位、前一格攻擊、本回合是否用變化牌等） |
-| 變化牌 | `UTILITY` | 約 7 | 治療、護盾、減半敵 HP、中毒、淨化、轉移負面狀態等 |
+| 變化牌 | `UTILITY` | 約 11 | 治療、護盾、正面增益、減半敵 HP、中毒、淨化、轉移負面狀態等 |
 
 **攻擊牌（範例）**：攻擊、斬擊、重擊、迅擊、咒刃、追擊、雙刃、猛攻、伏擊、爪擊、蓄力斬、利刃、巨刃、毒刃、吸血、魔法彈、魔法箭、箭、毒彈、毒箭等。
 
-**變化牌（範例）**：治療、護盾、生命魔術、毒術、淨化、魔鏡。
+**變化牌（範例）**：治療、護盾、尖刺護盾、鱗甲、專注、吸血鬼之牙、閃避、生命魔術、毒術、淨化、魔鏡。
 
 條件範例（皆在 JSON `when` 中）：`ROUND_EQUALS`、`TURN_HAS_USED_CATEGORY`、`SLOT_INDEX_EQUALS`、`PREVIOUS_SLOT_PLAYER_OFFENSE`、`CASTER_HAS_NEGATIVE_STATUS`、`OPPONENT_HAS_NEGATIVE_STATUS`。
 
@@ -122,7 +122,11 @@ UI 分類：`ActionCardCategory` — **ATTACK（攻擊）** / **CHANGE（變化�
 
 | trigger | 行為 |
 |---------|------|
-| `INCOMING_OFFENSE_CARD_DAMAGE` | 敵方受到攻擊牌傷害時 `add`（如恐懼 **+1**） |
+| `INCOMING_OFFENSE_CARD_DAMAGE` | 目標受到攻擊牌傷害時 `add`（如恐懼 **+1**） |
+| `INCOMING_OFFENSE_CARD_DAMAGE_TO_SELF` | 自身受到攻擊牌傷害時 `reduce`、`blockOffenseHit`、`retaliateAttacker` |
+| `OUTGOING_OFFENSE_CARD_DAMAGE` | 自身以攻擊牌造成傷害時 `ignoreShieldOnOffense`、`healCasterOnOffense` |
+
+變化牌以 `APPLY_POSITIVE_STATUS` + `positiveStatus` / `turns` 施加正面狀態。
 
 目前負面定義摘要：
 
@@ -131,6 +135,16 @@ UI 分類：`ActionCardCategory` — **ATTACK（攻擊）** / **CHANGE（變化�
 | 負面 | `POISON` | `FIXED` 2 | — |
 | 負面 | `BLEED` | `REMAINING_TURNS` | — |
 | 負面 | `FEAR` | 無 | `INCOMING_OFFENSE_CARD_DAMAGE` +1 |
+
+目前正面定義摘要：
+
+| 極性 | 類型 | 修正 |
+|------|------|------|
+| 正面 | `SPIKE_SHIELD` | 受攻擊牌時 `retaliateAttacker` 2 |
+| 正面 | `SCALE_ARMOR` | 受攻擊牌 `reduce` 1 |
+| 正面 | `FOCUS` | 攻擊牌 `ignoreShieldOnOffense` |
+| 正面 | `VAMPIRE_FANG` | 攻擊牌 `healCasterOnOffense` 2 |
+| 正面 | `DODGE` | 受攻擊牌 `blockOffenseHit`（消耗並清除） |
 
 **回合末**（`CombatEntity.applyRoundEndStatusEffects` ← `CombatController`）：
 

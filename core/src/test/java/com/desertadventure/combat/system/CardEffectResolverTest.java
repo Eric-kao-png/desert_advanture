@@ -94,6 +94,61 @@ public class CardEffectResolverTest {
     }
 
     @Test
+    void spikeShield_appliesPositiveFor2Turns() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.SPIKE_SHIELD);
+
+        assertEquals(com.desertadventure.combat.model.PositiveStatusType.SPIKE_SHIELD,
+                combat.playerEntity.getPositiveStatusType());
+        assertEquals(2, combat.playerEntity.getPositiveTurnsRemaining());
+    }
+
+    @Test
+    void scaleArmor_appliesPositiveFor2Turns() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.SCALE_ARMOR);
+
+        assertEquals(com.desertadventure.combat.model.PositiveStatusType.SCALE_ARMOR,
+                combat.playerEntity.getPositiveStatusType());
+        assertEquals(2, combat.playerEntity.getPositiveTurnsRemaining());
+    }
+
+    @Test
+    void focus_appliesPositiveFor3Turns() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.FOCUS);
+
+        assertEquals(com.desertadventure.combat.model.PositiveStatusType.FOCUS,
+                combat.playerEntity.getPositiveStatusType());
+        assertEquals(3, combat.playerEntity.getPositiveTurnsRemaining());
+    }
+
+    @Test
+    void vampireFang_appliesPositiveFor2Turns() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.VAMPIRE_FANG);
+
+        assertEquals(com.desertadventure.combat.model.PositiveStatusType.VAMPIRE_FANG,
+                combat.playerEntity.getPositiveStatusType());
+        assertEquals(2, combat.playerEntity.getPositiveTurnsRemaining());
+    }
+
+    @Test
+    void dodge_appliesPositiveFor3Turns() {
+        FakeCombatController combat = new FakeCombatController();
+
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.DODGE);
+
+        assertEquals(com.desertadventure.combat.model.PositiveStatusType.DODGE,
+                combat.playerEntity.getPositiveStatusType());
+        assertEquals(3, combat.playerEntity.getPositiveTurnsRemaining());
+    }
+
+    @Test
     void poison_appliesPoisonFor2Turns() {
         FakeCombatController combat = new FakeCombatController();
 
@@ -751,12 +806,39 @@ public class CardEffectResolverTest {
 
         @Override
         void dealDamageToPlayer(float amount) {
-            damageToPlayer += amount;
+            dealDamageToPlayer(amount, DamageSource.OTHER);
+        }
+
+        @Override
+        void dealDamageToPlayer(float amount, DamageSource source) {
+            if (source == DamageSource.OFFENSE_CARD) {
+                var resolved = com.desertadventure.combat.status.StatusEffectRuntime
+                        .resolveIncomingOffenseToSelf(amount, playerEntity);
+                damageToPlayer += resolved.damageToBearer();
+            } else {
+                damageToPlayer += amount;
+            }
         }
 
         @Override
         void dealDamageToPlayerIgnoringShield(float amount) {
-            damageIgnoringShieldToPlayer += amount;
+            dealDamageToPlayerIgnoringShield(amount, DamageSource.OTHER);
+        }
+
+        @Override
+        void dealDamageToPlayerIgnoringShield(float amount, DamageSource source) {
+            if (source == DamageSource.OFFENSE_CARD) {
+                var resolved = com.desertadventure.combat.status.StatusEffectRuntime
+                        .resolveIncomingOffenseToSelf(amount, playerEntity);
+                damageIgnoringShieldToPlayer += resolved.damageToBearer();
+            } else {
+                damageIgnoringShieldToPlayer += amount;
+            }
+        }
+
+        @Override
+        void applyPositiveStatusToPlayer(com.desertadventure.combat.model.PositiveStatusType type, int turns) {
+            playerEntity.setPositiveStatus(type, turns);
         }
 
         @Override

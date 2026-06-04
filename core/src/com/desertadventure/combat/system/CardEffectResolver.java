@@ -27,6 +27,8 @@ final class CardEffectResolver {
         registerTemplate(EffectTemplateId.HALVE_ENEMY_HP, (ctx, step) -> ctx.halveEnemyHp());
         registerTemplate(EffectTemplateId.APPLY_NEGATIVE_STATUS, (ctx, step) ->
                 ctx.applyNegativeStatusToEnemies(step.status, step.turns));
+        registerTemplate(EffectTemplateId.APPLY_POSITIVE_STATUS, (ctx, step) ->
+                ctx.applyPositiveStatusToCaster(step.positiveStatus, step.turns));
         registerTemplate(EffectTemplateId.APPLY_RANDOM_POISON, (ctx, step) -> ctx.applyRandomPoisonToEnemies());
         registerTemplate(EffectTemplateId.APPLY_CHANCE_POISON, (ctx, step) -> {
             int chance = step.chancePercent != null ? step.chancePercent : 50;

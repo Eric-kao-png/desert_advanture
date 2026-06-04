@@ -2,6 +2,7 @@ package com.desertadventure.combat.system;
 
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.combat.model.NegativeStatusType;
+import com.desertadventure.combat.model.PositiveStatusType;
 
 final class PlayerCombatPerspective implements CombatPerspective {
     private final CombatController combat;
@@ -67,5 +68,10 @@ final class PlayerCombatPerspective implements CombatPerspective {
     @Override
     public void applyNegativeStatusToEnemies(NegativeStatusType type, int turns) {
         combat.applyNegativeStatusToEnemies(type, turns);
+    }
+
+    @Override
+    public void applyPositiveStatusToCaster(PositiveStatusType type, int turns) {
+        combat.applyPositiveStatusToPlayer(type, turns);
     }
 }

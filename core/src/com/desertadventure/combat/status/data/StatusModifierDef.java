@@ -4,4 +4,9 @@ package com.desertadventure.combat.status.data;
 public final class StatusModifierDef {
     public StatusModifierTriggerId trigger;
     public float add;
+    public Float reduce;
+    public Boolean blockOffenseHit;
+    public Boolean ignoreShieldOnOffense;
+    public Float healCasterOnOffense;
+    public Float retaliateAttacker;
 }

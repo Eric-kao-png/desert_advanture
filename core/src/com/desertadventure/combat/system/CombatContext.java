@@ -3,6 +3,7 @@ package com.desertadventure.combat.system;
 import com.desertadventure.combat.card.ActionCardCategory;
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.combat.model.NegativeStatusType;
+import com.desertadventure.combat.model.PositiveStatusType;
 
 import java.util.List;
 
@@ -114,6 +115,10 @@ public final class CombatContext {
 
     public void applyNegativeStatusToEnemies(NegativeStatusType type, int turns) {
         perspective.applyNegativeStatusToEnemies(type, turns);
+    }
+
+    public void applyPositiveStatusToCaster(PositiveStatusType type, int turns) {
+        perspective.applyPositiveStatusToCaster(type, turns);
     }
 
     @Override

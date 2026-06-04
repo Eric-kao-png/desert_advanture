@@ -46,6 +46,11 @@ public final class CardColorRegistry {
         BY_TYPE.put(ActionCardType.ARROW, CARD_STRONG);
         BY_TYPE.put(ActionCardType.POISON_ARROW, CARD_STRONG);
         BY_TYPE.put(ActionCardType.PURIFY, CARD_HEAL);
+        BY_TYPE.put(ActionCardType.SPIKE_SHIELD, CARD_SHIELD);
+        BY_TYPE.put(ActionCardType.SCALE_ARMOR, CARD_SHIELD);
+        BY_TYPE.put(ActionCardType.FOCUS, CARD_HEAL);
+        BY_TYPE.put(ActionCardType.VAMPIRE_FANG, CARD_HEAL);
+        BY_TYPE.put(ActionCardType.DODGE, CARD_HEAL);
         BY_TYPE.put(ActionCardType.MAGIC_MIRROR, CARD_HEAL);
     }
 

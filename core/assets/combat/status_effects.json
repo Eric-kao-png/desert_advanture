@@ -21,5 +21,46 @@
       ]
     }
   ],
-  "positive": []
+  "positive": [
+    {
+      "id": "SPIKE_SHIELD",
+      "name": "尖刺護盾",
+      "polarity": "POSITIVE",
+      "modifiers": [
+        { "trigger": "INCOMING_OFFENSE_CARD_DAMAGE_TO_SELF", "retaliateAttacker": 2 }
+      ]
+    },
+    {
+      "id": "SCALE_ARMOR",
+      "name": "鱗甲",
+      "polarity": "POSITIVE",
+      "modifiers": [
+        { "trigger": "INCOMING_OFFENSE_CARD_DAMAGE_TO_SELF", "reduce": 1 }
+      ]
+    },
+    {
+      "id": "FOCUS",
+      "name": "專注",
+      "polarity": "POSITIVE",
+      "modifiers": [
+        { "trigger": "OUTGOING_OFFENSE_CARD_DAMAGE", "ignoreShieldOnOffense": true }
+      ]
+    },
+    {
+      "id": "VAMPIRE_FANG",
+      "name": "吸血鬼之牙",
+      "polarity": "POSITIVE",
+      "modifiers": [
+        { "trigger": "OUTGOING_OFFENSE_CARD_DAMAGE", "healCasterOnOffense": 2 }
+      ]
+    },
+    {
+      "id": "DODGE",
+      "name": "閃避",
+      "polarity": "POSITIVE",
+      "modifiers": [
+        { "trigger": "INCOMING_OFFENSE_CARD_DAMAGE_TO_SELF", "blockOffenseHit": true }
+      ]
+    }
+  ]
 }

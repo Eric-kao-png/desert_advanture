@@ -50,6 +50,81 @@
       ]
     },
     {
+      "id": "SPIKE_SHIELD",
+      "name": "尖刺護盾",
+      "description": "獲得 2 回合尖刺護盾：敵人每次以攻擊牌攻擊你時受到 2 點傷害。",
+      "category": "UTILITY",
+      "cooldown": 3,
+      "targeting": "SELF",
+      "effects": [
+        {
+          "template": "APPLY_POSITIVE_STATUS",
+          "positiveStatus": "SPIKE_SHIELD",
+          "turns": 2
+        }
+      ]
+    },
+    {
+      "id": "SCALE_ARMOR",
+      "name": "鱗甲",
+      "description": "獲得 2 回合鱗甲：每次受到傷害減少 1 點。",
+      "category": "UTILITY",
+      "cooldown": 3,
+      "targeting": "SELF",
+      "effects": [
+        {
+          "template": "APPLY_POSITIVE_STATUS",
+          "positiveStatus": "SCALE_ARMOR",
+          "turns": 2
+        }
+      ]
+    },
+    {
+      "id": "FOCUS",
+      "name": "專注",
+      "description": "獲得 3 回合專注：攻擊時無視對手護盾。",
+      "category": "UTILITY",
+      "cooldown": 3,
+      "targeting": "SELF",
+      "effects": [
+        {
+          "template": "APPLY_POSITIVE_STATUS",
+          "positiveStatus": "FOCUS",
+          "turns": 3
+        }
+      ]
+    },
+    {
+      "id": "VAMPIRE_FANG",
+      "name": "吸血鬼之牙",
+      "description": "獲得 2 回合吸血鬼之牙：每次攻擊恢復 2 點生命。",
+      "category": "UTILITY",
+      "cooldown": 3,
+      "targeting": "SELF",
+      "effects": [
+        {
+          "template": "APPLY_POSITIVE_STATUS",
+          "positiveStatus": "VAMPIRE_FANG",
+          "turns": 2
+        }
+      ]
+    },
+    {
+      "id": "DODGE",
+      "name": "閃避",
+      "description": "獲得 3 回合閃避：阻擋一次攻擊牌傷害，之後效果消失。",
+      "category": "UTILITY",
+      "cooldown": 3,
+      "targeting": "SELF",
+      "effects": [
+        {
+          "template": "APPLY_POSITIVE_STATUS",
+          "positiveStatus": "DODGE",
+          "turns": 3
+        }
+      ]
+    },
+    {
       "id": "MAGIC_MIRROR",
       "name": "魔法鏡",
       "description": "將自身異常狀態轉移給敵人。",

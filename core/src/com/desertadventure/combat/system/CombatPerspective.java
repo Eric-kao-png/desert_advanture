@@ -1,6 +1,7 @@
 package com.desertadventure.combat.system;
 
 import com.desertadventure.combat.model.NegativeStatusType;
+import com.desertadventure.combat.model.PositiveStatusType;
 
 /** Directional combat operations from the resolving card's point of view. */
 interface CombatPerspective {
@@ -25,4 +26,6 @@ interface CombatPerspective {
     void halveEnemyHp();
 
     void applyNegativeStatusToEnemies(NegativeStatusType type, int turns);
+
+    void applyPositiveStatusToCaster(PositiveStatusType type, int turns);
 }
