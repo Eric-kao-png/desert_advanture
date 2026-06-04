@@ -446,19 +446,12 @@ public class CombatController {
     }
 
     void halveEnemyHp() {
-        for (CombatEntity enemy : enemies) {
-            if (enemy.isAlive()) {
-                enemy.setHp((float) Math.floor(enemy.getHp() / 2f));
-            }
-        }
+        CombatEntityRoster.forEachAliveEnemy(enemies, enemy ->
+                enemy.setHp((float) Math.floor(enemy.getHp() / 2f)));
     }
 
     void applyNegativeStatusToEnemies(NegativeStatusType type, int turns) {
-        for (CombatEntity enemy : enemies) {
-            if (enemy.isAlive()) {
-                enemy.setNegativeStatus(type, turns);
-            }
-        }
+        CombatEntityRoster.forEachAliveEnemy(enemies, enemy -> enemy.setNegativeStatus(type, turns));
     }
 
     void clearNegativeStatusOnPlayer() {
@@ -468,11 +461,7 @@ public class CombatController {
     }
 
     void clearNegativeStatusOnEnemies() {
-        for (CombatEntity enemy : enemies) {
-            if (enemy.isAlive()) {
-                enemy.clearNegativeStatus();
-            }
-        }
+        CombatEntityRoster.forEachAliveEnemy(enemies, CombatEntity::clearNegativeStatus);
     }
 
     void transferNegativeStatusFromPlayerToEnemies() {
@@ -482,15 +471,11 @@ public class CombatController {
         NegativeStatusType type = player.getNegativeStatusType();
         int turns = player.getNegativeTurnsRemaining();
         player.clearNegativeStatus();
-        for (CombatEntity enemy : enemies) {
-            if (enemy.isAlive()) {
-                enemy.setNegativeStatus(type, turns);
-            }
-        }
+        CombatEntityRoster.forEachAliveEnemy(enemies, enemy -> enemy.setNegativeStatus(type, turns));
     }
 
     void transferNegativeStatusFromEnemyToPlayer() {
-        CombatEntity enemy = firstAliveEnemy();
+        CombatEntity enemy = CombatEntityRoster.firstAliveEnemy(enemies);
         if (enemy == null || !enemy.hasNegativeStatus() || player == null) {
             return;
         }
@@ -503,7 +488,7 @@ public class CombatController {
     }
 
     boolean enemyHasNegativeStatus() {
-        CombatEntity enemy = firstAliveEnemy();
+        CombatEntity enemy = CombatEntityRoster.firstAliveEnemy(enemies);
         return enemy != null && enemy.hasNegativeStatus();
     }
 
@@ -535,14 +520,7 @@ public class CombatController {
     }
 
     void dealDamageToEnemy(float amount, DamageSource source) {
-        for (CombatEntity enemy : enemies) {
-            if (enemy.isAlive()) {
-                float finalAmount = source == DamageSource.OFFENSE_CARD
-                        ? offenseDamageWithFearBonus(amount, enemy)
-                        : amount;
-                enemy.takeDamage(finalAmount);
-            }
-        }
+        damageAliveEnemies(amount, source, false);
     }
 
     void healPlayer(float amount) {
@@ -554,19 +532,11 @@ public class CombatController {
     }
 
     void healEnemy(float amount) {
-        for (CombatEntity enemy : enemies) {
-            if (enemy.isAlive()) {
-                enemy.heal(amount);
-            }
-        }
+        CombatEntityRoster.forEachAliveEnemy(enemies, enemy -> enemy.heal(amount));
     }
 
     void addEnemyShield(int amount) {
-        for (CombatEntity enemy : enemies) {
-            if (enemy.isAlive()) {
-                enemy.addShield(amount);
-            }
-        }
+        CombatEntityRoster.forEachAliveEnemy(enemies, enemy -> enemy.addShield(amount));
     }
 
     void halvePlayerHp() {
@@ -584,19 +554,20 @@ public class CombatController {
     }
 
     void dealDamageToEnemyIgnoringShield(float amount) {
-        for (CombatEntity enemy : enemies) {
-            if (enemy.isAlive()) {
-                enemy.takeDamageIgnoringShield(offenseDamageWithFearBonus(amount, enemy));
-            }
-        }
+        damageAliveEnemies(amount, DamageSource.OFFENSE_CARD, true);
     }
 
-    private static float offenseDamageWithFearBonus(float amount, CombatEntity enemy) {
-        if (enemy.getNegativeStatusType() == NegativeStatusType.FEAR
-                && enemy.getNegativeTurnsRemaining() > 0) {
-            return amount + 1f;
-        }
-        return amount;
+    private void damageAliveEnemies(float amount, DamageSource source, boolean ignoreShield) {
+        CombatEntityRoster.forEachAliveEnemy(enemies, enemy -> {
+            float finalAmount = source == DamageSource.OFFENSE_CARD
+                    ? CombatEntityRoster.offenseDamageWithFearBonus(amount, enemy)
+                    : amount;
+            if (ignoreShield) {
+                enemy.takeDamageIgnoringShield(finalAmount);
+            } else {
+                enemy.takeDamage(finalAmount);
+            }
+        });
     }
 
     void dealDamageToPlayer(float amount) {
@@ -613,15 +584,6 @@ public class CombatController {
         }
         player.takeDamageIgnoringShield(amount);
         syncPlayerStatsHp();
-    }
-
-    private CombatEntity firstAliveEnemy() {
-        for (CombatEntity enemy : enemies) {
-            if (enemy.isAlive()) {
-                return enemy;
-            }
-        }
-        return null;
     }
 
     private void finishRound() {
@@ -682,25 +644,8 @@ public class CombatController {
     }
 
     private void applyRoundEndCooldownsOnly() {
-        applyRoundEndCooldownsForDeck(deck, playedThisRound);
-        applyRoundEndCooldownsForDeck(enemyDeck, enemyPlayedThisRound);
-    }
-
-    private static void applyRoundEndCooldownsForDeck(ActionCardDeck actionDeck, Set<Integer> playedThisRound) {
-        if (actionDeck == null) {
-            playedThisRound.clear();
-            return;
-        }
-        for (ActionCardInstance instance : actionDeck.getInstances()) {
-            instance.tickCooldown();
-        }
-        for (int instanceId : new HashSet<>(playedThisRound)) {
-            ActionCardInstance card = actionDeck.findById(instanceId);
-            if (card != null) {
-                card.setCooldownRemaining(card.getType().getCooldownTurns());
-            }
-        }
-        playedThisRound.clear();
+        RoundEndCooldownApplier.apply(deck, playedThisRound);
+        RoundEndCooldownApplier.apply(enemyDeck, enemyPlayedThisRound);
     }
 
     private void clearAllSlots() {

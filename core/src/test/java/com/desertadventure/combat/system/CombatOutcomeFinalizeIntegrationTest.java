@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.desertadventure.combat.system.support.CombatIntegrationTestSupport.firstPlayerSlot;
 
 public class CombatOutcomeFinalizeIntegrationTest {
     @BeforeEach
@@ -97,15 +98,6 @@ public class CombatOutcomeFinalizeIntegrationTest {
         // Now round 2 should be planning with slots (1,3) in 0-based indices (1,3),
         // and any assigned cards in non-player slots (including previous slot 0) must be cleared.
         assertNull(combat.getSlotInstanceId(0), "assigned card in now-invalid slot should be cleared");
-    }
-
-    private static int firstPlayerSlot(CombatController combat) {
-        for (int i = 0; i < 4; i++) {
-            if (combat.isPlayerSlot(i)) {
-                return i;
-            }
-        }
-        throw new IllegalStateException("No player slot available");
     }
 
     private static final class FakeAttackAnimation implements PlayerAttackAnimation {

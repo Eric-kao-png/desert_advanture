@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.desertadventure.combat.system.support.CombatIntegrationTestSupport.resolveFullRound;
 
 /**
  * Verifies normal-enemy slots resolve through {@link CardEffectResolver} with enemy targeting,
@@ -154,13 +155,6 @@ class EnemyCardResolveIntegrationTest {
 
     private static void assertTrueHpInRange(float maxHp) {
         assertEquals(true, maxHp >= 7f && maxHp <= 8f);
-    }
-
-    private static void resolveFullRound(CombatController combat) {
-        for (int i = 0; i < 4; i++) {
-            combat.update(999f);
-            combat.finalizePendingOutcome();
-        }
     }
 
 }

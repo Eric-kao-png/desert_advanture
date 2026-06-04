@@ -8,6 +8,10 @@ import com.desertadventure.combat.card.data.CardDatabase;
 import com.desertadventure.combat.card.data.InMemoryCardRepository;
 import com.desertadventure.combat.system.support.CombatTestCardDefs;
 import com.desertadventure.combat.system.support.SequencedPlanRoller;
+
+import static com.desertadventure.combat.system.support.CombatIntegrationTestSupport.findFirstInstanceId;
+import static com.desertadventure.combat.system.support.CombatIntegrationTestSupport.firstPlayerSlot;
+import static com.desertadventure.combat.system.support.CombatIntegrationTestSupport.resolveFullRound;
 import com.desertadventure.player.PlayerStats;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -214,32 +218,6 @@ public class CombatFlowIntegrationTest {
         resolveFullRound(combat);
 
         assertEquals(4f, enemy.getHp(), 0.001f, "charged slash in slot 4 should deal 6");
-    }
-
-    private static void resolveFullRound(CombatController combat) {
-        // Each update resolves at most one slot; run enough updates for 4 slots.
-        for (int i = 0; i < 4; i++) {
-            combat.update(999f);
-            combat.finalizePendingOutcome();
-        }
-    }
-
-    private static int findFirstInstanceId(ActionCardDeck deck, ActionCardType type) {
-        for (ActionCardInstance instance : deck.getInstances()) {
-            if (instance.getType() == type) {
-                return instance.getInstanceId();
-            }
-        }
-        throw new IllegalStateException("Missing card instance: " + type);
-    }
-
-    private static int firstPlayerSlot(CombatController combat) {
-        for (int i = 0; i < 4; i++) {
-            if (combat.isPlayerSlot(i)) {
-                return i;
-            }
-        }
-        throw new IllegalStateException("No player slot available");
     }
 
 }
