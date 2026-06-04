@@ -31,6 +31,7 @@ sourceSets {
 
 dependencies {
     api "com.badlogicgames.gdx:gdx:$gdxVersion"
+    api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
     testImplementation "org.junit.jupiter:junit-jupiter:5.11.2"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.11.2"
 }

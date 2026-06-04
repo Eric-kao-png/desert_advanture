@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.desertadventure.DesertAdventure;
 import com.desertadventure.config.GameConfig;
+import com.desertadventure.infrastructure.gdx.UiFontFactory;
 import com.desertadventure.presentation.GameViewport;
 import com.desertadventure.presentation.GameplayRenderer;
 import com.desertadventure.state.GameSession;
@@ -28,7 +29,7 @@ public class GameplayScreen extends ScreenAdapter {
 
     @Override
     public void show() {
-        font = new BitmapFont();
+        font = UiFontFactory.createHudFont();
         font.getData().setScale(GameConfig.HUD_FONT_SCALE);
         input = new GameplayInputHandler(game, session, gameViewport);
         modeUpdater = new GameplayModeUpdater(session, input, combatState);

@@ -38,10 +38,10 @@ public final class CombatCardInfoFormatter {
         if (instance != null) {
             int remaining = instance.getCooldownRemaining();
             if (remaining > 0) {
-                return "Cooldown: " + remaining + " turn(s) left";
+                return "冷卻：剩餘 " + remaining + " 回合";
             }
-            return "Ready to play";
+            return "可出牌";
         }
-        return "Cooldown: " + type.getCooldownTurns() + " turn(s)";
+        return "冷卻：" + type.getCooldownTurns() + " 回合";
     }
 }
