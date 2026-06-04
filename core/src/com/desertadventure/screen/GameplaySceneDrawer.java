@@ -5,8 +5,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.desertadventure.DesertAdventure;
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.combat.system.CombatController;
-import com.desertadventure.config.GameConfig;
-import com.desertadventure.map.view.MapOverlayLayout;
 import com.desertadventure.presentation.GameViewport;
 import com.desertadventure.presentation.GameplayRenderer;
 import com.desertadventure.screen.layout.CombatCardLayout;
@@ -50,16 +48,11 @@ final class GameplaySceneDrawer {
         SpriteBatch batch = game.getBatch();
         renderer.setProjectionMatrix(viewport.getProjectionMatrix());
 
-        updateHoverStateForMode(mode);
-
         switch (mode) {
             case HUB -> drawHub(batch, delta);
-            case MAP_OVERLAY -> drawMapOverlay(batch, delta);
-            case CHARACTER_OVERLAY -> drawCharacterOverlay(batch, delta);
             case COMBAT, BOSS_COMBAT -> drawCombat(batch, delta, mode);
-            case STORM -> drawStorm(batch, delta);
             case VICTORY -> game.setScreen(new VictoryScreen(game));
-            default -> drawExplore(batch, mode == GameplayMode.RUNNING, delta);
+            default -> drawHub(batch, delta);
         }
 
         if (mode == GameplayMode.VICTORY) {
@@ -71,48 +64,13 @@ final class GameplaySceneDrawer {
         batch.end();
     }
 
-    private void updateHoverStateForMode(GameplayMode mode) {
-        if (mode == GameplayMode.MAP_OVERLAY) {
-            input.updateMapHover();
-            return;
-        }
-        if (mode == GameplayMode.CHARACTER_OVERLAY) {
-            input.updateCharacterHover();
-        }
-    }
-
-    private void drawMapOverlay(SpriteBatch batch, float delta) {
-        drawExplore(batch, false, delta);
-        MapOverlayLayout layout = session.createMapOverlayLayout();
-        renderer.renderMapOverlay(
-                session,
-                layout,
-                input.getHoveredGridPos(),
-                batch,
-                input.isMapDismissHovered(),
-                input.isMapDismissPressed());
-    }
-
-    private void drawCharacterOverlay(SpriteBatch batch, float delta) {
-        drawExplore(batch, false, delta);
-        renderer.renderCharacterOverlay(
-                batch,
-                session,
-                uiFont,
-                input.getCharacterLayout(),
-                input.getCharacterInput(),
-                delta,
-                input.isCharacterDismissHovered(),
-                input.isCharacterDismissPressed());
-    }
-
     private void drawCombat(SpriteBatch batch, float delta, GameplayMode mode) {
         modeUpdater.ensureCombatInitializedForDraw(mode);
         float blend = modeUpdater.getLayoutBlend();
         CombatCardLayout layout = input.getCombatCardInput().getLayout();
         layout.applyBlend(blend);
 
-        drawBackgroundAndFloor(batch, false, delta, blend);
+        drawBackgroundAndFloor(batch, blend);
 
         CombatController combat = session.getCombatController();
         CombatEntity player = combat.getPlayer();
@@ -127,27 +85,15 @@ final class GameplaySceneDrawer {
 
     private void drawHub(SpriteBatch batch, float delta) {
         float blend = modeUpdater.getLayoutBlend();
-        drawBackgroundAndFloor(batch, false, delta, blend);
+        drawBackgroundAndFloor(batch, blend);
         batch.begin();
         input.getHubDrawer().draw(batch, uiFont, session);
         batch.end();
     }
 
-    private void drawStorm(SpriteBatch batch, float delta) {
-        drawExplore(batch, false, delta);
-        renderer.renderStorm(session.getStormTimer() / GameConfig.STORM_FADE_SECONDS);
-    }
-
-    private void drawExplore(SpriteBatch batch, boolean running, float delta) {
-        float blend = modeUpdater.getLayoutBlend();
-        drawBackgroundAndFloor(batch, running, delta, blend);
-        renderer.renderExploreForeground(session, running, blend, batch, uiFont);
-    }
-
-    private void drawBackgroundAndFloor(SpriteBatch batch, boolean running, float delta, float blend) {
+    private void drawBackgroundAndFloor(SpriteBatch batch, float blend) {
         batch.begin();
-        renderer.drawParallaxBackground(batch, running, delta, blend);
-        renderer.drawParallaxFloor(batch, blend);
+        renderer.drawSceneBackground(batch, blend);
         batch.end();
     }
 

@@ -8,8 +8,8 @@ import com.desertadventure.state.GameplayMode;
 /** Mutable combat-init flags owned by {@link GameplayScreen}. */
 final class CombatSessionState {
     boolean combatInitialized;
-    GameplayMode lastMode = GameplayMode.EXPLORE_IDLE;
-    /** 0 = exploration layout, 1 = combat layout. */
+    GameplayMode lastMode = GameplayMode.HUB;
+    /** 0 = hub layout, 1 = combat layout. */
     float layoutBlend;
 
     final AttackAnimationTimer attackAnimation = new AttackAnimationTimer();

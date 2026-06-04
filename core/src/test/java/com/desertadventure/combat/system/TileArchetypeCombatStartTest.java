@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -22,52 +21,17 @@ class TileArchetypeCombatStartTest {
         CombatTestDataBootstrap.ensureProductionDatabases();
     }
 
-    private static GameSession newExplorationSession() {
-        GameSession session = new GameSession();
-        session.setMode(GameplayMode.EXPLORE_IDLE);
-        return session;
-    }
-
     @Test
-    void combatTile_wanderingWizard_startsCombatWithWizardArchetype() {
-        GameSession session = newExplorationSession();
-        var tile = session.getMap().getTile(4, 0);
-        assertNotNull(tile);
-        session.handleTileInteraction(tile, false);
+    void hubStage1_startsCombatWithDesertZombieArchetype() {
+        GameSession session = new GameSession();
+        assertTrue(session.tryStartCurrentStageCombat());
 
         assertEquals(GameplayMode.COMBAT, session.getMode());
-        assertEquals(EnemyArchetypeId.WANDERING_WIZARD, session.consumePendingCombatArchetype());
-
-        CombatController combat = session.getCombatController();
-        combat.startCombat(
-                session.getCurrentDistanceBand(),
-                false,
-                EnemyArchetypeId.WANDERING_WIZARD,
-                800f,
-                120f,
-                new ActionCardDeck(),
-                ignored -> {
-                });
-
-        assertEquals(EnemyArchetypeId.WANDERING_WIZARD, combat.getCurrentEnemyArchetype());
-        assertEquals("Wandering Wizard", combat.getOpponentDisplayName());
-        var wizardDef = EnemyArchetypeRegistry.getRequired(EnemyArchetypeId.WANDERING_WIZARD);
-        float maxHp = combat.getEnemies().get(0).getMaxHp();
-        assertTrue(maxHp >= wizardDef.hpMin() && maxHp <= wizardDef.hpMax());
-    }
-
-    @Test
-    void combatTile_desertZombie_startsCombatWithZombieDeck() {
-        GameSession session = newExplorationSession();
-        var tile = session.getMap().getTile(-3, 0);
-        assertNotNull(tile);
-        session.handleTileInteraction(tile, false);
-
         assertEquals(EnemyArchetypeId.DESERT_ZOMBIE, session.consumePendingCombatArchetype());
 
         CombatController combat = session.getCombatController();
         combat.startCombat(
-                0,
+                session.getRunProgress().getCurrentStageIndex(),
                 false,
                 EnemyArchetypeId.DESERT_ZOMBIE,
                 800f,
@@ -80,6 +44,31 @@ class TileArchetypeCombatStartTest {
         assertEquals("Desert Zombie", combat.getOpponentDisplayName());
         assertTrue(combat.enemyDeckInstancesForTests().stream()
                 .anyMatch(i -> i.getType() == ActionCardType.CLAW));
+    }
+
+    @Test
+    void hubStage2_startsCombatWithWanderingWizardArchetype() {
+        GameSession session = new GameSession();
+        session.getRunProgress().advanceAfterVictory();
+        assertTrue(session.tryStartCurrentStageCombat());
+
+        assertEquals(EnemyArchetypeId.WANDERING_WIZARD, session.consumePendingCombatArchetype());
+
+        CombatController combat = session.getCombatController();
+        combat.startCombat(
+                session.getRunProgress().getCurrentStageIndex(),
+                false,
+                EnemyArchetypeId.WANDERING_WIZARD,
+                800f,
+                120f,
+                new ActionCardDeck(),
+                ignored -> {
+                });
+
+        assertEquals(EnemyArchetypeId.WANDERING_WIZARD, combat.getCurrentEnemyArchetype());
+        var wizardDef = EnemyArchetypeRegistry.getRequired(EnemyArchetypeId.WANDERING_WIZARD);
+        float maxHp = combat.getEnemies().get(0).getMaxHp();
+        assertTrue(maxHp >= wizardDef.hpMin() && maxHp <= wizardDef.hpMax());
     }
 
     @Test

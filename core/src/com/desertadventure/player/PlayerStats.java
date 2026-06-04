@@ -11,7 +11,6 @@ public class PlayerStats {
     private float hp = PlayerConfig.INITIAL_MAX_HP;
     private int attack = PlayerConfig.INITIAL_ATTACK;
     private int defense = PlayerConfig.INITIAL_DEFENSE;
-    private int stepBudgetBonus;
     private float moveSpeed = PlayerConfig.SPEED;
 
     public int getLevel() {
@@ -46,16 +45,8 @@ public class PlayerStats {
         return defense;
     }
 
-    public int getStepBudgetBonus() {
-        return stepBudgetBonus;
-    }
-
     public float getMoveSpeed() {
         return moveSpeed;
-    }
-
-    public float getTotalStepBudget() {
-        return GameConfig.BASE_STEP_BUDGET + stepBudgetBonus;
     }
 
     public boolean isAlive() {
@@ -89,7 +80,6 @@ public class PlayerStats {
         hp = maxHp;
         attack += PlayerConfig.LEVEL_ATTACK_GAIN;
         defense += PlayerConfig.LEVEL_DEFENSE_GAIN;
-        stepBudgetBonus += PlayerConfig.LEVEL_STEP_BONUS;
         experienceToNext = (int) (experienceToNext * PlayerConfig.LEVEL_EXP_MULTIPLIER);
     }
 
@@ -101,7 +91,6 @@ public class PlayerStats {
         hp = PlayerConfig.INITIAL_MAX_HP;
         attack = PlayerConfig.INITIAL_ATTACK;
         defense = PlayerConfig.INITIAL_DEFENSE;
-        stepBudgetBonus = 0;
         moveSpeed = PlayerConfig.SPEED;
     }
 }

@@ -2,10 +2,9 @@ package com.desertadventure.item;
 
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.config.GameMessages;
-import com.desertadventure.exploration.StepBudgetService;
 import com.desertadventure.player.PlayerStats;
 
-/** Consumable / permanent boost items found on the map. */
+/** Consumable / permanent boost items (legacy map loot; stamina items are no-ops in hub MVP). */
 public enum ItemType {
     HEALTH_POTION,
     STAMINA_POTION,
@@ -39,12 +38,12 @@ public enum ItemType {
         };
     }
 
-    public void apply(PlayerStats stats, StepBudgetService stepBudget) {
+    public void apply(PlayerStats stats) {
         switch (this) {
             case HEALTH_POTION -> stats.restoreHp(GameConfig.ITEM_HEALTH_POTION_RESTORE);
-            case STAMINA_POTION -> stepBudget.restoreStamina(GameConfig.ITEM_STAMINA_POTION_RESTORE);
             case HEALTH_GEM -> stats.increaseMaxHp(GameConfig.ITEM_HEALTH_GEM_BONUS);
-            case STAMINA_GEM -> stepBudget.increaseMaxStamina(GameConfig.ITEM_STAMINA_GEM_BONUS);
+            case STAMINA_POTION, STAMINA_GEM -> {
+            }
         }
     }
 }

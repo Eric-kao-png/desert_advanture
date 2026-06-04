@@ -6,21 +6,7 @@ import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardDeckResetPolicy;
 import com.desertadventure.combat.card.DefaultActionCardDeckResetPolicy;
 import com.desertadventure.combat.system.CombatController;
-import com.desertadventure.config.GameMessages;
-import com.desertadventure.event.RequiredEventTracker;
-import com.desertadventure.exploration.StepBudgetService;
 import com.desertadventure.item.Inventory;
-import com.desertadventure.item.ItemType;
-import com.desertadventure.exploration.StormResetService;
-import com.desertadventure.exploration.TileInteractionContext;
-import com.desertadventure.exploration.TileInteractionHandler;
-import com.desertadventure.exploration.TravelMovement;
-import com.desertadventure.exploration.PathRunner;
-import com.desertadventure.map.model.GameMap;
-import com.desertadventure.map.model.GridPos;
-import com.desertadventure.map.model.MapGenerator;
-import com.desertadventure.map.model.Tile;
-import com.desertadventure.map.view.MapOverlayLayout;
 import com.desertadventure.player.PlayerStats;
 import com.desertadventure.run.RunProgress;
 import com.desertadventure.run.StageCatalog;
@@ -28,107 +14,42 @@ import com.desertadventure.run.StageDef;
 import com.desertadventure.run.StageRunCoordinator;
 import com.desertadventure.run.data.StageCatalogDatabase;
 
-public class GameSession implements ExplorationCallbacks {
-    private final GameMap map;
+public class GameSession {
     private final PlayerStats playerStats = new PlayerStats();
     private final PermanentProgress permanentProgress = new PermanentProgress();
-    private final RequiredEventTracker eventTracker;
-    private final StepBudgetService stepBudget = new StepBudgetService();
-    private final StormResetService stormReset = new StormResetService();
-    private final TravelMovement travel;
     private final CombatController combatController;
     private final ActionCardDeck actionCardDeck = new ActionCardDeck();
     private final ActionCardDeckResetPolicy actionCardDeckResetPolicy = new DefaultActionCardDeckResetPolicy();
-    private final MapViewState mapViewState = new MapViewState();
     private final MessageFeed messageFeed = new MessageFeed();
     private final Inventory inventory = new Inventory();
-    private final MapTravelActions mapTravel;
-    private final CombatOutcomeApplier combatOutcomes;
-    private final TileInteractionContext tileContext;
     private final StageCatalog stageCatalog;
     private final RunProgress runProgress;
     private final StageRunCoordinator stageRunCoordinator;
 
-    private int playerX;
-    private int playerY;
     private GameplayMode mode = GameplayMode.HUB;
     private HubPanel hubPanel = HubPanel.MAIN;
-    private float stormTimer;
-    private float scrollOffset;
-    private boolean bossAvailableThisCycle;
     private EnemyArchetypeId pendingCombatArchetype;
 
     public GameSession() {
         GameDataBootstrap.initializeIfNeeded();
-        map = MapGenerator.createWorld();
-        travel = new TravelMovement(this);
-        eventTracker = new RequiredEventTracker(permanentProgress);
         combatController = new CombatController(playerStats);
-        mapTravel = createMapTravelActions();
-        combatOutcomes = createCombatOutcomeApplier();
-        tileContext = createTileInteractionContext();
         stageCatalog = StageCatalogDatabase.getRequired();
         runProgress = new RunProgress(stageCatalog);
         stageRunCoordinator = new StageRunCoordinator(
                 runProgress, playerStats, permanentProgress, messageFeed, actionCardDeck,
                 GameSessionDelegates.modeAccess(this));
-        initializeNewSessionState();
-    }
-
-    private void initializeNewSessionState() {
-        resetToSpawn();
-        stepBudget.resetForCycle(playerStats);
         actionCardDeck.resetToDefault();
-        revealAroundPlayer();
     }
 
     public void startNewGame() {
         permanentProgress.resetForNewGame();
         playerStats.resetForNewGame();
-        map.resetCycleState();
-        resetToSpawn();
-        stepBudget.resetForCycle(playerStats);
-        revealAroundPlayer();
         mode = GameplayMode.HUB;
         hubPanel = HubPanel.MAIN;
         runProgress.resetForNewRun();
         messageFeed.clear();
         inventory.clear();
         actionCardDeckResetPolicy.resetDeck(actionCardDeck);
-        bossAvailableThisCycle = false;
-    }
-
-    private void resetToSpawn() {
-        GridPos spawn = map.getSpawnPosition();
-        playerX = spawn.x;
-        playerY = spawn.y;
-    }
-
-    private void revealAroundPlayer() {
-        map.revealAround(getPlayerGridPos());
-    }
-
-    private MapTravelActions createMapTravelActions() {
-        return new MapTravelActions(
-                map, mapViewState, travel, messageFeed,
-                GameSessionDelegates.modeAccess(this), GameSessionDelegates.playerPosition(this));
-    }
-
-    private CombatOutcomeApplier createCombatOutcomeApplier() {
-        return new CombatOutcomeApplier(
-                map, playerStats, permanentProgress, travel, messageFeed, actionCardDeck,
-                GameSessionDelegates.modeAccess(this), this::triggerStorm, this::getPlayerGridPos);
-    }
-
-    private TileInteractionContext createTileInteractionContext() {
-        return new TileInteractionContext(
-                this, map, playerStats, permanentProgress,
-                eventTracker, inventory, stepBudget,
-                travel::resume, available -> bossAvailableThisCycle = available);
-    }
-
-    public GameMap getMap() {
-        return map;
     }
 
     public PlayerStats getPlayerStats() {
@@ -139,20 +60,8 @@ public class GameSession implements ExplorationCallbacks {
         return permanentProgress;
     }
 
-    public RequiredEventTracker getEventTracker() {
-        return eventTracker;
-    }
-
-    public StepBudgetService getStepBudget() {
-        return stepBudget;
-    }
-
     public Inventory getInventory() {
         return inventory;
-    }
-
-    public PathRunner getPathRunner() {
-        return travel.getPathRunner();
     }
 
     public CombatController getCombatController() {
@@ -199,7 +108,6 @@ public class GameSession implements ExplorationCallbacks {
         return true;
     }
 
-    @Override
     public GameplayMode getMode() {
         return mode;
     }
@@ -208,156 +116,19 @@ public class GameSession implements ExplorationCallbacks {
         this.mode = mode;
     }
 
-    public MapViewState getMapViewState() {
-        return mapViewState;
-    }
-
-    public MapOverlayLayout createMapOverlayLayout() {
-        return new MapOverlayLayout(map, mapViewState.getOriginX(), mapViewState.getOriginY());
-    }
-
-    public void openMapOverlay() {
-        stopRunningTravelForOverlay();
-        mapTravel.openOverlay();
-    }
-
-    public void closeMapOverlay() {
-        if (mode == GameplayMode.MAP_OVERLAY) {
-            mode = GameplayMode.EXPLORE_IDLE;
-        }
-    }
-
-    public void openCharacterOverlay() {
-        stopRunningTravelForOverlay();
-        mode = GameplayMode.CHARACTER_OVERLAY;
-    }
-
-    private void stopRunningTravelForOverlay() {
-        if (mode == GameplayMode.RUNNING) {
-            travel.stopForMap();
-        }
-    }
-
-    public void closeCharacterOverlay() {
-        if (mode == GameplayMode.CHARACTER_OVERLAY) {
-            mode = GameplayMode.EXPLORE_IDLE;
-        }
-    }
-
-    public boolean tryUseInventoryItemAtSlot(int slotIndex) {
-        ItemType type = inventory.getItemAt(slotIndex);
-        if (type == null) {
-            return false;
-        }
-        if (!inventory.useSlot(slotIndex, playerStats, stepBudget)) {
-            setPendingMessage(GameMessages.itemEmpty(type.getDisplayName()));
-            return false;
-        }
-        setPendingMessage(GameMessages.itemUsed(type.getDisplayName()));
-        return true;
-    }
-
-    public void panMapView(int dx, int dy) {
-        mapViewState.pan(dx, dy, map);
-    }
-
-    @Override
-    public GridPos getPlayerGridPos() {
-        return new GridPos(playerX, playerY);
-    }
-
-    @Override
-    public void setPlayerGridPos(int x, int y) {
-        playerX = x;
-        playerY = y;
-    }
-
-    public GridPos getDisplayGridPos() {
-        PathRunner runner = activePathRunner();
-        if (runner != null) {
-            return new GridPos(Math.round(runner.getCurrentX()), Math.round(runner.getCurrentY()));
-        }
-        return getPlayerGridPos();
-    }
-
-    public float getDistanceFromOrigin() {
-        PathRunner runner = activePathRunner();
-        if (runner != null) {
-            return (float) Math.hypot(runner.getCurrentX(), runner.getCurrentY());
-        }
-        return (float) Math.hypot(playerX, playerY);
-    }
-
-    private PathRunner activePathRunner() {
-        boolean shouldUseRunner = mode == GameplayMode.RUNNING && travel.getPathRunner().isRunning();
-        return shouldUseRunner ? travel.getPathRunner() : null;
-    }
-
     public MessageFeed getMessageFeed() {
         return messageFeed;
     }
 
-    public float getStormTimer() {
-        return stormTimer;
-    }
-
-    public float getScrollOffset() {
-        return scrollOffset;
-    }
-
-    @Override
-    public void addScrollOffset(float amount) {
-        scrollOffset += amount;
-    }
-
-    public boolean isBossAvailableThisCycle() {
-        return bossAvailableThisCycle;
-    }
-
-    public boolean trySelectDestination(GridPos destination) {
-        return mapTravel.trySelectDestination(destination);
-    }
-
-    @Override
     public void setPendingMessage(String message) {
         messageFeed.push(message);
     }
 
-    @Override
-    public void beginCombatEncounter(EnemyArchetypeId tileArchetype) {
-        pendingCombatArchetype = tileArchetype;
-    }
-
-    /** Archetype from the combat tile; cleared after combat session starts. */
+    /** Archetype from the current stage; cleared after combat session starts. */
     public EnemyArchetypeId consumePendingCombatArchetype() {
         EnemyArchetypeId archetype = pendingCombatArchetype;
         pendingCombatArchetype = null;
         return archetype;
-    }
-
-    @Override
-    public void handleTileInteraction(Tile tile, boolean duringMove) {
-        TileInteractionHandler.handle(tile, duringMove, tileContext);
-    }
-
-    @Override
-    public void triggerStorm() {
-        mode = GameplayMode.STORM;
-        stormTimer = 0f;
-    }
-
-    public void updateStorm(float delta) {
-        stormTimer += delta;
-    }
-
-    public void completeStorm() {
-        stormReset.applyCycleReset(map, playerStats, stepBudget);
-        resetToSpawn();
-        revealAroundPlayer();
-        permanentProgress.save();
-        mode = GameplayMode.EXPLORE_IDLE;
-        setPendingMessage(GameMessages.SANDSTORM_RETURN);
-        bossAvailableThisCycle = false;
     }
 
     public void onCombatEnd(CombatOutcome outcome) {
@@ -365,18 +136,5 @@ public class GameSession implements ExplorationCallbacks {
         if (mode == GameplayMode.HUB) {
             hubPanel = HubPanel.MAIN;
         }
-    }
-
-    public void updateRunning(float delta) {
-        scrollOffset += travel.getPathRunner().getScrollOffset(delta);
-        travel.update(delta);
-    }
-
-    public int getCurrentDistanceBand() {
-        return map.distanceBand(getPlayerGridPos());
-    }
-
-    public Tile getCurrentTile() {
-        return map.getTile(getDisplayGridPos());
     }
 }

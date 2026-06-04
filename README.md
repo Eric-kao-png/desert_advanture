@@ -12,7 +12,7 @@ The default flow after **Enter** is a **linear card run** (no map exploration):
 4. **Beat the boss** → victory screen
 5. **Lose** or run out of HP → **rewind** to stage 1, **all card cooldowns cleared** (same deck instances; no meta card pick)
 
-Map/exploration code remains in the repo but is bypassed in this MVP. Cooldowns **persist between fights** in the same run and are only cleared on rewind.
+Cooldowns **persist between fights** in the same run and are only cleared on rewind.
 
 ## Controls (MVP)
 
@@ -26,8 +26,6 @@ Map/exploration code remains in the repo but is bypassed in this MVP. Cooldowns 
 | Click hub lines | Same as 1–3 |
 | Click + slots 1 & 3 | Assign action cards (combat) |
 | Enter / Space | Confirm combat round |
-
-Legacy exploration keys (M map, N inventory overlay, arrow pan) still exist in code but are not used in the hub-first flow.
 
 ## Run
 
@@ -46,8 +44,6 @@ macOS automatically adds `-XstartOnFirstThread` (required by LWJGL3).
 ## Documentation
 
 - [Combat card system](docs/Combat-Card-System.md) — turn phases, deck, balance, controls
-- [Movement & map logic](docs/Movement-and-Map-Logic.md) — legacy exploration (not used in MVP hub flow)
-- Parallax backgrounds: `core/assets/backgrounds/parallax_{back,middle,forward}.png`
 - Stage catalog: `core/assets/stages/stages.json`
 - Enemy archetypes: `core/assets/enemies/enemy_archetypes.json`
 

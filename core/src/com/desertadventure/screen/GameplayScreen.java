@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.desertadventure.DesertAdventure;
 import com.desertadventure.config.GameConfig;
-import com.desertadventure.map.view.MapOverlayInput;
 import com.desertadventure.presentation.GameViewport;
 import com.desertadventure.presentation.GameplayRenderer;
 import com.desertadventure.state.GameSession;
@@ -16,9 +15,6 @@ public class GameplayScreen extends ScreenAdapter {
     private final GameSession session = new GameSession();
     private final GameplayRenderer renderer = new GameplayRenderer();
     private final GameViewport gameViewport = new GameViewport();
-    private final MapOverlayInput mapInput = new MapOverlayInput();
-    private final CharacterOverlayInput characterInput = new CharacterOverlayInput();
-    private final CharacterOverlayLayout characterLayout = new CharacterOverlayLayout();
     private final CombatSessionState combatState = new CombatSessionState();
 
     private GameplayHud hud;
@@ -36,12 +32,11 @@ public class GameplayScreen extends ScreenAdapter {
         font = new BitmapFont();
         font.getData().setScale(GameConfig.HUD_FONT_SCALE);
         hud = new GameplayHud(font);
-        input = new GameplayInputHandler(game, session, gameViewport, mapInput, characterInput, characterLayout);
-        modeUpdater = new GameplayModeUpdater(session, input, renderer, combatState);
+        input = new GameplayInputHandler(game, session, gameViewport);
+        modeUpdater = new GameplayModeUpdater(session, input, combatState);
         sceneDrawer = new GameplaySceneDrawer(game, session, renderer, gameViewport, input, hud, font, modeUpdater);
         gameViewport.update();
         session.startNewGame();
-        renderer.repopulateHouseProps(GameConfig.VIEW_WIDTH);
     }
 
     @Override

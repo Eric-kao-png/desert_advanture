@@ -157,17 +157,17 @@ public class CombatController {
     }
 
     public void startCombat(
-            int distanceBand,
+            int stageIndex,
             boolean boss,
             float arenaWidth,
             float groundY,
             ActionCardDeck actionDeck,
             Consumer<CombatOutcome> onEnd) {
-        startCombat(distanceBand, boss, null, arenaWidth, groundY, actionDeck, onEnd);
+        startCombat(stageIndex, boss, null, arenaWidth, groundY, actionDeck, onEnd);
     }
 
     public void startCombat(
-            int distanceBand,
+            int stageIndex,
             boolean boss,
             EnemyArchetypeId tileEncounterArchetype,
             float arenaWidth,
@@ -175,7 +175,7 @@ public class CombatController {
             ActionCardDeck actionDeck,
             Consumer<CombatOutcome> onEnd) {
         initializeCombatSession(
-                distanceBand, boss, tileEncounterArchetype, arenaWidth, groundY, actionDeck, onEnd);
+                stageIndex, boss, tileEncounterArchetype, arenaWidth, groundY, actionDeck, onEnd);
     }
 
     public CombatEntity getPlayer() {
@@ -677,7 +677,7 @@ public class CombatController {
     }
 
     private void initializeCombatSession(
-            int distanceBand,
+            int stageIndex,
             boolean boss,
             EnemyArchetypeId tileEncounterArchetype,
             float arenaWidth,
@@ -713,7 +713,7 @@ public class CombatController {
         }
 
         player = createPlayerEntity(arenaWidth, groundY);
-        enemies.add(createOpponentEntity(distanceBand, boss, arenaWidth, groundY));
+        enemies.add(createOpponentEntity(stageIndex, boss, arenaWidth, groundY));
         rollPlayerSlotsForPlanning();
         rollEnemySlotCards();
     }
@@ -727,9 +727,9 @@ public class CombatController {
         return playerEntity;
     }
 
-    private CombatEntity createOpponentEntity(int distanceBand, boolean boss, float arenaWidth, float groundY) {
+    private CombatEntity createOpponentEntity(int stageIndex, boolean boss, float arenaWidth, float groundY) {
         if (boss) {
-            float bossHp = CombatConfig.BOSS_BASE_HP + distanceBand * CombatConfig.BOSS_HP_PER_DISTANCE_BAND;
+            float bossHp = CombatConfig.BOSS_BASE_HP + stageIndex * CombatConfig.BOSS_HP_PER_DISTANCE_BAND;
             float bossX = arenaWidth * CombatConfig.COMBAT_BOSS_X_RATIO;
             CombatEntity bossEntity = new CombatEntity(CombatEntity.Kind.BOSS, bossX, groundY, bossHp, 0, 0f);
             bossEntity.clearCombatStatus();
