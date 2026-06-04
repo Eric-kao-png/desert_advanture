@@ -35,6 +35,8 @@ public class CardManifestIntegrityTest {
             assertNotNull(def.id, "card id must not be null");
             assertTrue(!def.id.isBlank(), "card id must not be blank");
             assertTrue(ids.add(def.id), "duplicate card id: " + def.id);
+            assertNotNull(def.description, "card description must not be null: " + def.id);
+            assertTrue(!def.description.isBlank(), "card description must not be blank: " + def.id);
         }
 
         for (ActionCardType type : ActionCardType.values()) {

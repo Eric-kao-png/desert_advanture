@@ -29,6 +29,11 @@ public enum ActionCardType {
         return def().name;
     }
 
+    public String getDescription() {
+        String text = def().description;
+        return text != null ? text : "";
+    }
+
     public int getPrimaryValue() {
         CardDef def = def();
         return switch (this) {

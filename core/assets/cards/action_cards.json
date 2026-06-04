@@ -4,6 +4,7 @@
     {
       "id": "ATTACK",
       "name": "Attack",
+      "description": "Deal 2 damage to the enemy.",
       "category": "OFFENSE",
       "cooldown": 1,
       "targeting": "ENEMY",
@@ -14,6 +15,7 @@
     {
       "id": "SWIFT_STRIKE",
       "name": "Swift Strike",
+      "description": "Deal 3 damage to the enemy.",
       "category": "OFFENSE",
       "cooldown": 2,
       "targeting": "ENEMY",
@@ -24,6 +26,7 @@
     {
       "id": "HEAL",
       "name": "Heal",
+      "description": "Restore 4 HP.",
       "category": "UTILITY",
       "cooldown": 4,
       "targeting": "SELF",
@@ -34,6 +37,7 @@
     {
       "id": "SHIELD",
       "name": "Shield",
+      "description": "Gain 4 shield.",
       "category": "UTILITY",
       "cooldown": 3,
       "targeting": "SELF",
@@ -44,6 +48,7 @@
     {
       "id": "ASSAULT",
       "name": "Assault",
+      "description": "Deal 6 damage if no Utility card resolved this turn; otherwise 3 damage.",
       "category": "OFFENSE",
       "cooldown": 3,
       "targeting": "ENEMY",
@@ -59,6 +64,7 @@
     {
       "id": "LIFE_MAGIC",
       "name": "Life Magic",
+      "description": "Reduce the enemy's current HP by half (rounded down).",
       "category": "UTILITY",
       "cooldown": 5,
       "targeting": "ENEMY",
@@ -69,6 +75,7 @@
     {
       "id": "AMBUSH",
       "name": "Ambush",
+      "description": "Deal 6 damage on combat round 1; otherwise 3 damage.",
       "category": "OFFENSE",
       "cooldown": 3,
       "targeting": "ENEMY",
@@ -84,6 +91,7 @@
     {
       "id": "POISON_MAGIC",
       "name": "Poison Magic",
+      "description": "Apply Poison for 2 turns (1 damage at each round end).",
       "category": "UTILITY",
       "cooldown": 2,
       "targeting": "ENEMY",
@@ -94,6 +102,7 @@
     {
       "id": "CLAW",
       "name": "Claw",
+      "description": "Deal 3 damage to the enemy.",
       "category": "OFFENSE",
       "cooldown": 2,
       "targeting": "ENEMY",
@@ -104,6 +113,7 @@
     {
       "id": "CHARGED_SLASH",
       "name": "Charged Slash",
+      "description": "Deal 6 damage when resolved in slot 4; otherwise 3 damage.",
       "category": "OFFENSE",
       "cooldown": 3,
       "targeting": "ENEMY",
@@ -119,6 +129,7 @@
     {
       "id": "BLADE",
       "name": "Blade",
+      "description": "Deal 3 damage and apply Bleed for 2 turns.",
       "category": "OFFENSE",
       "cooldown": 3,
       "targeting": "ENEMY",
@@ -130,6 +141,7 @@
     {
       "id": "GREAT_BLADE",
       "name": "Great Blade",
+      "description": "Deal 3 damage and apply Fear for 2 turns.",
       "category": "OFFENSE",
       "cooldown": 3,
       "targeting": "ENEMY",
@@ -141,6 +153,7 @@
     {
       "id": "VAMPIRISM",
       "name": "Vampirism",
+      "description": "Deal 3 damage and heal 3 HP.",
       "category": "OFFENSE",
       "cooldown": 3,
       "targeting": "ENEMY",
@@ -152,6 +165,7 @@
     {
       "id": "PURIFY",
       "name": "Purify",
+      "description": "Clear your debuff. If you have none, heal 2 HP instead.",
       "category": "UTILITY",
       "cooldown": 2,
       "targeting": "SELF",
@@ -166,6 +180,7 @@
     {
       "id": "MAGIC_BOLT",
       "name": "Magic Bolt",
+      "description": "Deal 3 damage. Ignores shield.",
       "category": "OFFENSE",
       "cooldown": 2,
       "targeting": "ENEMY",
@@ -176,6 +191,7 @@
     {
       "id": "POISON_BOLT",
       "name": "Poison Bolt",
+      "description": "Deal 2 damage, or apply Poison for 2 turns (random).",
       "category": "OFFENSE",
       "cooldown": 2,
       "targeting": "ENEMY",
@@ -187,6 +203,7 @@
     {
       "id": "MAGIC_MIRROR",
       "name": "Magic Mirror",
+      "description": "Transfer your debuff to the enemy.",
       "category": "UTILITY",
       "cooldown": 3,
       "targeting": "SELF",
@@ -197,6 +214,7 @@
     {
       "id": "MAGIC_ARROW",
       "name": "Magic Arrow",
+      "description": "Deal 4 damage if the enemy has a debuff; otherwise 3 damage.",
       "category": "OFFENSE",
       "cooldown": 3,
       "targeting": "ENEMY",
@@ -212,6 +230,7 @@
     {
       "id": "ARROW",
       "name": "Arrow",
+      "description": "Deal 3 damage to the enemy.",
       "category": "OFFENSE",
       "cooldown": 2,
       "targeting": "ENEMY",
@@ -222,6 +241,7 @@
     {
       "id": "POISON_ARROW",
       "name": "Poison Arrow",
+      "description": "Deal 2 damage. 50% chance to apply Poison for 2 turns.",
       "category": "OFFENSE",
       "cooldown": 2,
       "targeting": "ENEMY",
@@ -232,4 +252,3 @@
     }
   ]
 }
-

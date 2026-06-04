@@ -10,6 +10,8 @@ import java.util.List;
 public final class CardDef {
     public String id;
     public String name;
+    /** Player-facing effect text shown in the combat info panel. */
+    public String description;
     public CardCategoryId category;
     public int cooldown;
     public CardTargetingId targeting;
