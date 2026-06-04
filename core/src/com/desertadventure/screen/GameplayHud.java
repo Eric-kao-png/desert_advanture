@@ -35,6 +35,9 @@ public class GameplayHud {
     }
 
     private void drawStatusLines(SpriteBatch batch, GameSession session, GameplayMode mode) {
+        if (mode.isHub()) {
+            return;
+        }
         float top = GameConfig.VIEW_HEIGHT;
         float left = GameConfig.HUD_LEFT_MARGIN;
         float offset = GameConfig.HUD_STATUS_TOP_OFFSET;
@@ -45,20 +48,22 @@ public class GameplayHud {
                     left, top - offset - GameConfig.HUD_LINE_STEP * line);
             line++;
         }
-        font.draw(batch, String.format("Steps: %.1f/%.1f",
-                session.getStepBudget().getRemainingSteps(), session.getStepBudget().getStepBudget()),
-                left, top - offset - GameConfig.HUD_LINE_STEP * line);
-        line++;
-        font.draw(batch, String.format("Required Events: %d/%d",
-                session.getEventTracker().getCompletedCount(), session.getEventTracker().getRequiredCount()),
-                left, top - offset - GameConfig.HUD_LINE_STEP * line);
-        line++;
+        if (mode.isExploreScene()) {
+            font.draw(batch, String.format("Steps: %.1f/%.1f",
+                    session.getStepBudget().getRemainingSteps(), session.getStepBudget().getStepBudget()),
+                    left, top - offset - GameConfig.HUD_LINE_STEP * line);
+            line++;
+            font.draw(batch, String.format("Required Events: %d/%d",
+                    session.getEventTracker().getCompletedCount(), session.getEventTracker().getRequiredCount()),
+                    left, top - offset - GameConfig.HUD_LINE_STEP * line);
+            line++;
 
-        GridPos tile = session.getDisplayGridPos();
-        font.draw(batch, String.format("Tile: %s", tile), left, top - offset - GameConfig.HUD_LINE_STEP * line);
-        line++;
-        font.draw(batch, String.format("Distance from origin: %.1f", session.getDistanceFromOrigin()),
-                left, top - offset - GameConfig.HUD_LINE_STEP * line);
+            GridPos tile = session.getDisplayGridPos();
+            font.draw(batch, String.format("Tile: %s", tile), left, top - offset - GameConfig.HUD_LINE_STEP * line);
+            line++;
+            font.draw(batch, String.format("Distance from origin: %.1f", session.getDistanceFromOrigin()),
+                    left, top - offset - GameConfig.HUD_LINE_STEP * line);
+        }
     }
 
     private void drawModeOverlay(SpriteBatch batch, GameSession session, GameplayMode mode) {

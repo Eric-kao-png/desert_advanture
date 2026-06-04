@@ -108,8 +108,9 @@ final class GameplayModeUpdater {
     }
 
     private void beginCombat(boolean boss) {
+        int distanceBand = session.getRunProgress().getCurrentStageIndex();
         session.getCombatController().startCombat(
-                session.getCurrentDistanceBand(),
+                distanceBand,
                 boss,
                 boss ? null : session.consumePendingCombatArchetype(),
                 GameConfig.VIEW_WIDTH,

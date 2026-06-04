@@ -22,9 +22,15 @@ class TileArchetypeCombatStartTest {
         CombatTestDataBootstrap.ensureProductionDatabases();
     }
 
+    private static GameSession newExplorationSession() {
+        GameSession session = new GameSession();
+        session.setMode(GameplayMode.EXPLORE_IDLE);
+        return session;
+    }
+
     @Test
     void combatTile_wanderingWizard_startsCombatWithWizardArchetype() {
-        GameSession session = new GameSession();
+        GameSession session = newExplorationSession();
         var tile = session.getMap().getTile(4, 0);
         assertNotNull(tile);
         session.handleTileInteraction(tile, false);
@@ -52,7 +58,7 @@ class TileArchetypeCombatStartTest {
 
     @Test
     void combatTile_desertZombie_startsCombatWithZombieDeck() {
-        GameSession session = new GameSession();
+        GameSession session = newExplorationSession();
         var tile = session.getMap().getTile(-3, 0);
         assertNotNull(tile);
         session.handleTileInteraction(tile, false);

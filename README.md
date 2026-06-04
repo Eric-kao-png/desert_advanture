@@ -1,20 +1,33 @@
 # Desert Adventure
 
-A LibGDX desert roguelite prototype: 2D grid exploration, side-scrolling travel presentation, and turn-based card combat.
+A LibGDX desert roguelite prototype with turn-based card combat.
 
-## Controls
+## MVP mode (card run)
+
+The default flow after **Enter** is a **linear card run** (no map exploration):
+
+1. **Camp Hub** — start the current stage fight, view your action deck (with cooldowns), or read inventory
+2. **4 stages** — 3 normal encounters + 1 boss (`core/assets/stages/stages.json`)
+3. **Win** a non-boss fight → advance stage, return to hub (small HP heal between fights)
+4. **Beat the boss** → victory screen
+5. **Lose** or run out of HP → **rewind** to stage 1, **all card cooldowns cleared** (same deck instances; no meta card pick)
+
+Map/exploration code remains in the repo but is bypassed in this MVP. Cooldowns **persist between fights** in the same run and are only cleared on rewind.
+
+## Controls (MVP)
 
 | Key | Action |
 |-----|--------|
 | Enter | Start from main menu |
-| M | Open map (while exploring); close map (while map is open) |
-| N | Open inventory (while exploring); close inventory (while inventory is open) |
-| Arrow keys | Pan map view (while map is open) |
-| Mouse click | Select destination on map |
-| Esc | Close map or inventory (while open); return to main menu (while exploring) |
-| X (top-right) | Close map or inventory (while open) |
+| 1 | Hub: start current stage battle |
+| 2 | Hub: view deck (name + cooldown remaining) |
+| 3 | Hub: view inventory (read-only) |
+| B / Esc | Back to hub from deck/inventory; Esc from hub → main menu |
+| Click hub lines | Same as 1–3 |
 | Click + slots 1 & 3 | Assign action cards (combat) |
 | Enter / Space | Confirm combat round |
+
+Legacy exploration keys (M map, N inventory overlay, arrow pan) still exist in code but are not used in the hub-first flow.
 
 ## Run
 
@@ -24,21 +37,22 @@ gradle :desktop:runGame
 
 macOS automatically adds `-XstartOnFirstThread` (required by LWJGL3).
 
-## World
+## Tests
 
-- **501×501** procedural desert map; world origin **(0, 0)** is the center and spawn (coords about **-250..250**)
-- Movement uses **steps** (float, Euclidean distance) per cycle along a **straight line**; you may select any unblocked destination—if steps run out mid-travel, a sandstorm begins
-- Map overlay shows a **51×51** window; use arrow keys to pan across the world
+```bash
+./gradlew :core:test -q
+```
 
 ## Documentation
 
-- [Movement & map logic](docs/Movement-and-Map-Logic.md) — path planning, steps, mid-path encounters, file index
 - [Combat card system](docs/Combat-Card-System.md) — turn phases, deck, balance, controls
+- [Movement & map logic](docs/Movement-and-Map-Logic.md) — legacy exploration (not used in MVP hub flow)
 - Parallax backgrounds: `core/assets/backgrounds/parallax_{back,middle,forward}.png`
-- Sprite sheet: `core/assets/sprites/desert_parallax_sheet.png` + `core/assets/data/desert_sprite_sheet.json`
+- Stage catalog: `core/assets/stages/stages.json`
+- Enemy archetypes: `core/assets/enemies/enemy_archetypes.json`
 
-## Goal
+## Shelved (not in MVP)
 
-1. Explore the map and complete 3 required events (yellow tiles)
-2. Running out of steps triggers a sandstorm reset (progress is kept)
-3. After all events, reach the purple Boss tile and defeat the Boss to win
+- Meta card retention / pick-a-card on death
+- Map exploration as the default loop
+- Branching stage paths

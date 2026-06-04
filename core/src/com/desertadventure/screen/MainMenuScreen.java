@@ -46,7 +46,7 @@ public class MainMenuScreen extends ScreenAdapter {
         font.setColor(Color.WHITE);
         CenteredTextDrawer.draw(batch, font, "Desert Adventure", GameConfig.VIEW_HEIGHT * GameConfig.MENU_TITLE_Y_RATIO);
         font.getData().setScale(GameConfig.MENU_BODY_FONT_SCALE);
-        CenteredTextDrawer.draw(batch, font, "Survive the sandstorm. Reach the guardian.",
+        CenteredTextDrawer.draw(batch, font, "Card-run MVP: clear 3 fights, then the boss.",
                 GameConfig.VIEW_HEIGHT * GameConfig.MENU_SUBTITLE_Y_RATIO);
         CenteredTextDrawer.draw(batch, font, "Press Enter to Start", GameConfig.VIEW_HEIGHT * GameConfig.MENU_PROMPT_Y_RATIO);
         batch.end();

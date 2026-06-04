@@ -58,6 +58,13 @@ public final class ActionCardDeck {
         }
     }
 
+    /** Sets every instance's cooldown to zero without removing or rebuilding instances. */
+    public void clearAllCooldowns() {
+        for (ActionCardInstance instance : instances) {
+            instance.setCooldownRemaining(0);
+        }
+    }
+
     public void addCard(ActionCardType type) {
         instances.add(new ActionCardInstance(nextInstanceId++, type));
     }

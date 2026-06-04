@@ -22,6 +22,11 @@ import com.desertadventure.map.model.MapGenerator;
 import com.desertadventure.map.model.Tile;
 import com.desertadventure.map.view.MapOverlayLayout;
 import com.desertadventure.player.PlayerStats;
+import com.desertadventure.run.RunProgress;
+import com.desertadventure.run.StageCatalog;
+import com.desertadventure.run.StageDef;
+import com.desertadventure.run.StageRunCoordinator;
+import com.desertadventure.run.data.StageCatalogDatabase;
 
 public class GameSession implements ExplorationCallbacks {
     private final GameMap map;
@@ -40,10 +45,14 @@ public class GameSession implements ExplorationCallbacks {
     private final MapTravelActions mapTravel;
     private final CombatOutcomeApplier combatOutcomes;
     private final TileInteractionContext tileContext;
+    private final StageCatalog stageCatalog;
+    private final RunProgress runProgress;
+    private final StageRunCoordinator stageRunCoordinator;
 
     private int playerX;
     private int playerY;
-    private GameplayMode mode = GameplayMode.EXPLORE_IDLE;
+    private GameplayMode mode = GameplayMode.HUB;
+    private HubPanel hubPanel = HubPanel.MAIN;
     private float stormTimer;
     private float scrollOffset;
     private boolean bossAvailableThisCycle;
@@ -58,6 +67,11 @@ public class GameSession implements ExplorationCallbacks {
         mapTravel = createMapTravelActions();
         combatOutcomes = createCombatOutcomeApplier();
         tileContext = createTileInteractionContext();
+        stageCatalog = StageCatalogDatabase.getRequired();
+        runProgress = new RunProgress(stageCatalog);
+        stageRunCoordinator = new StageRunCoordinator(
+                runProgress, playerStats, permanentProgress, messageFeed, actionCardDeck,
+                GameSessionDelegates.modeAccess(this));
         initializeNewSessionState();
     }
 
@@ -75,7 +89,9 @@ public class GameSession implements ExplorationCallbacks {
         resetToSpawn();
         stepBudget.resetForCycle(playerStats);
         revealAroundPlayer();
-        mode = GameplayMode.EXPLORE_IDLE;
+        mode = GameplayMode.HUB;
+        hubPanel = HubPanel.MAIN;
+        runProgress.resetForNewRun();
         messageFeed.clear();
         inventory.clear();
         actionCardDeckResetPolicy.resetDeck(actionCardDeck);
@@ -145,6 +161,42 @@ public class GameSession implements ExplorationCallbacks {
 
     public ActionCardDeck getActionCardDeck() {
         return actionCardDeck;
+    }
+
+    public RunProgress getRunProgress() {
+        return runProgress;
+    }
+
+    public StageCatalog getStageCatalog() {
+        return stageCatalog;
+    }
+
+    public HubPanel getHubPanel() {
+        return hubPanel;
+    }
+
+    public void setHubPanel(HubPanel hubPanel) {
+        this.hubPanel = hubPanel != null ? hubPanel : HubPanel.MAIN;
+    }
+
+    public void returnHubToMainPanel() {
+        hubPanel = HubPanel.MAIN;
+    }
+
+    /** Starts combat for the current linear stage (hub MVP). */
+    public boolean tryStartCurrentStageCombat() {
+        if (mode != GameplayMode.HUB || hubPanel != HubPanel.MAIN) {
+            return false;
+        }
+        StageDef stage = runProgress.getCurrentStage();
+        if (stage.boss()) {
+            mode = GameplayMode.BOSS_COMBAT;
+            pendingCombatArchetype = null;
+        } else {
+            mode = GameplayMode.COMBAT;
+            pendingCombatArchetype = stage.enemyArchetype();
+        }
+        return true;
     }
 
     @Override
@@ -309,7 +361,10 @@ public class GameSession implements ExplorationCallbacks {
     }
 
     public void onCombatEnd(CombatOutcome outcome) {
-        combatOutcomes.apply(outcome, combatController.getLastDefeatedEnemyArchetype());
+        stageRunCoordinator.apply(outcome, combatController.getLastDefeatedEnemyArchetype());
+        if (mode == GameplayMode.HUB) {
+            hubPanel = HubPanel.MAIN;
+        }
     }
 
     public void updateRunning(float delta) {

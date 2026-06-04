@@ -6,6 +6,8 @@ import com.desertadventure.combat.card.data.CardDef;
 import com.desertadventure.combat.card.data.CardManifest;
 import com.desertadventure.combat.card.data.InMemoryCardRepository;
 import com.desertadventure.combat.enemy.EnemyArchetypeTestSupport;
+import com.desertadventure.run.data.StageCatalogDatabase;
+import com.desertadventure.run.data.StageManifestLoader;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,6 +32,11 @@ public final class CombatTestDataBootstrap {
             CardDatabase.initialize(new InMemoryCardRepository(defs));
         }
         EnemyArchetypeTestSupport.ensureLoaded();
+        if (!StageCatalogDatabase.isInitialized()) {
+            var stagePath = StageManifestLoader.resolveManifestPath();
+            String stageJson = Files.readString(stagePath, StandardCharsets.UTF_8);
+            StageCatalogDatabase.initialize(StageManifestLoader.loadFromJson(stageJson, stagePath.toString()));
+        }
     }
 
     private static Path resolveCardManifestPath() {

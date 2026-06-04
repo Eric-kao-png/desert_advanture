@@ -1,6 +1,7 @@
 package com.desertadventure.state;
 
 public enum GameplayMode {
+    HUB,
     EXPLORE_IDLE,
     MAP_OVERLAY,
     CHARACTER_OVERLAY,
@@ -14,9 +15,13 @@ public enum GameplayMode {
         return this == COMBAT || this == BOSS_COMBAT;
     }
 
-    /** Parallax explore scene with overhead player HP bar (not combat or victory). */
+    public boolean isHub() {
+        return this == HUB;
+    }
+
+    /** Parallax explore scene with overhead player HP bar (not combat, hub, or victory). */
     public boolean isExploreScene() {
-        return !isCombat() && this != VICTORY;
+        return !isCombat() && !isHub() && this != VICTORY;
     }
 
     public boolean canOpenMap() {

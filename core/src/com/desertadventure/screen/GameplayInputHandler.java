@@ -7,7 +7,9 @@ import com.desertadventure.presentation.GameViewport;
 import com.desertadventure.screen.input.CharacterOverlayPointerInput;
 import com.desertadventure.screen.input.CombatCardInput;
 import com.desertadventure.screen.input.ExplorationKeyboardInput;
+import com.desertadventure.screen.input.HubKeyboardInput;
 import com.desertadventure.screen.input.MapOverlayPointerInput;
+import com.badlogic.gdx.Gdx;
 import com.desertadventure.state.GameSession;
 import com.desertadventure.state.GameplayMode;
 
@@ -19,6 +21,8 @@ public class GameplayInputHandler {
     private final CharacterOverlayInput characterInput;
     private final CharacterOverlayLayout characterLayout;
     private final ExplorationKeyboardInput explorationKeys = new ExplorationKeyboardInput();
+    private final HubKeyboardInput hubKeys = new HubKeyboardInput();
+    private final HubScreenDrawer hubDrawer = new HubScreenDrawer();
     private final CombatCardInput combatCardInput = new CombatCardInput();
     private final MapOverlayPointerInput mapOverlayInput;
     private final CharacterOverlayPointerInput characterOverlayInput;
@@ -52,8 +56,20 @@ public class GameplayInputHandler {
             return;
         }
 
+        if (mode == GameplayMode.HUB) {
+            hubKeys.handle(game, session);
+            if (Gdx.input.justTouched()) {
+                hubDrawer.handlePointerTap(session, viewport.pointerWorldX(), viewport.pointerWorldY());
+            }
+            return;
+        }
+
         characterOverlayInput.resetPointerTracking();
         explorationKeys.handle(game, session, mode);
+    }
+
+    public HubScreenDrawer getHubDrawer() {
+        return hubDrawer;
     }
 
     public void updateCharacterHover() {

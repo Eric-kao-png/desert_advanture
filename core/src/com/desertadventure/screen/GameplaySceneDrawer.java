@@ -53,6 +53,7 @@ final class GameplaySceneDrawer {
         updateHoverStateForMode(mode);
 
         switch (mode) {
+            case HUB -> drawHub(batch, delta);
             case MAP_OVERLAY -> drawMapOverlay(batch, delta);
             case CHARACTER_OVERLAY -> drawCharacterOverlay(batch, delta);
             case COMBAT, BOSS_COMBAT -> drawCombat(batch, delta, mode);
@@ -122,6 +123,14 @@ final class GameplaySceneDrawer {
         renderer.renderCombatEntities(combat, entities, batch, uiFont);
         renderer.renderCombatHand(combat, layout, batch, uiFont);
         renderer.renderCombatSlotsAndControls(combat, layout, batch, uiFont);
+    }
+
+    private void drawHub(SpriteBatch batch, float delta) {
+        float blend = modeUpdater.getLayoutBlend();
+        drawBackgroundAndFloor(batch, false, delta, blend);
+        batch.begin();
+        input.getHubDrawer().draw(batch, uiFont, session);
+        batch.end();
     }
 
     private void drawStorm(SpriteBatch batch, float delta) {

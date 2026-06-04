@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "stages": [
+    {
+      "id": "stage_1",
+      "displayName": "Desert Scout",
+      "enemyArchetype": "DESERT_ZOMBIE",
+      "boss": false
+    },
+    {
+      "id": "stage_2",
+      "displayName": "Wandering Mage",
+      "enemyArchetype": "WANDERING_WIZARD",
+      "boss": false
+    },
+    {
+      "id": "stage_3",
+      "displayName": "Bone Archer",
+      "enemyArchetype": "SKELETON_ARCHER",
+      "boss": false
+    },
+    {
+      "id": "stage_boss",
+      "displayName": "Desert Guardian",
+      "boss": true
+    }
+  ]
+}

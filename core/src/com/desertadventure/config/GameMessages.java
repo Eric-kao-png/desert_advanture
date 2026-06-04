@@ -10,6 +10,8 @@ public final class GameMessages {
     public static final String PATH_BLOCKED = "Straight path is blocked.";
     public static final String RUINS_ALREADY_DONE = "Ruins already investigated.";
     public static final String BATTLE_WON = "Battle won!";
+    public static final String RUN_DEFEATED = "Defeated. The run rewinds to stage 1.";
+    public static final String RUN_REWOUND = "All card cooldowns cleared.";
     public static final String SANDSTORM_RETURN = "Sandstorm... You returned to camp center.";
 
     public static final String CHARACTER_PANEL_TITLE = "Character";
@@ -72,5 +74,13 @@ public final class GameMessages {
 
     public static String requiredEventsIncomplete(int completed, int required) {
         return "Required events incomplete (" + completed + "/" + required + ")";
+    }
+
+    public static String runStageHeal(float amount) {
+        return String.format("Recovered %.0f HP before the next fight.", amount);
+    }
+
+    public static String runStageAdvanced(int stageNumber, String stageLabel) {
+        return String.format("Next: Stage %d — %s", stageNumber, stageLabel);
     }
 }
