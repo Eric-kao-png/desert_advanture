@@ -157,15 +157,7 @@ public final class GameConfig {
     public static final int PLAYER_LEVEL_DEFENSE_GAIN = PlayerConfig.LEVEL_DEFENSE_GAIN;
     public static final float PLAYER_LEVEL_EXP_MULTIPLIER = PlayerConfig.LEVEL_EXP_MULTIPLIER;
 
-    // --- Menu screens ---
-    public static final float MENU_TITLE_FONT_SCALE = 1.5f;
-    public static final float MENU_BODY_FONT_SCALE = 1f;
-    public static final float MENU_TITLE_Y_RATIO = 0.68f;
-    public static final float MENU_SUBTITLE_Y_RATIO = 0.58f;
-    public static final float MENU_PROMPT_Y_RATIO = 0.35f;
-    public static final float MENU_GROUND_HEIGHT_RATIO = 0.4f;
-    public static final float MENU_SKY_BAND_HEIGHT_RATIO = 0.6f;
-
+    // --- Victory screen ---
     public static final float VICTORY_TITLE_FONT_SCALE = 1.8f;
     public static final float VICTORY_BODY_FONT_SCALE = 1.1f;
     public static final float VICTORY_TITLE_Y_RATIO = 0.7f;

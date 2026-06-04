@@ -2,7 +2,7 @@ package com.desertadventure;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.desertadventure.screen.MainMenuScreen;
+import com.desertadventure.screen.GameplayScreen;
 
 public class DesertAdventure extends Game {
     private SpriteBatch batch;
@@ -10,7 +10,7 @@ public class DesertAdventure extends Game {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        setScreen(new MainMenuScreen(this));
+        setScreen(new GameplayScreen(this));
     }
 
     public SpriteBatch getBatch() {

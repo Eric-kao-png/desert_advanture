@@ -25,7 +25,6 @@ public class GameSession {
     private final StageRunCoordinator stageRunCoordinator;
 
     private GameplayMode mode = GameplayMode.HUB;
-    private HubPanel hubPanel = HubPanel.MAIN;
     private EnemyArchetypeId pendingCombatArchetype;
 
     public GameSession() {
@@ -43,7 +42,6 @@ public class GameSession {
         permanentProgress.resetForNewGame();
         playerStats.resetForNewGame();
         mode = GameplayMode.HUB;
-        hubPanel = HubPanel.MAIN;
         runProgress.resetForNewRun();
         messageFeed.clear();
         actionCardDeckResetPolicy.resetDeck(actionCardDeck);
@@ -73,21 +71,9 @@ public class GameSession {
         return stageCatalog;
     }
 
-    public HubPanel getHubPanel() {
-        return hubPanel;
-    }
-
-    public void setHubPanel(HubPanel hubPanel) {
-        this.hubPanel = hubPanel != null ? hubPanel : HubPanel.MAIN;
-    }
-
-    public void returnHubToMainPanel() {
-        hubPanel = HubPanel.MAIN;
-    }
-
-    /** Starts combat for the current linear stage (hub MVP). */
+    /** Starts combat for the current linear stage (hub). */
     public boolean tryStartCurrentStageCombat() {
-        if (mode != GameplayMode.HUB || hubPanel != HubPanel.MAIN) {
+        if (mode != GameplayMode.HUB) {
             return false;
         }
         StageDef stage = runProgress.getCurrentStage();
@@ -126,8 +112,5 @@ public class GameSession {
 
     public void onCombatEnd(CombatOutcome outcome) {
         stageRunCoordinator.apply(outcome, combatController.getLastDefeatedEnemyArchetype());
-        if (mode == GameplayMode.HUB) {
-            hubPanel = HubPanel.MAIN;
-        }
     }
 }

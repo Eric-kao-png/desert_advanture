@@ -4,12 +4,12 @@ A LibGDX desert roguelite prototype with turn-based card combat.
 
 ## MVP mode (card run)
 
-The default flow after **Enter** is a **linear card run** (no map exploration):
+Launch goes straight into a **linear card run**:
 
-1. **Camp Hub** — start the current stage fight or view your action deck (with cooldowns)
+1. **Camp Hub** — start the current stage fight
 2. **4 stages** — 3 normal encounters + 1 boss (`core/assets/stages/stages.json`)
 3. **Win** a non-boss fight → advance stage, return to hub (small HP heal between fights)
-4. **Beat the boss** → victory screen
+4. **Beat the boss** → victory screen (Enter starts a new run)
 5. **Lose** or run out of HP → **rewind** to stage 1, **all card cooldowns cleared** (same deck instances; no meta card pick)
 
 Cooldowns **persist between fights** in the same run and are only cleared on rewind.
@@ -18,13 +18,11 @@ Cooldowns **persist between fights** in the same run and are only cleared on rew
 
 | Key | Action |
 |-----|--------|
-| Enter | Start from main menu |
 | 1 | Hub: start current stage battle |
-| 2 | Hub: view deck (name + cooldown remaining) |
-| B / Esc | Back to hub from deck; Esc from hub → main menu |
-| Click hub lines | Same as 1–2 |
+| Click hub line | Same as 1 |
 | Click + slots 1 & 3 | Assign action cards (combat) |
 | Enter / Space | Confirm combat round |
+| Enter | Victory screen: play again |
 
 ## Run
 

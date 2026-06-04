@@ -46,12 +46,12 @@ public class VictoryScreen extends ScreenAdapter {
         font.getData().setScale(GameConfig.VICTORY_BODY_FONT_SCALE);
         CenteredTextDrawer.draw(batch, font, "You defeated the desert guardian",
                 GameConfig.VIEW_HEIGHT * GameConfig.VICTORY_SUBTITLE_Y_RATIO);
-        CenteredTextDrawer.draw(batch, font, "Press Enter to return to main menu",
+        CenteredTextDrawer.draw(batch, font, "Press Enter to play again",
                 GameConfig.VIEW_HEIGHT * GameConfig.VICTORY_PROMPT_Y_RATIO);
         batch.end();
 
         if (GameInputBindings.justConfirmed()) {
-            game.setScreen(new MainMenuScreen(game));
+            game.setScreen(new GameplayScreen(game));
         }
     }
 

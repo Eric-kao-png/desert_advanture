@@ -27,7 +27,7 @@ public class GameplayInputHandler {
         GameplayMode mode = session.getMode();
 
         if (mode == GameplayMode.HUB) {
-            hubKeys.handle(game, session);
+            hubKeys.handle(session);
             if (Gdx.input.justTouched()) {
                 hubDrawer.handlePointerTap(session, viewport.pointerWorldX(), viewport.pointerWorldY());
             }
