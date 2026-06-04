@@ -84,9 +84,12 @@ UI 分類：`ActionCardCategory` — **ATTACK（攻擊）** / **CHANGE（變化�
 
 - 攻擊 ×2
 - 斬擊 ×1
-- 治療 ×1
-- 護盾 ×1
+- 迅擊 ×1
 - 蓄力斬 ×1
+- 巨刃 ×1
+- 伏擊 ×1
+- 護盾 ×1
+- 治療 ×1
 
 冷卻在 **同一輪 run** 的各場戰鬥間保留；**落敗 rewind** 時僅 `clearAllCooldowns()`，不重建牌庫實例。
 

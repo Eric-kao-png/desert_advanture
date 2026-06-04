@@ -14,9 +14,12 @@ public final class ActionCardDeck {
                 ActionCardType.ATTACK,
                 ActionCardType.ATTACK,
                 ActionCardType.STRIKE,
-                ActionCardType.HEAL,
+                ActionCardType.SWIFT_STRIKE,
+                ActionCardType.CHARGED_SLASH,
+                ActionCardType.GREAT_BLADE,
+                ActionCardType.AMBUSH,
                 ActionCardType.SHIELD,
-                ActionCardType.CHARGED_SLASH));
+                ActionCardType.HEAL));
     }
 
     /** Replaces all instances with one per entry (duplicate types allowed). */
