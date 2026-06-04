@@ -477,7 +477,7 @@ public class CombatController {
     private void damageAliveEnemies(float amount, DamageSource source, boolean ignoreShield) {
         CombatEntityRoster.forEachAliveEnemy(enemies, enemy -> {
             float finalAmount = source == DamageSource.OFFENSE_CARD
-                    ? CombatEntityRoster.offenseDamageWithFearBonus(amount, enemy)
+                    ? CombatEntityRoster.offenseDamageWithStatusModifiers(amount, enemy)
                     : amount;
             if (ignoreShield) {
                 enemy.takeDamageIgnoringShield(finalAmount);
@@ -535,13 +535,12 @@ public class CombatController {
     }
 
     private void applyRoundEndStatusEffects() {
-        float poisonDamage = CombatConfig.CARD_POISON_DAMAGE_PER_ROUND;
         if (player != null) {
-            player.applyRoundEndStatusEffects(poisonDamage);
+            player.applyRoundEndStatusEffects();
             syncPlayerStatsHp();
         }
         for (CombatEntity enemy : enemies) {
-            enemy.applyRoundEndStatusEffects(poisonDamage);
+            enemy.applyRoundEndStatusEffects();
         }
     }
 

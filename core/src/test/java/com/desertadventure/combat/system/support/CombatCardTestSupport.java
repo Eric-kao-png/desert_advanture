@@ -9,6 +9,8 @@ import com.desertadventure.combat.card.data.CardDef;
 import com.desertadventure.combat.card.data.CardManifestLoader;
 import com.desertadventure.combat.card.data.CardTargetingId;
 import com.desertadventure.combat.card.data.InMemoryCardRepository;
+import com.desertadventure.combat.status.data.StatusEffectDatabase;
+import com.desertadventure.combat.status.data.StatusEffectManifestLoader;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -24,6 +26,9 @@ public final class CombatCardTestSupport {
         Map<String, CardDef> defs = CardManifestLoader.loadMergedFromFiles(
                 CardManifestLoader.resolveDefaultManifestFiles(cwd));
         CardDatabase.initialize(new InMemoryCardRepository(defs));
+        if (!StatusEffectDatabase.isInitialized()) {
+            StatusEffectDatabase.initialize(StatusEffectManifestLoader.loadFromProjectAssets());
+        }
     }
 
     public static ActionCardDeck deckWithSingleCard(ActionCardType type) {

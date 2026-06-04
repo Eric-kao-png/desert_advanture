@@ -2,12 +2,22 @@ package com.desertadventure.combat.system;
 
 import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.combat.model.NegativeStatusType;
+import com.desertadventure.combat.status.data.StatusEffectDatabase;
+import com.desertadventure.combat.status.data.StatusEffectManifestLoader;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class ShieldAndStatusTest {
+    @BeforeAll
+    static void loadStatusManifest() {
+        if (!StatusEffectDatabase.isInitialized()) {
+            StatusEffectDatabase.initialize(StatusEffectManifestLoader.loadFromProjectAssets());
+        }
+    }
+
     @Test
     void takeDamage_consumesShieldFirst_thenHp() {
         CombatEntity e = new CombatEntity(CombatEntity.Kind.PLAYER, 0f, 0f, 10f);
@@ -44,7 +54,7 @@ public class ShieldAndStatusTest {
         e.addShield(5);
         e.setNegativeStatus(NegativeStatusType.POISON, 1);
 
-        e.applyRoundEndStatusEffects(2f);
+        e.applyRoundEndStatusEffects();
 
         assertEquals(5, e.getShield(), "poison tick should bypass shield");
         assertEquals(8f, e.getHp(), 0.001f, "poison tick should deal damage");

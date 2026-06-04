@@ -2,6 +2,8 @@ package com.desertadventure.state;
 
 import com.desertadventure.combat.card.data.CardDatabase;
 import com.desertadventure.combat.card.data.GdxCardRepositoryLoader;
+import com.desertadventure.combat.status.data.GdxStatusEffectLoader;
+import com.desertadventure.combat.status.data.StatusEffectDatabase;
 import com.desertadventure.combat.enemy.data.EnemyArchetypeDatabase;
 import com.desertadventure.combat.enemy.data.GdxEnemyArchetypeLoader;
 import com.desertadventure.run.StageCatalog;
@@ -20,6 +22,9 @@ public final class GameDataBootstrap {
     public static void initializeIfNeeded() {
         if (!CardDatabase.isInitialized()) {
             CardDatabase.initialize(GdxCardRepositoryLoader.loadDefault());
+        }
+        if (!StatusEffectDatabase.isInitialized()) {
+            StatusEffectDatabase.initialize(GdxStatusEffectLoader.loadDefault());
         }
         if (!EnemyArchetypeDatabase.isInitialized()) {
             EnemyArchetypeDatabase.initialize(GdxEnemyArchetypeLoader.loadDefault());

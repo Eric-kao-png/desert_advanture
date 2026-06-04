@@ -98,19 +98,43 @@ UI 分類：`ActionCardCategory` — **ATTACK（攻擊）** / **CHANGE（變化�
 
 每個 `CombatEntity` 各有一個正面、一個負面狀態格。同極性新狀態 **覆蓋** 舊的。護盾獨立於正面狀態（吸收傷害的點數）。
 
-| 極性 | 類型 | 說明 |
-|------|------|------|
-| 負面 | `POISON` | 回合末造成固定傷害（見下），**無視護盾** |
-| 負面 | `BLEED` | 回合末傷害 = 剩餘回合數 |
-| 負面 | `FEAR` | 戰鬥邏輯用（如 roster 行為），無每回合固定傷害模板 |
+**資料來源**：`core/assets/combat/status_effects.json`，由 `StatusEffectManifestLoader` / `StatusEffectDatabase` 載入。`NegativeStatusType` / `PositiveStatusType` enum 與 JSON `id` 一一對應（完整性測試會驗證 manifest 涵蓋所有 enum 值）。`positive` 陣列可為空；新增正面狀態時在 enum 與 JSON 同時登記即可。
+
+| 欄位 | 說明 |
+|------|------|
+| `id` | 與 enum 同名（如 `POISON`） |
+| `name` | 繁中 UI 顯示（如 中毒） |
+| `polarity` | `NEGATIVE` 或 `POSITIVE` |
+| `roundEnd` | 可選；回合末傷害規則（**無視護盾**） |
+| `modifiers` | 可選；結算期觸發的數值修正 |
+
+**`roundEnd.kind`**
+
+| kind | 行為 |
+|------|------|
+| `FIXED` | 每回合固定傷害（`amount`，如中毒 **2**） |
+| `REMAINING_TURNS` | 傷害 = 該狀態剩餘回合數（流血） |
+
+**`modifiers`（範例）**
+
+| trigger | 行為 |
+|---------|------|
+| `INCOMING_OFFENSE_CARD_DAMAGE` | 敵方受到攻擊牌傷害時 `add`（如恐懼 **+1**） |
+
+目前負面定義摘要：
+
+| 極性 | 類型 | 回合末 | 修正 |
+|------|------|--------|------|
+| 負面 | `POISON` | `FIXED` 2 | — |
+| 負面 | `BLEED` | `REMAINING_TURNS` | — |
+| 負面 | `FEAR` | 無 | `INCOMING_OFFENSE_CARD_DAMAGE` +1 |
 
 **回合末**（`CombatEntity.applyRoundEndStatusEffects` ← `CombatController`）：
 
-1. 若負面為 `POISON` 且回合數 &gt; 0 → 造成 `CombatConfig.CARD_POISON_DAMAGE_PER_ROUND`（目前 **2**）。
-2. 若為 `BLEED` → 造成等同剩餘回合的傷害。
-3. 正負面剩餘回合各 −1，歸零則清除。
+1. 依 registry 對當前負面狀態套用 `roundEnd`（若有）。
+2. 正負面剩餘回合各 −1，歸零則清除。
 
-中毒持續回合等由 **卡牌 JSON**（`APPLY_NEGATIVE_STATUS` 等）決定，非 `CombatConfig` 常數。
+狀態 **持續回合** 仍由卡牌 JSON（`APPLY_NEGATIVE_STATUS` 的 `turns` 等）決定；固定傷害與修正數值在 `status_effects.json` 調整。
 
 ---
 
@@ -178,7 +202,6 @@ Boss 關（`stage_boss`）：`CombatConfig.BOSS_BASE_HP`、`BOSS_HP_PER_DISTANCE
 
 | 常數 | 用途 |
 |------|------|
-| `CARD_POISON_DAMAGE_PER_ROUND` | 中毒每回合傷害（2） |
 | `PLAYER_SLOTS_WEIGHT_*` | 玩家格位對擲骰權重 |
 | `RESOLVE_SLOT_SECONDS` | 每格結算 UI 停留時間 |
 | `COMBAT_*_X_RATIO` | 戰鬥中角色水平位置 |
@@ -197,6 +220,7 @@ Boss 關（`stage_boss`）：`CombatConfig.BOSS_BASE_HP`、`BOSS_HP_PER_DISTANCE
 | `combat/card/data/CardManifestLoader.java` | 合併多份 manifest |
 | `core/assets/enemies/enemy_archetypes.json` | 敵人 HP、牌組、戰利品表（loot 預留） |
 | `core/assets/stages/stages.json` | 線性關卡與原型 ID |
+| `core/assets/combat/status_effects.json` | 正負面狀態定義（回合末傷害、修正器） |
 | `combat/card/ActionCardType.java` | 卡 ID enum；顯示/分類/冷卻自 JSON |
 | `combat/card/ActionCardDeck.java` | 實例集合、`resetToDefault()` |
 | `combat/card/data/CardDatabase.java` | 載入 JSON |
@@ -205,7 +229,9 @@ Boss 關（`stage_boss`）：`CombatConfig.BOSS_BASE_HP`、`BOSS_HP_PER_DISTANCE
 | `combat/system/CombatController.java` | 戰鬥回合主控 |
 | `combat/system/slots/WeightedPlayerSlotRoller.java` | 玩家格位對擲骰 |
 | `combat/model/CombatEntity.java` | HP、護盾、狀態、回合末 tick |
-| `combat/model/NegativeStatusType.java` | POISON / BLEED / FEAR |
+| `combat/status/data/StatusEffectDatabase.java` | 載入狀態 JSON |
+| `combat/status/StatusEffectRuntime.java` | 回合末傷害與修正器執行 |
+| `combat/model/NegativeStatusType.java` | POISON / BLEED / FEAR（id 對應 JSON） |
 | `config/CombatConfig.java` | 戰鬥調參 |
 | `run/StageRunCoordinator.java` | 勝敗後 Hub / rewind |
 | `screen/input/CombatCardInput.java` | 戰鬥輸入 |

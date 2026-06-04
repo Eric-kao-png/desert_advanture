@@ -1,7 +1,7 @@
 package com.desertadventure.combat.system;
 
 import com.desertadventure.combat.model.CombatEntity;
-import com.desertadventure.combat.model.NegativeStatusType;
+import com.desertadventure.combat.status.StatusEffectRuntime;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -28,11 +28,7 @@ final class CombatEntityRoster {
         return null;
     }
 
-    static float offenseDamageWithFearBonus(float amount, CombatEntity enemy) {
-        if (enemy.getNegativeStatusType() == NegativeStatusType.FEAR
-                && enemy.getNegativeTurnsRemaining() > 0) {
-            return amount + 1f;
-        }
-        return amount;
+    static float offenseDamageWithStatusModifiers(float amount, CombatEntity enemy) {
+        return StatusEffectRuntime.applyIncomingOffenseCardDamageModifiers(amount, enemy);
     }
 }

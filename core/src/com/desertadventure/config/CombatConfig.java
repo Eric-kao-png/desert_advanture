@@ -16,9 +16,6 @@ public final class CombatConfig {
     public static final float BOSS_BASE_HP = 35f;
     public static final float BOSS_HP_PER_DISTANCE_BAND = 8f;
 
-    /** Poison tick damage at round end (bypasses shield). */
-    public static final int CARD_POISON_DAMAGE_PER_ROUND = 2;
-
     /** Player slot pair roll weights per round (higher = more likely). */
     public static final int PLAYER_SLOTS_WEIGHT_13 = 70;
     public static final int PLAYER_SLOTS_WEIGHT_24 = 20;

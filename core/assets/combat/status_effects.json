@@ -1,0 +1,25 @@
+{
+  "negative": [
+    {
+      "id": "POISON",
+      "name": "中毒",
+      "polarity": "NEGATIVE",
+      "roundEnd": { "kind": "FIXED", "amount": 2 }
+    },
+    {
+      "id": "BLEED",
+      "name": "流血",
+      "polarity": "NEGATIVE",
+      "roundEnd": { "kind": "REMAINING_TURNS" }
+    },
+    {
+      "id": "FEAR",
+      "name": "恐懼",
+      "polarity": "NEGATIVE",
+      "modifiers": [
+        { "trigger": "INCOMING_OFFENSE_CARD_DAMAGE", "add": 1 }
+      ]
+    }
+  ],
+  "positive": []
+}

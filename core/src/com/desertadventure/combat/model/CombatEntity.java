@@ -1,5 +1,6 @@
 package com.desertadventure.combat.model;
 
+import com.desertadventure.combat.status.StatusEffectRuntime;
 import com.desertadventure.config.GameConfig;
 
 /** Combatant on the arena: HP, shield, and combat statuses. */
@@ -178,16 +179,13 @@ public final class CombatEntity {
         applyDirectDamage(amount);
     }
 
-    public void applyRoundEndStatusEffects(float poisonDamagePerRound) {
+    public void applyRoundEndStatusEffects() {
         if (!alive) {
             return;
         }
-        if (negativeTurnsRemaining > 0 && negativeType != null) {
-            if (negativeType == NegativeStatusType.POISON) {
-                takeStatusDamage(poisonDamagePerRound);
-            } else if (negativeType == NegativeStatusType.BLEED) {
-                takeStatusDamage(negativeTurnsRemaining);
-            }
+        float roundEndDamage = StatusEffectRuntime.computeRoundEndDamage(this);
+        if (roundEndDamage > 0f) {
+            takeStatusDamage(roundEndDamage);
         }
         tickStatusDurations();
     }
