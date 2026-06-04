@@ -13,18 +13,8 @@ public final class GameConfig {
     public static final int VIEW_WIDTH = UiLayoutConfig.VIEW_WIDTH;
     public static final int VIEW_HEIGHT = UiLayoutConfig.VIEW_HEIGHT;
 
-    /** Warm beige sky; also used for GL clear. */
+    /** Solid gameplay background (GL clear color). */
     public static final Color SKY_BASE_COLOR = new Color(0.96f, 0.90f, 0.78f, 1f);
-    public static final String SUN_TEXTURE_PATH = "sprites/sun.png";
-    /** Drawn size for 32×32 sun sprite (screen space). */
-    public static final float SUN_DISPLAY_SIZE = 112f;
-    /** Sun bottom-left corner (fixed, does not scroll). */
-    public static final float SUN_MARGIN_LEFT = 64f;
-    public static final float SUN_MARGIN_TOP = 48f;
-    /** Downward shift for sun (LibGDX Y; negative = lower on screen). */
-    public static final float SUN_VERTICAL_OFFSET = -190f;
-    public static final float SUN_X = SUN_MARGIN_LEFT;
-    public static final float SUN_Y = VIEW_HEIGHT - SUN_MARGIN_TOP - SUN_DISPLAY_SIZE + SUN_VERTICAL_OFFSET;
 
     /** Event / feedback lines in the bottom-left HUD area. */
     public static final int MESSAGE_FEED_MAX_LINES = UiLayoutConfig.MESSAGE_FEED_MAX_LINES;

@@ -59,8 +59,6 @@ final class GameplaySceneDrawer {
         CombatCardLayout layout = input.getCombatCardInput().getLayout();
         layout.applyBlend(blend);
 
-        drawBackgroundAndFloor(batch, blend);
-
         CombatController combat = session.getCombatController();
         CombatEntity player = combat.getPlayer();
         if (player == null) {
@@ -73,16 +71,8 @@ final class GameplaySceneDrawer {
     }
 
     private void drawHub(SpriteBatch batch, float delta) {
-        float blend = modeUpdater.getLayoutBlend();
-        drawBackgroundAndFloor(batch, blend);
         batch.begin();
         input.getHubDrawer().draw(batch, uiFont, session);
-        batch.end();
-    }
-
-    private void drawBackgroundAndFloor(SpriteBatch batch, float blend) {
-        batch.begin();
-        renderer.drawSceneBackground(batch, blend);
         batch.end();
     }
 
