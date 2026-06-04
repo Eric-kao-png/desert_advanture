@@ -17,12 +17,13 @@ public final class GameConfig {
     public static final float HUD_LINE_STEP = UiLayoutConfig.HUD_LINE_STEP;
     public static final float HUD_FONT_SCALE = UiLayoutConfig.HUD_FONT_SCALE;
 
-    public static final float PLAYER_WIDTH = PlayerConfig.WIDTH;
-    public static final float PLAYER_HEIGHT = PlayerConfig.HEIGHT;
-    public static final float ENEMY_WIDTH = 40f;
-    public static final float ENEMY_HEIGHT = 56f;
-    public static final float BOSS_WIDTH = 80f;
-    public static final float BOSS_HEIGHT = 100f;
+    public static final float ENEMY_WIDTH = 120f;
+    public static final float ENEMY_HEIGHT = 168f;
+    /** Player combat sprite matches normal enemy size. */
+    public static final float PLAYER_WIDTH = ENEMY_WIDTH;
+    public static final float PLAYER_HEIGHT = ENEMY_HEIGHT;
+    public static final float BOSS_WIDTH = 240f;
+    public static final float BOSS_HEIGHT = 300f;
 
     public static final float COMBAT_PLAYER_X_RATIO = CombatConfig.COMBAT_PLAYER_X_RATIO;
     public static final float COMBAT_ENEMY_X_RATIO = CombatConfig.COMBAT_ENEMY_X_RATIO;
@@ -43,24 +44,45 @@ public final class GameConfig {
     public static final float COMBAT_HP_BAR_TEXT_GAP = 6f;
     public static final float COMBAT_HP_BAR_BORDER_WIDTH = 2.5f;
     public static final float COMBAT_HP_BAR_COMPACT_MAX_HP = 3f;
+    public static final float COMBAT_STATUS_BELOW_BAR_GAP = 4f;
+    public static final float COMBAT_STATUS_COLUMN_OFFSET = 6f;
+    public static final float COMBAT_STATUS_PANEL_PADDING_H = 5f;
+    public static final float COMBAT_STATUS_PANEL_PADDING_V = 3f;
+    public static final float COMBAT_STATUS_BORDER_WIDTH = 1.5f;
 
     public static final float COMBAT_SLOT_WIDTH = 84f;
     public static final float COMBAT_SLOT_HEIGHT = 108f;
-    public static final float COMBAT_SLOT_Y = 340f;
     public static final float COMBAT_SLOT_GAP = 20f;
-    public static final float COMBAT_HAND_Y = 12f;
-    public static final float COMBAT_CARD_WIDTH = 72f;
-    public static final float COMBAT_CARD_HEIGHT = 90f;
+    public static final float COMBAT_HAND_BOTTOM_MARGIN = 12f;
+    public static final float COMBAT_HAND_ROW_GAP = 8f;
+    public static final float COMBAT_SLOT_ABOVE_HAND_GAP = 20f;
+    /** Space between slot row top and fighter feet; sized for bars below large sprites. */
+    public static final float COMBAT_ENTITY_ABOVE_SLOT_GAP = 96f;
+    public static final float COMBAT_CARD_WIDTH = 64f;
+    public static final float COMBAT_CARD_HEIGHT = 80f;
+    /** Fixed hand-row panel height (independent of card size). */
+    public static final float COMBAT_HAND_ROW_VIEWPORT_HEIGHT = 110f;
     public static final float COMBAT_HAND_GAP = 10f;
     public static final float COMBAT_HAND_VIEWPORT_MARGIN_H = 16f;
-    public static final float COMBAT_HAND_CENTER_GAP = 12f;
+    /** Max width of each hand row panel (centered); cards scroll inside. */
+    public static final float COMBAT_HAND_VIEWPORT_WIDTH = 560f;
     public static final float COMBAT_HAND_VIEWPORT_PADDING = 8f;
     public static final float COMBAT_HAND_BORDER = 2f;
     public static final float COMBAT_HAND_SCROLL_THRESHOLD = 10f;
+    public static final float COMBAT_CARD_DRAG_THRESHOLD = 12f;
+    public static final float COMBAT_SLOT_DISMISS_SIZE = 24f;
+    public static final String COMBAT_SLOT_DISMISS_TEXTURE = "sprites/button_close.png";
+    public static final String COMBAT_SLOT_DISMISS_TEXTURE_HOVERED = "sprites/button_close_hovered.png";
+    public static final String COMBAT_SLOT_DISMISS_TEXTURE_PRESSED = "sprites/button_close_mark.png";
+    public static final float COMBAT_HAND_INFO_GAP = 16f;
+    public static final float COMBAT_INFO_PANEL_BORDER = 2f;
+    public static final float COMBAT_INFO_PANEL_PADDING = 12f;
+    public static final float COMBAT_INFO_LINE_HEIGHT = 22f;
+    public static final float COMBAT_INFO_FONT_SCALE = 1.05f;
+    public static final float COMBAT_CONFIRM_ABOVE_INFO_GAP = 10f;
     public static final float COMBAT_CONFIRM_WIDTH = 130f;
     public static final float COMBAT_CONFIRM_HEIGHT = 40f;
     public static final float COMBAT_RESOLVE_SLOT_SECONDS = CombatConfig.RESOLVE_SLOT_SECONDS;
-    public static final float COMBAT_GROUND_Y = CombatConfig.COMBAT_GROUND_Y;
 
     public static final float PLAYER_INITIAL_MAX_HP = PlayerConfig.INITIAL_MAX_HP;
 

@@ -25,6 +25,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
 
     @Override
     public void dispose() {
+        combatCards.dispose();
         shapes.dispose();
     }
 
@@ -36,24 +37,41 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
             CombatController combat,
             CombatCardLayout layout,
             SpriteBatch batch,
-            BitmapFont font) {
+            BitmapFont font,
+            int draggingInstanceId,
+            com.desertadventure.combat.card.ActionCardType inspectedType,
+            com.desertadventure.combat.card.ActionCardInstance inspectedInstance) {
         shapes.setProjectionMatrix(screenProjection);
-        combatCards.renderHand(combat, layout, batch, font);
+        combatCards.renderHand(combat, layout, batch, font, draggingInstanceId, inspectedType, inspectedInstance);
+    }
+
+    public void renderCombatDraggedCard(
+            CombatController combat,
+            CombatCardLayout layout,
+            SpriteBatch batch,
+            BitmapFont font,
+            int draggingInstanceId,
+            float pointerX,
+            float pointerY) {
+        shapes.setProjectionMatrix(screenProjection);
+        combatCards.renderDraggedCard(combat, layout, batch, font, draggingInstanceId, pointerX, pointerY);
     }
 
     public void renderCombatSlotsAndControls(
             CombatController combat,
             CombatCardLayout layout,
             SpriteBatch batch,
-            BitmapFont font) {
+            BitmapFont font,
+            int hoveredDismissSlot,
+            boolean pressedDismiss) {
         shapes.setProjectionMatrix(screenProjection);
-        combatCards.renderSlotsAndControls(combat, layout, batch, font);
+        combatCards.renderSlotsAndControls(combat, layout, batch, font, hoveredDismissSlot, pressedDismiss);
     }
 
     public void renderCombatEntities(CombatController combat, List<CombatEntity> entities, SpriteBatch batch, BitmapFont font) {
         shapes.setProjectionMatrix(screenProjection);
         combatEntities.drawBodies(shapes, entities);
-        combatEntities.drawOverlays(shapes, entities);
+        combatEntities.drawOverlays(shapes, entities, font);
         batch.setProjectionMatrix(screenProjection);
         batch.begin();
         combatEntities.drawTexts(batch, entities, font, combat);

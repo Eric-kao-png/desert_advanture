@@ -7,6 +7,7 @@ import com.desertadventure.combat.model.CombatEntity;
 import com.desertadventure.combat.system.CombatController;
 import com.desertadventure.presentation.GameViewport;
 import com.desertadventure.presentation.GameplayRenderer;
+import com.desertadventure.screen.input.CombatCardInput;
 import com.desertadventure.screen.layout.CombatCardLayout;
 import com.desertadventure.state.GameSession;
 import com.desertadventure.state.GameplayMode;
@@ -54,7 +55,8 @@ final class GameplaySceneDrawer {
 
     private void drawCombat(SpriteBatch batch, GameplayMode mode) {
         modeUpdater.ensureCombatInitializedForDraw(mode);
-        CombatCardLayout layout = input.getCombatCardInput().getLayout();
+        CombatCardInput cardInput = input.getCombatCardInput();
+        CombatCardLayout layout = cardInput.getLayout();
 
         CombatController combat = session.getCombatController();
         CombatEntity player = combat.getPlayer();
@@ -64,9 +66,23 @@ final class GameplaySceneDrawer {
         List<CombatEntity> entities = new ArrayList<>();
         entities.add(player);
         entities.addAll(combat.getEnemies());
+        int draggingId = cardInput.isDragging() ? cardInput.getDragInstanceId() : -1;
+        renderer.renderCombatHand(
+                combat, layout, batch, uiFont, draggingId,
+                cardInput.getInspectedCardType(),
+                cardInput.getInspectedCardInstance());
+        renderer.renderCombatSlotsAndControls(
+                combat, layout, batch, uiFont,
+                cardInput.getHoveredDismissSlot(),
+                cardInput.isPressedDismiss());
+        if (cardInput.isDragging()) {
+            renderer.renderCombatDraggedCard(
+                    combat, layout, batch, uiFont,
+                    cardInput.getDragInstanceId(),
+                    cardInput.getDragPointerX(),
+                    cardInput.getDragPointerY());
+        }
         renderer.renderCombatEntities(combat, entities, batch, uiFont);
-        renderer.renderCombatHand(combat, layout, batch, uiFont);
-        renderer.renderCombatSlotsAndControls(combat, layout, batch, uiFont);
     }
 
     private void drawHub(SpriteBatch batch) {

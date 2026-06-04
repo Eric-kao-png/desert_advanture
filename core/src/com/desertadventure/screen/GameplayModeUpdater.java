@@ -1,8 +1,8 @@
 package com.desertadventure.screen;
 
 import com.desertadventure.combat.model.CombatEntity;
-import com.desertadventure.config.GameConfig;
 import com.desertadventure.screen.layout.CombatSceneLayout;
+import com.desertadventure.config.GameConfig;
 import com.desertadventure.state.GameSession;
 import com.desertadventure.state.GameplayMode;
 
@@ -77,7 +77,7 @@ final class GameplayModeUpdater {
                 session.isPendingBossFight(),
                 session.consumePendingEnemyArchetype(),
                 GameConfig.VIEW_WIDTH,
-                GameConfig.COMBAT_GROUND_Y,
+                CombatSceneLayout.entityGroundY(),
                 session.getActionCardDeck(),
                 session::onCombatEnd);
         combatState.resetForCombatStart();

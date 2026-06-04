@@ -22,12 +22,13 @@ final class CombatEntityRenderer {
         shapes.end();
     }
 
-    void drawOverlays(ShapeRenderer shapes, List<CombatEntity> entities) {
+    void drawOverlays(ShapeRenderer shapes, List<CombatEntity> entities, BitmapFont font) {
         for (CombatEntity entity : entities) {
             if (!GameplayRenderer.shouldDrawCombatEntity(entity)) {
                 continue;
             }
             CombatHpBarDrawer.draw(shapes, entity);
+            CombatStatusDrawer.drawPanels(shapes, entity, font);
         }
     }
 
@@ -41,6 +42,7 @@ final class CombatEntityRenderer {
                 CombatHpBarDrawer.drawOpponentNameAboveBar(batch, font, entity, opponentName);
             }
             CombatHpBarDrawer.drawHpText(batch, font, entity);
+            CombatStatusDrawer.drawText(batch, font, entity);
         }
     }
 }

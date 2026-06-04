@@ -9,8 +9,6 @@ public final class CombatConfig {
     private CombatConfig() {
     }
 
-    public static final float COMBAT_GROUND_Y = 160f;
-
     public static final float COMBAT_PLAYER_X_RATIO = 0.3f;
     public static final float COMBAT_ENEMY_X_RATIO = 0.72f;
     public static final float COMBAT_BOSS_X_RATIO = 0.78f;

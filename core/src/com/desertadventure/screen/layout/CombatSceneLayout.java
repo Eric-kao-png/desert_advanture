@@ -2,21 +2,36 @@ package com.desertadventure.screen.layout;
 
 import com.desertadventure.config.GameConfig;
 
-/** Fixed combat UI anchors (no hub/combat blend). */
+/**
+ * Combat UI stacked bottom-to-top: two hand rows, four slots, then fighters.
+ * LibGDX Y increases upward; {@link #changeHandViewportY()} is the bottom hand row.
+ */
 public final class CombatSceneLayout {
     private CombatSceneLayout() {
     }
 
-    public static float groundY() {
-        return GameConfig.COMBAT_GROUND_Y;
+    /** Bottom hand row viewport origin Y. */
+    public static float changeHandViewportY() {
+        return GameConfig.COMBAT_HAND_BOTTOM_MARGIN;
     }
 
-    public static float handY() {
-        return GameConfig.COMBAT_HAND_Y;
+    /** Upper hand row viewport origin Y. */
+    public static float attackHandViewportY() {
+        return changeHandViewportY()
+                + GameConfig.COMBAT_HAND_ROW_VIEWPORT_HEIGHT
+                + GameConfig.COMBAT_HAND_ROW_GAP;
     }
 
+    /** Four timeline slots above the hand rows. */
     public static float slotY() {
-        return GameConfig.COMBAT_SLOT_Y;
+        return attackHandViewportY()
+                + GameConfig.COMBAT_HAND_ROW_VIEWPORT_HEIGHT
+                + GameConfig.COMBAT_SLOT_ABOVE_HAND_GAP;
+    }
+
+    /** Fighter feet Y (bottom of entity rect), above slots. */
+    public static float entityGroundY() {
+        return slotY() + slotHeight() + GameConfig.COMBAT_ENTITY_ABOVE_SLOT_GAP;
     }
 
     public static float slotWidth() {
@@ -35,7 +50,7 @@ public final class CombatSceneLayout {
         return GameConfig.COMBAT_CARD_HEIGHT;
     }
 
-    public static float entityGroundY() {
-        return groundY();
+    public static float handRowViewportHeight() {
+        return GameConfig.COMBAT_HAND_ROW_VIEWPORT_HEIGHT;
     }
 }

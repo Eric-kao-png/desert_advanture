@@ -2,7 +2,7 @@ package com.desertadventure.combat.model;
 
 import com.desertadventure.config.GameConfig;
 
-/** Combatant on the arena: HP, shield, and negative statuses. */
+/** Combatant on the arena: HP, shield, and combat statuses. */
 public final class CombatEntity {
     public enum Kind {
         PLAYER, ENEMY, BOSS
@@ -17,6 +17,8 @@ public final class CombatEntity {
     private final float maxHp;
     private boolean alive = true;
     private int shield;
+    private PositiveStatusType positiveType;
+    private int positiveTurnsRemaining;
     private NegativeStatusType negativeType;
     private int negativeTurnsRemaining;
 
@@ -92,6 +94,31 @@ public final class CombatEntity {
         shield += amount;
     }
 
+    public PositiveStatusType getPositiveStatusType() {
+        return positiveType;
+    }
+
+    public int getPositiveTurnsRemaining() {
+        return positiveTurnsRemaining;
+    }
+
+    public boolean hasPositiveStatus() {
+        return positiveTurnsRemaining > 0 && positiveType != null;
+    }
+
+    public void setPositiveStatus(PositiveStatusType type, int turns) {
+        if (!alive || type == null || turns <= 0) {
+            return;
+        }
+        positiveType = type;
+        positiveTurnsRemaining = turns;
+    }
+
+    public void clearPositiveStatus() {
+        positiveType = null;
+        positiveTurnsRemaining = 0;
+    }
+
     public NegativeStatusType getNegativeStatusType() {
         return negativeType;
     }
@@ -119,6 +146,7 @@ public final class CombatEntity {
 
     public void clearCombatStatus() {
         shield = 0;
+        clearPositiveStatus();
         clearNegativeStatus();
     }
 
@@ -161,10 +189,16 @@ public final class CombatEntity {
                 takeStatusDamage(negativeTurnsRemaining);
             }
         }
-        tickNegativeDuration();
+        tickStatusDurations();
     }
 
-    private void tickNegativeDuration() {
+    private void tickStatusDurations() {
+        if (positiveTurnsRemaining > 0) {
+            positiveTurnsRemaining--;
+            if (positiveTurnsRemaining <= 0) {
+                clearPositiveStatus();
+            }
+        }
         if (negativeTurnsRemaining > 0) {
             negativeTurnsRemaining--;
             if (negativeTurnsRemaining <= 0) {

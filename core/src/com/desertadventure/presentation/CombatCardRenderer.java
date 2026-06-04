@@ -37,6 +37,7 @@ public final class CombatCardRenderer {
     private static final Color HAND_VIEWPORT_BORDER = new Color(0.42f, 0.38f, 0.3f, 1f);
 
     private final ShapeRenderer shapes;
+    private final SlotCardDismissButton dismissButton = new SlotCardDismissButton();
     private final OrthographicCamera scissorCamera = new OrthographicCamera();
     private final Matrix4 identityTransform = new Matrix4();
     private final Rectangle scissorBounds = new Rectangle();
@@ -46,26 +47,68 @@ public final class CombatCardRenderer {
         this.shapes = shapes;
     }
 
-    /** Hand row (attack left, utility right) and centered confirm; drawn above ground after parallax floor. */
+    public void dispose() {
+        dismissButton.dispose();
+    }
+
+    /** Centered hand rows, info panel on the right, confirm above info panel. */
     public void renderHand(
             CombatController combat,
             CombatCardLayout layout,
             SpriteBatch batch,
-            BitmapFont font) {
+            BitmapFont font,
+            int draggingInstanceId,
+            ActionCardType inspectedType,
+            ActionCardInstance inspectedInstance) {
         layout.rebuildHand(combat);
+        drawInfoPanelFrame(layout);
         drawHandViewportFrame(layout.attackPanel);
         drawHandViewportFrame(layout.changePanel);
-        drawHandZone(combat, layout, layout.attackPanel, batch, font);
-        drawHandZone(combat, layout, layout.changePanel, batch, font);
+        drawHandZone(combat, layout, layout.attackPanel, batch, font, draggingInstanceId);
+        drawHandZone(combat, layout, layout.changePanel, batch, font, draggingInstanceId);
         drawConfirmShape(layout, combat);
+        batch.begin();
+        CombatInfoPanelDrawer.draw(batch, font, layout, inspectedType, inspectedInstance);
+        batch.end();
     }
 
-    /** Timeline slots and tooltips above fighters. */
+    /** Card ghost following the pointer while dragging from hand to a slot. */
+    public void renderDraggedCard(
+            CombatController combat,
+            CombatCardLayout layout,
+            SpriteBatch batch,
+            BitmapFont font,
+            int instanceId,
+            float pointerX,
+            float pointerY) {
+        ActionCardInstance card = findHandCard(combat, instanceId);
+        if (card == null) {
+            return;
+        }
+        float x = pointerX - layout.cardW / 2f;
+        float y = pointerY - layout.cardH / 2f;
+        shapes.begin(ShapeRenderer.ShapeType.Filled);
+        shapes.setColor(CARD_SELECTED);
+        shapes.rect(x - 3f, y - 3f, layout.cardW + 6f, layout.cardH + 6f);
+        Color fill = colorFor(card.getType());
+        fill.a = 0.82f;
+        drawCardShape(x, y, layout.cardW, layout.cardH, fill);
+        fill.a = 1f;
+        shapes.end();
+        batch.begin();
+        ActionCardUiText.drawCardFaceCentered(batch, font, card.getType(),
+                x, y, layout.cardW, layout.cardH, Color.WHITE);
+        batch.end();
+    }
+
+    /** Four timeline slots between hand rows and fighters. */
     public void renderSlotsAndControls(
             CombatController combat,
             CombatCardLayout layout,
             SpriteBatch batch,
-            BitmapFont font) {
+            BitmapFont font,
+            int hoveredDismissSlot,
+            boolean pressedDismiss) {
         CombatPhase phase = combat.getPhase();
         int resolvingSlot = combat.getResolvingSlotDisplayIndex();
         layout.rebuildHand(combat);
@@ -74,6 +117,7 @@ public final class CombatCardRenderer {
 
         batch.begin();
         drawSlotNames(batch, font, layout, combat);
+        drawSlotDismissButtons(combat, layout, batch, hoveredDismissSlot, pressedDismiss);
         batch.end();
     }
 
@@ -98,10 +142,33 @@ public final class CombatCardRenderer {
             }
             ActionCardInstance card = combat.getSlotCard(i);
             if (card != null) {
+                Integer selected = combat.getSelectedInstanceId();
+                if (selected != null && selected == card.getInstanceId()) {
+                    shapes.setColor(CARD_SELECTED);
+                    shapes.rect(innerX - 3f, innerY - 3f, innerW + 6f, innerH + 6f);
+                }
                 Color fill = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_FILL : colorFor(card.getType());
                 drawCardShape(innerX, innerY, innerW, innerH, fill);
             }
         }
+        shapes.end();
+    }
+
+    private void drawInfoPanelFrame(CombatCardLayout layout) {
+        float x = layout.infoPanelX;
+        float y = layout.infoPanelY;
+        float w = layout.infoPanelW;
+        float h = layout.infoPanelH;
+        float border = GameConfig.COMBAT_INFO_PANEL_BORDER;
+
+        shapes.begin(ShapeRenderer.ShapeType.Filled);
+        shapes.setColor(HAND_VIEWPORT_BORDER);
+        shapes.rect(x, y, w, border);
+        shapes.rect(x, y + h - border, w, border);
+        shapes.rect(x, y, border, h);
+        shapes.rect(x + w - border, y, border, h);
+        shapes.setColor(HAND_VIEWPORT_BG);
+        shapes.rect(x + border, y + border, w - 2f * border, h - 2f * border);
         shapes.end();
     }
 
@@ -128,23 +195,20 @@ public final class CombatCardRenderer {
             CombatCardLayout layout,
             HandZonePanel panel,
             SpriteBatch batch,
-            BitmapFont font) {
+            BitmapFont font,
+            int draggingInstanceId) {
         if (!pushHandClip(shapes.getProjectionMatrix(), layout, panel)) {
             return;
         }
-        drawHandShapes(combat, layout, panel);
+        drawHandShapes(combat, layout, panel, draggingInstanceId);
         batch.begin();
-        drawHandNames(batch, font, layout, combat, panel);
+        drawHandNames(batch, font, layout, combat, panel, draggingInstanceId);
         batch.end();
         popHandClip();
     }
 
     private boolean pushHandClip(Matrix4 projection, CombatCardLayout layout, HandZonePanel panel) {
-        scissorBounds.set(
-                panel.clipX(),
-                panel.clipY(layout.handY, layout.cardH),
-                panel.clipW(),
-                panel.clipH(layout.cardH));
+        scissorBounds.set(panel.clipX(), panel.clipY(), panel.clipW(), panel.clipH());
         scissorCamera.combined.set(projection);
         ScissorStack.calculateScissors(scissorCamera, identityTransform, scissorBounds, scissorResult);
         return ScissorStack.pushScissors(scissorResult);
@@ -154,10 +218,17 @@ public final class CombatCardRenderer {
         ScissorStack.popScissors();
     }
 
-    private void drawHandShapes(CombatController combat, CombatCardLayout layout, HandZonePanel panel) {
+    private void drawHandShapes(
+            CombatController combat,
+            CombatCardLayout layout,
+            HandZonePanel panel,
+            int draggingInstanceId) {
         Integer selected = combat.getSelectedInstanceId();
         shapes.begin(ShapeRenderer.ShapeType.Filled);
         for (CombatCardLayout.HandEntry entry : panel.getEntries()) {
+            if (entry.instanceId == draggingInstanceId) {
+                continue;
+            }
             ActionCardInstance card = findHandCard(combat, entry.instanceId);
             if (card == null) {
                 continue;
@@ -178,6 +249,33 @@ public final class CombatCardRenderer {
         shapes.setColor(enabled ? CONFIRM : CONFIRM_DISABLED);
         shapes.rect(layout.confirmX, layout.confirmY, layout.confirmW, layout.confirmH);
         shapes.end();
+    }
+
+    private void drawSlotDismissButtons(
+            CombatController combat,
+            CombatCardLayout layout,
+            SpriteBatch batch,
+            int hoveredDismissSlot,
+            boolean pressedDismiss) {
+        if (combat.getPhase() != CombatPhase.PLANNING) {
+            return;
+        }
+        Integer selected = combat.getSelectedInstanceId();
+        if (selected == null) {
+            return;
+        }
+        for (int i = 0; i < 4; i++) {
+            if (!combat.isPlayerSlot(i)) {
+                continue;
+            }
+            ActionCardInstance card = combat.getSlotCard(i);
+            if (card == null || card.getInstanceId() != selected) {
+                continue;
+            }
+            boolean hovered = i == hoveredDismissSlot;
+            boolean pressed = pressedDismiss && hovered;
+            dismissButton.draw(batch, layout.slotDismissX(i), layout.slotDismissY(i), hovered, pressed);
+        }
     }
 
     private void drawSlotNames(SpriteBatch batch, BitmapFont font, CombatCardLayout layout, CombatController combat) {
@@ -208,8 +306,12 @@ public final class CombatCardRenderer {
             BitmapFont font,
             CombatCardLayout layout,
             CombatController combat,
-            HandZonePanel panel) {
+            HandZonePanel panel,
+            int draggingInstanceId) {
         for (CombatCardLayout.HandEntry entry : panel.getEntries()) {
+            if (entry.instanceId == draggingInstanceId) {
+                continue;
+            }
             ActionCardInstance card = findHandCard(combat, entry.instanceId);
             if (card == null) {
                 continue;

@@ -8,19 +8,28 @@ import com.desertadventure.config.GameConfig;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Screen layout for combat timeline, split hand zones, and centered confirm. */
+/**
+ * Screen layout: centered hand rows, info panel to their right, confirm above info panel.
+ */
 public final class CombatCardLayout {
     public final float[] slotX = new float[4];
     public float slotY;
     public float slotW;
     public float slotH;
 
-    public float handY;
     public float cardW;
     public float cardH;
 
     public final HandZonePanel attackPanel = new HandZonePanel(ActionCardCategory.ATTACK);
     public final HandZonePanel changePanel = new HandZonePanel(ActionCardCategory.CHANGE);
+
+    public float handViewportX;
+    public float handViewportW;
+
+    public float infoPanelX;
+    public float infoPanelY;
+    public float infoPanelW;
+    public float infoPanelH;
 
     public float confirmX;
     public float confirmY;
@@ -38,7 +47,6 @@ public final class CombatCardLayout {
         slotY = CombatSceneLayout.slotY();
         slotW = CombatSceneLayout.slotWidth();
         slotH = CombatSceneLayout.slotHeight();
-        handY = CombatSceneLayout.handY();
         cardW = CombatSceneLayout.cardWidth();
         cardH = CombatSceneLayout.cardHeight();
 
@@ -48,23 +56,31 @@ public final class CombatCardLayout {
             slotX[i] = startX + i * (slotW + GameConfig.COMBAT_SLOT_GAP);
         }
 
-        confirmX = (GameConfig.VIEW_WIDTH - confirmW) / 2f;
-        confirmY = handY;
-
-        float panelY = handY - GameConfig.COMBAT_HAND_VIEWPORT_PADDING - GameConfig.COMBAT_HAND_BORDER;
-        float panelH = cardH + 2f * (GameConfig.COMBAT_HAND_VIEWPORT_PADDING + GameConfig.COMBAT_HAND_BORDER);
         float margin = GameConfig.COMBAT_HAND_VIEWPORT_MARGIN_H;
-        float centerGap = GameConfig.COMBAT_HAND_CENTER_GAP;
+        float maxHandW = GameConfig.VIEW_WIDTH - 2f * margin;
+        handViewportW = Math.min(GameConfig.COMBAT_HAND_VIEWPORT_WIDTH, maxHandW);
+        handViewportX = (GameConfig.VIEW_WIDTH - handViewportW) / 2f;
 
-        attackPanel.viewportX = margin;
-        attackPanel.viewportW = confirmX - centerGap - attackPanel.viewportX;
-        attackPanel.viewportY = panelY;
-        attackPanel.viewportH = panelH;
+        float handStackBottom = CombatSceneLayout.changeHandViewportY();
+        float handStackTop = CombatSceneLayout.attackHandViewportY() + CombatSceneLayout.handRowViewportHeight();
 
-        changePanel.viewportX = confirmX + confirmW + centerGap;
-        changePanel.viewportW = GameConfig.VIEW_WIDTH - margin - changePanel.viewportX;
-        changePanel.viewportY = panelY;
-        changePanel.viewportH = panelH;
+        infoPanelX = handViewportX + handViewportW + GameConfig.COMBAT_HAND_INFO_GAP;
+        infoPanelY = handStackBottom;
+        infoPanelW = GameConfig.VIEW_WIDTH - infoPanelX - margin;
+        infoPanelH = handStackTop - handStackBottom;
+
+        confirmX = infoPanelX + (infoPanelW - confirmW) / 2f;
+        confirmY = handStackTop + GameConfig.COMBAT_CONFIRM_ABOVE_INFO_GAP;
+
+        layoutHandRow(attackPanel, CombatSceneLayout.attackHandViewportY());
+        layoutHandRow(changePanel, CombatSceneLayout.changeHandViewportY());
+    }
+
+    private void layoutHandRow(HandZonePanel panel, float viewportY) {
+        panel.viewportW = handViewportW;
+        panel.viewportX = handViewportX;
+        panel.viewportY = viewportY;
+        panel.viewportH = CombatSceneLayout.handRowViewportHeight();
     }
 
     public void rebuildHand(CombatController combat) {
@@ -85,6 +101,7 @@ public final class CombatCardLayout {
     }
 
     private void layoutZone(HandZonePanel panel, List<ActionCardInstance> cards) {
+        float cardY = panel.centeredCardY(cardH);
         float contentW = cards.size() * cardW + Math.max(0, cards.size() - 1) * GameConfig.COMBAT_HAND_GAP;
         panel.lastContentWidth = contentW;
         panel.clampScroll();
@@ -99,7 +116,7 @@ public final class CombatCardLayout {
         }
         for (int i = 0; i < cards.size(); i++) {
             float x = startX + i * (cardW + GameConfig.COMBAT_HAND_GAP);
-            panel.entries.add(new HandEntry(cards.get(i).getInstanceId(), x, handY));
+            panel.entries.add(new HandEntry(cards.get(i).getInstanceId(), x, cardY));
         }
     }
 
@@ -156,6 +173,28 @@ public final class CombatCardLayout {
 
     public float innerCardH() {
         return slotH - 20f;
+    }
+
+    /** Top-right dismiss button origin for a slotted card (LibGDX bottom-left of button). */
+    public float slotDismissX(int slotIndex) {
+        return innerCardX(slotIndex) + innerCardW() - GameConfig.COMBAT_SLOT_DISMISS_SIZE;
+    }
+
+    public float slotDismissY(int slotIndex) {
+        return innerCardY() + innerCardH() - GameConfig.COMBAT_SLOT_DISMISS_SIZE;
+    }
+
+    /** Player slot index whose dismiss control was hit, or -1. */
+    public int hitSlotDismiss(float worldX, float worldY) {
+        float size = GameConfig.COMBAT_SLOT_DISMISS_SIZE;
+        for (int i = 0; i < 4; i++) {
+            float x = slotDismissX(i);
+            float y = slotDismissY(i);
+            if (worldX >= x && worldX <= x + size && worldY >= y && worldY <= y + size) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public int hitHandInstance(float worldX, float worldY) {
@@ -240,20 +279,29 @@ public final class CombatCardLayout {
             return viewportX + GameConfig.COMBAT_HAND_BORDER + GameConfig.COMBAT_HAND_VIEWPORT_PADDING;
         }
 
+        public float centeredCardY(float cardH) {
+            float pad = GameConfig.COMBAT_HAND_VIEWPORT_PADDING;
+            float border = GameConfig.COMBAT_HAND_BORDER;
+            float innerH = viewportH - 2f * (pad + border);
+            return viewportY + border + pad + (innerH - cardH) / 2f;
+        }
+
         public float clipX() {
             return contentStartX();
         }
 
-        public float clipY(float handY, float cardH) {
-            return handY;
+        public float clipY() {
+            return viewportY + GameConfig.COMBAT_HAND_BORDER + GameConfig.COMBAT_HAND_VIEWPORT_PADDING;
         }
 
         public float clipW() {
             return innerWidth();
         }
 
-        public float clipH(float cardH) {
-            return cardH;
+        public float clipH() {
+            float pad = GameConfig.COMBAT_HAND_VIEWPORT_PADDING;
+            float border = GameConfig.COMBAT_HAND_BORDER;
+            return viewportH - 2f * (pad + border);
         }
 
         public boolean contains(float worldX, float worldY) {
