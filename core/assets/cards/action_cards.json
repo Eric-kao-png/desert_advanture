@@ -24,6 +24,77 @@
       ]
     },
     {
+      "id": "HEAVY_STRIKE",
+      "name": "重擊",
+      "description": "對敵人造成 4 點傷害。",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "DEAL_DAMAGE", "amount": 4 }
+      ]
+    },
+    {
+      "id": "SWIFT_STRIKE",
+      "name": "迅擊",
+      "description": "在第 1 格結算時造成 6 點傷害，否則 3 點傷害。",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        {
+          "when": { "type": "SLOT_INDEX_EQUALS", "slotIndex": 0 },
+          "template": "DEAL_DAMAGE",
+          "amount": 6
+        },
+        { "template": "DEAL_DAMAGE", "amount": 3 }
+      ]
+    },
+    {
+      "id": "SPELLBLADE",
+      "name": "咒刃",
+      "description": "若本回合自己使用了變化牌，造成 6 點傷害，否則 3 點傷害。",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        {
+          "when": { "type": "TURN_HAS_USED_CATEGORY", "category": "UTILITY" },
+          "template": "DEAL_DAMAGE",
+          "amount": 6
+        },
+        { "template": "DEAL_DAMAGE", "amount": 3 }
+      ]
+    },
+    {
+      "id": "CHASE_ATTACK",
+      "name": "追擊",
+      "description": "若前一格為自己的攻擊牌，造成 6 點傷害，否則 3 點傷害。",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        {
+          "when": { "type": "PREVIOUS_SLOT_PLAYER_OFFENSE" },
+          "template": "DEAL_DAMAGE",
+          "amount": 6
+        },
+        { "template": "DEAL_DAMAGE", "amount": 3 }
+      ]
+    },
+    {
+      "id": "DOUBLE_BLADE",
+      "name": "雙刃",
+      "description": "造成 2 次 2 點傷害。",
+      "category": "OFFENSE",
+      "cooldown": 3,
+      "targeting": "ENEMY",
+      "effects": [
+        { "template": "DEAL_DAMAGE", "amount": 2 },
+        { "template": "DEAL_DAMAGE", "amount": 2 }
+      ]
+    },
+    {
       "id": "HEAL",
       "name": "治療",
       "description": "恢復 4 點生命。",

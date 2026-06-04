@@ -51,6 +51,8 @@ final class CardEffectResolver {
         });
         registerCondition(ConditionType.SLOT_INDEX_EQUALS,
                 (ctx, when) -> when.slotIndex != null && ctx.resolvingSlotIndex() == when.slotIndex);
+        registerCondition(ConditionType.PREVIOUS_SLOT_PLAYER_OFFENSE,
+                (ctx, when) -> ctx.previousSlotIsPlayerOffense());
         registerCondition(ConditionType.CASTER_HAS_NEGATIVE_STATUS, (ctx, when) -> ctx.casterHasNegativeStatus());
         registerCondition(ConditionType.OPPONENT_HAS_NEGATIVE_STATUS, (ctx, when) -> ctx.opponentHasNegativeStatus());
     }

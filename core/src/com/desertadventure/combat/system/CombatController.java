@@ -267,6 +267,18 @@ public class CombatController {
         }
     }
 
+    boolean previousSlotIsPlayerOffense(EffectCaster caster, int resolvingSlotIndex) {
+        if (resolvingSlotIndex <= FIRST_SLOT_INDEX || caster == EffectCaster.ENEMY) {
+            return false;
+        }
+        int previousIndex = resolvingSlotIndex - 1;
+        if (!isPlayerSlot(previousIndex)) {
+            return false;
+        }
+        ActionCardInstance card = getSlotCard(previousIndex);
+        return card != null && card.getType().getCategory() == ActionCardCategory.ATTACK;
+    }
+
     boolean roundHasUsedCategory(ActionCardCategory category, EffectCaster caster) {
         for (int slotIndex = 0; slotIndex < SLOT_COUNT; slotIndex++) {
             if (caster == EffectCaster.ENEMY) {

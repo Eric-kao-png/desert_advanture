@@ -147,6 +147,63 @@ public class CardEffectResolverTest {
     }
 
     @Test
+    void heavyStrike_deals4Damage() {
+        FakeCombatController combat = new FakeCombatController();
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.HEAVY_STRIKE);
+        assertEquals(4f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void swiftStrike_slot1_executes6Damage_otherSlots3() {
+        FakeCombatController combat = new FakeCombatController();
+        resolver.resolve(new CombatContext(combat, 1, Set.of(), 0), ActionCardType.SWIFT_STRIKE);
+        assertEquals(6f, combat.damageToEnemies, 0.001f);
+
+        combat.damageToEnemies = 0f;
+        resolver.resolve(new CombatContext(combat, 1, Set.of(), 2), ActionCardType.SWIFT_STRIKE);
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void spellblade_changeCardUsed_executes6Damage() {
+        FakeCombatController combat = new FakeCombatController();
+        combat.cardsByInstanceId.put(10, new ActionCardInstance(10, ActionCardType.HEAL));
+        combat.setPlayerSlotInstanceForTest(0, 10);
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.SPELLBLADE);
+        assertEquals(6f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void spellblade_noChangeCard_executes3Damage() {
+        FakeCombatController combat = new FakeCombatController();
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.SPELLBLADE);
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void chaseAttack_previousSlotPlayerOffense_executes6Damage() {
+        FakeCombatController combat = new FakeCombatController();
+        combat.cardsByInstanceId.put(1, new ActionCardInstance(1, ActionCardType.ATTACK));
+        combat.setPlayerSlotInstanceForTest(0, 1);
+        resolver.resolve(new CombatContext(combat, 1, Set.of(), 1), ActionCardType.CHASE_ATTACK);
+        assertEquals(6f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void chaseAttack_noPreviousPlayerOffense_executes3Damage() {
+        FakeCombatController combat = new FakeCombatController();
+        resolver.resolve(new CombatContext(combat, 1, Set.of(), 2), ActionCardType.CHASE_ATTACK);
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void doubleBlade_dealsTwoHitsOf2() {
+        FakeCombatController combat = new FakeCombatController();
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.DOUBLE_BLADE);
+        assertEquals(4f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
     void thrust_round1_executes6Damage_otherRoundsExecutes3Damage() {
         FakeCombatController combat = new FakeCombatController();
         resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.AMBUSH);
@@ -348,6 +405,11 @@ public class CardEffectResolverTest {
         Map<String, CardDef> defs = new HashMap<>();
         defs.put("ATTACK", CombatTestCardDefs.damageDef("ATTACK", "Attack", 1, 2));
         defs.put("STRIKE", CombatTestCardDefs.damageDef("STRIKE", "斬擊", 2, 3));
+        defs.put("HEAVY_STRIKE", CombatTestCardDefs.damageDef("HEAVY_STRIKE", "重擊", 3, 4));
+        defs.put("SWIFT_STRIKE", swiftStrikeDef());
+        defs.put("SPELLBLADE", spellbladeDef());
+        defs.put("CHASE_ATTACK", chaseAttackDef());
+        defs.put("DOUBLE_BLADE", doubleBladeDef());
         defs.put("HEAL", CombatTestCardDefs.healDef());
         defs.put("SHIELD", CombatTestCardDefs.shieldDef());
         defs.put("ASSAULT", fullPowerDef());
@@ -367,6 +429,90 @@ public class CardEffectResolverTest {
         defs.put("ARROW", arrowDef());
         defs.put("POISON_ARROW", poisonArrowDef());
         return defs;
+    }
+
+    private static CardDef swiftStrikeDef() {
+        CardDef def = new CardDef();
+        def.id = "SWIFT_STRIKE";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectConditionDef cond = new CardEffectConditionDef();
+        cond.type = com.desertadventure.combat.system.effects.ConditionType.SLOT_INDEX_EQUALS;
+        cond.slotIndex = 0;
+
+        CardEffectStepDef conditional = new CardEffectStepDef();
+        conditional.when = cond;
+        conditional.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        conditional.amount = 6;
+
+        CardEffectStepDef fallback = new CardEffectStepDef();
+        fallback.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        fallback.amount = 3;
+
+        def.effects = List.of(conditional, fallback);
+        return def;
+    }
+
+    private static CardDef spellbladeDef() {
+        CardDef def = new CardDef();
+        def.id = "SPELLBLADE";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectConditionDef cond = new CardEffectConditionDef();
+        cond.type = com.desertadventure.combat.system.effects.ConditionType.TURN_HAS_USED_CATEGORY;
+        cond.category = CardCategoryId.UTILITY;
+
+        CardEffectStepDef conditional = new CardEffectStepDef();
+        conditional.when = cond;
+        conditional.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        conditional.amount = 6;
+
+        CardEffectStepDef fallback = new CardEffectStepDef();
+        fallback.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        fallback.amount = 3;
+
+        def.effects = List.of(conditional, fallback);
+        return def;
+    }
+
+    private static CardDef chaseAttackDef() {
+        CardDef def = new CardDef();
+        def.id = "CHASE_ATTACK";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+
+        CardEffectConditionDef cond = new CardEffectConditionDef();
+        cond.type = com.desertadventure.combat.system.effects.ConditionType.PREVIOUS_SLOT_PLAYER_OFFENSE;
+
+        CardEffectStepDef conditional = new CardEffectStepDef();
+        conditional.when = cond;
+        conditional.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        conditional.amount = 6;
+
+        CardEffectStepDef fallback = new CardEffectStepDef();
+        fallback.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        fallback.amount = 3;
+
+        def.effects = List.of(conditional, fallback);
+        return def;
+    }
+
+    private static CardDef doubleBladeDef() {
+        CardDef def = new CardDef();
+        def.id = "DOUBLE_BLADE";
+        def.category = CardCategoryId.OFFENSE;
+        def.cooldown = 3;
+        def.targeting = CardTargetingId.ENEMY;
+        CardEffectStepDef hit = new CardEffectStepDef();
+        hit.template = com.desertadventure.combat.system.effects.EffectTemplateId.DEAL_DAMAGE;
+        hit.amount = 2;
+        def.effects = List.of(hit, hit);
+        return def;
     }
 
     private static CardDef fullPowerDef() {

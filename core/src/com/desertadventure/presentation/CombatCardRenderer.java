@@ -337,8 +337,8 @@ public final class CombatCardRenderer {
             case LIFE_MAGIC -> CARD_LIFE_MAGIC;
             case AMBUSH -> CARD_THRUST;
             case POISON_MAGIC -> CARD_POISON;
-            case CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM, MAGIC_BOLT, POISON_BOLT, MAGIC_ARROW,
-                    ARROW, POISON_ARROW ->
+            case HEAVY_STRIKE, SWIFT_STRIKE, SPELLBLADE, CHASE_ATTACK, DOUBLE_BLADE, CLAW, CHARGED_SLASH, BLADE,
+                    GREAT_BLADE, VAMPIRISM, MAGIC_BOLT, POISON_BOLT, MAGIC_ARROW, ARROW, POISON_ARROW ->
                     CARD_STRONG;
             case PURIFY, MAGIC_MIRROR -> CARD_HEAL;
         };

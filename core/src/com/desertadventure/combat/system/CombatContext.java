@@ -68,6 +68,11 @@ public final class CombatContext {
         return combat.roundHasUsedCategory(category, caster);
     }
 
+    /** Resolve-order slot immediately before {@link #resolvingSlotIndex()} is a player offense card. */
+    public boolean previousSlotIsPlayerOffense() {
+        return combat.previousSlotIsPlayerOffense(caster, resolvingSlotIndex);
+    }
+
     /** 0-based slot index (0..3) for the card currently being resolved; -1 if unknown. */
     public int resolvingSlotIndex() {
         return resolvingSlotIndex;
