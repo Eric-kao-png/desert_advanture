@@ -71,7 +71,7 @@ public class CardEffectResolverTest {
     void strongAttack_deals3Damage() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.SWIFT_STRIKE);
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.STRIKE);
 
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
@@ -114,7 +114,7 @@ public class CardEffectResolverTest {
     }
 
     @Test
-    void fullPower_noUtilityResolved_executesConditional6Damage() {
+    void assault_noChangeCardUsed_executes6Damage() {
         FakeCombatController combat = new FakeCombatController();
         CombatContext ctx = new CombatContext(combat, 1, Set.of());
 
@@ -124,9 +124,21 @@ public class CardEffectResolverTest {
     }
 
     @Test
-    void fullPower_utilityResolved_executesFallback3Damage() {
+    void assault_changeCardAssigned_executesFallback3Damage() {
         FakeCombatController combat = new FakeCombatController();
         combat.cardsByInstanceId.put(10, new ActionCardInstance(10, ActionCardType.HEAL));
+        combat.setPlayerSlotInstanceForTest(2, 10);
+
+        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.ASSAULT);
+
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+    }
+
+    @Test
+    void assault_changeCardResolvedEarlier_executesFallback3Damage() {
+        FakeCombatController combat = new FakeCombatController();
+        combat.cardsByInstanceId.put(10, new ActionCardInstance(10, ActionCardType.HEAL));
+        combat.setPlayerSlotInstanceForTest(0, 10);
         CombatContext ctx = new CombatContext(combat, 1, Set.of(10));
 
         resolver.resolve(ctx, ActionCardType.ASSAULT);
@@ -335,7 +347,7 @@ public class CardEffectResolverTest {
     private static Map<String, CardDef> minimalDefs() {
         Map<String, CardDef> defs = new HashMap<>();
         defs.put("ATTACK", CombatTestCardDefs.damageDef("ATTACK", "Attack", 1, 2));
-        defs.put("SWIFT_STRIKE", CombatTestCardDefs.damageDef("SWIFT_STRIKE", "Swift Strike", 2, 3));
+        defs.put("STRIKE", CombatTestCardDefs.damageDef("STRIKE", "斬擊", 2, 3));
         defs.put("HEAL", CombatTestCardDefs.healDef());
         defs.put("SHIELD", CombatTestCardDefs.shieldDef());
         defs.put("ASSAULT", fullPowerDef());
@@ -366,7 +378,7 @@ public class CardEffectResolverTest {
         def.targeting = CardTargetingId.ENEMY;
 
         CardEffectConditionDef cond = new CardEffectConditionDef();
-        cond.type = com.desertadventure.combat.system.effects.ConditionType.TURN_HAS_RESOLVED_CATEGORY;
+        cond.type = com.desertadventure.combat.system.effects.ConditionType.TURN_HAS_USED_CATEGORY;
         cond.category = CardCategoryId.UTILITY;
         cond.negate = true;
 

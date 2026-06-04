@@ -13,8 +13,8 @@
       ]
     },
     {
-      "id": "SWIFT_STRIKE",
-      "name": "迅擊",
+      "id": "STRIKE",
+      "name": "斬擊",
       "description": "對敵人造成 3 點傷害。",
       "category": "OFFENSE",
       "cooldown": 2,
@@ -48,13 +48,13 @@
     {
       "id": "ASSAULT",
       "name": "猛攻",
-      "description": "本回合若未結算過輔助牌，造成 6 點傷害；否則造成 3 點傷害。",
+      "description": "如果本回合自己沒有使用變化牌，造成 6 點傷害，否則 3 點傷害。",
       "category": "OFFENSE",
       "cooldown": 3,
       "targeting": "ENEMY",
       "effects": [
         {
-          "when": { "type": "TURN_HAS_RESOLVED_CATEGORY", "category": "UTILITY", "negate": true },
+          "when": { "type": "TURN_HAS_USED_CATEGORY", "category": "UTILITY", "negate": true },
           "template": "DEAL_DAMAGE",
           "amount": 6
         },

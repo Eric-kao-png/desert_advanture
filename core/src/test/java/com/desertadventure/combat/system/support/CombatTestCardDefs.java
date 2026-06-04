@@ -29,7 +29,7 @@ public final class CombatTestCardDefs {
     public static Map<String, CardDef> outcomeFinalizeMinimalDefs() {
         return Map.of(
                 "ATTACK", damageDef("ATTACK", "Attack", 1, 2),
-                "SWIFT_STRIKE", damageDef("SWIFT_STRIKE", "Swift Strike", 2, 3));
+                "STRIKE", damageDef("STRIKE", "斬擊", 2, 3));
     }
 
     public static Map<String, CardDef> enemyResolveMinimalDefs() {

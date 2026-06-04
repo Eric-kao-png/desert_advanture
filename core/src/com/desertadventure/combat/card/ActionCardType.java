@@ -5,7 +5,7 @@ import com.desertadventure.combat.card.data.CardDef;
 
 public enum ActionCardType {
     ATTACK,
-    SWIFT_STRIKE,
+    STRIKE,
     HEAL,
     SHIELD,
     ASSAULT,
@@ -37,7 +37,7 @@ public enum ActionCardType {
     public int getPrimaryValue() {
         CardDef def = def();
         return switch (this) {
-            case ATTACK, SWIFT_STRIKE, HEAL, SHIELD, CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM,
+            case ATTACK, STRIKE, HEAL, SHIELD, CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM,
                     MAGIC_BOLT, POISON_BOLT, MAGIC_ARROW, ARROW, POISON_ARROW -> def.firstAmount();
             case ASSAULT -> def.minAmount();
             case AMBUSH -> def.minAmount();
@@ -78,7 +78,7 @@ public enum ActionCardType {
     public ActionCardMechanic getMechanic() {
         // Legacy field kept for UI and any switch-based fallbacks; resolver uses JSON templates.
         return switch (this) {
-            case ATTACK, SWIFT_STRIKE, CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM -> ActionCardMechanic.DAMAGE;
+            case ATTACK, STRIKE, CLAW, CHARGED_SLASH, BLADE, GREAT_BLADE, VAMPIRISM -> ActionCardMechanic.DAMAGE;
             case POISON_BOLT -> ActionCardMechanic.RANDOM_POISON_DAMAGE;
             case POISON_ARROW -> ActionCardMechanic.CHANCE_POISON_DAMAGE;
             case ARROW -> ActionCardMechanic.DAMAGE;

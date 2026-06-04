@@ -13,7 +13,7 @@ public final class ActionCardDeck {
         resetFromCardTypes(List.of(
                 ActionCardType.ATTACK,
                 ActionCardType.ATTACK,
-                ActionCardType.SWIFT_STRIKE,
+                ActionCardType.STRIKE,
                 ActionCardType.HEAL,
                 ActionCardType.SHIELD,
                 ActionCardType.CHARGED_SLASH));

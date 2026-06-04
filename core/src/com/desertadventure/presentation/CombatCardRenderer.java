@@ -330,7 +330,7 @@ public final class CombatCardRenderer {
     private static Color colorFor(ActionCardType type) {
         return switch (type) {
             case ATTACK -> CARD_ATTACK;
-            case SWIFT_STRIKE -> CARD_STRONG;
+            case STRIKE -> CARD_STRONG;
             case HEAL -> CARD_HEAL;
             case SHIELD -> CARD_SHIELD;
             case ASSAULT -> CARD_FULL_POWER;

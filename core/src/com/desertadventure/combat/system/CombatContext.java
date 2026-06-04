@@ -63,6 +63,11 @@ public final class CombatContext {
         return false;
     }
 
+    /** Whether the caster assigned a card of {@code category} to a slot this round (player or enemy slots). */
+    public boolean turnHasUsedCategory(ActionCardCategory category) {
+        return combat.roundHasUsedCategory(category, caster);
+    }
+
     /** 0-based slot index (0..3) for the card currently being resolved; -1 if unknown. */
     public int resolvingSlotIndex() {
         return resolvingSlotIndex;

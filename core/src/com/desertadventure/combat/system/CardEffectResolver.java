@@ -44,6 +44,11 @@ final class CardEffectResolver {
                     when.category != null ? when.category : CardCategoryId.UTILITY);
             return ctx.turnHasResolvedCategory(category);
         });
+        registerCondition(ConditionType.TURN_HAS_USED_CATEGORY, (ctx, when) -> {
+            ActionCardCategory category = ActionCardCategory.fromData(
+                    when.category != null ? when.category : CardCategoryId.UTILITY);
+            return ctx.turnHasUsedCategory(category);
+        });
         registerCondition(ConditionType.SLOT_INDEX_EQUALS,
                 (ctx, when) -> when.slotIndex != null && ctx.resolvingSlotIndex() == when.slotIndex);
         registerCondition(ConditionType.CASTER_HAS_NEGATIVE_STATUS, (ctx, when) -> ctx.casterHasNegativeStatus());

@@ -255,10 +255,39 @@ public class CombatController {
 
     public ActionCardInstance getSlotCard(int slotIndex) {
         Integer id = getSlotInstanceId(slotIndex);
-        if (id == null || deck == null) {
+        if (id == null) {
             return null;
         }
-        return deck.findById(id);
+        return findCard(id);
+    }
+
+    void setPlayerSlotInstanceForTest(int slotIndex, int instanceId) {
+        if (isPlayerSlot(slotIndex)) {
+            slotInstanceIds[slotIndex] = instanceId;
+        }
+    }
+
+    boolean roundHasUsedCategory(ActionCardCategory category, EffectCaster caster) {
+        for (int slotIndex = 0; slotIndex < SLOT_COUNT; slotIndex++) {
+            if (caster == EffectCaster.ENEMY) {
+                if (!isEnemySlot(slotIndex)) {
+                    continue;
+                }
+                ActionCardInstance card = getEnemySlotCard(slotIndex);
+                if (card != null && card.getType().getCategory() == category) {
+                    return true;
+                }
+            } else {
+                if (!isPlayerSlot(slotIndex)) {
+                    continue;
+                }
+                ActionCardInstance card = getSlotCard(slotIndex);
+                if (card != null && card.getType().getCategory() == category) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public boolean isPlayerSlot(int slotIndex) {

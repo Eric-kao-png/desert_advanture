@@ -65,7 +65,7 @@ public class CombatOutcomeFinalizeIntegrationTest {
 
         ActionCardDeck deck = new ActionCardDeck();
         deck.addCard(ActionCardType.ATTACK);
-        deck.addCard(ActionCardType.SWIFT_STRIKE);
+        deck.addCard(ActionCardType.STRIKE);
 
         combat.startCombat(0, true, 800f, 120f, deck, ignored -> {
         });
