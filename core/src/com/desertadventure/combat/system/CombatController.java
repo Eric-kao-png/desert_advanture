@@ -53,6 +53,8 @@ public class CombatController {
     private boolean roundEndCooldownsApplied;
     private Integer selectedInstanceId;
     private final CardEffectResolver effectResolver = new CardEffectResolver();
+    /** Shield on primary opponent when current card resolution began; -1 if not resolving a card. */
+    int opponentShieldAtCardStart = -1;
 
     enum DamageSource {
         OFFENSE_CARD,
@@ -364,8 +366,22 @@ public class CombatController {
     }
 
     private void applyCardEffect(ActionCardType type, EffectCaster caster) {
-        CombatContext ctx = new CombatContext(this, roundNumber, resolvingSlotIndex, caster);
-        effectResolver.resolve(ctx, type);
+        opponentShieldAtCardStart = snapshotPrimaryOpponentShield();
+        try {
+            CombatContext ctx = new CombatContext(this, roundNumber, resolvingSlotIndex, caster);
+            effectResolver.resolve(ctx, type);
+        } finally {
+            opponentShieldAtCardStart = -1;
+        }
+    }
+
+    boolean opponentHadNoShieldAtCardStart() {
+        return opponentShieldAtCardStart <= 0;
+    }
+
+    int snapshotPrimaryOpponentShield() {
+        CombatEntity enemy = CombatEntityRoster.firstAliveEnemy(enemies);
+        return enemy != null ? enemy.getShield() : 0;
     }
 
     void halveEnemyHp() {
@@ -442,9 +458,10 @@ public class CombatController {
         boolean ignoreShield = source == DamageSource.OFFENSE_CARD
                 && player != null
                 && StatusEffectRuntime.casterIgnoresShieldOnOffense(player);
+        int shieldForLifesteal = opponentShieldAtCardStart;
         damageAliveEnemies(amount, source, ignoreShield);
         if (source == DamageSource.OFFENSE_CARD && player != null && player.isAlive()) {
-            float heal = StatusEffectRuntime.outgoingOffenseHealCaster(player);
+            float heal = StatusEffectRuntime.outgoingOffenseHealCaster(player, shieldForLifesteal);
             if (heal > 0f) {
                 healPlayer(heal);
             }
@@ -488,9 +505,10 @@ public class CombatController {
     }
 
     void dealDamageToEnemyIgnoringShield(float amount) {
+        int shieldForLifesteal = opponentShieldAtCardStart;
         damageAliveEnemies(amount, DamageSource.OFFENSE_CARD, true);
         if (player != null && player.isAlive()) {
-            float heal = StatusEffectRuntime.outgoingOffenseHealCaster(player);
+            float heal = StatusEffectRuntime.outgoingOffenseHealCaster(player, shieldForLifesteal);
             if (heal > 0f) {
                 healPlayer(heal);
             }

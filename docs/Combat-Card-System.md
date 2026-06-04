@@ -72,7 +72,7 @@ LibGDX、`core` 模組的 1v1 卡牌戰鬥參考：回合流程、牌庫、資�
 
 **變化牌（範例）**：治療、護盾、尖刺護盾、鱗甲、專注、吸血鬼之牙、閃避、生命魔術、毒術、淨化、魔鏡。
 
-條件範例（皆在 JSON `when` 中）：`ROUND_EQUALS`、`TURN_HAS_USED_CATEGORY`、`SLOT_INDEX_EQUALS`、`PREVIOUS_SLOT_PLAYER_OFFENSE`、`CASTER_HAS_NEGATIVE_STATUS`、`OPPONENT_HAS_NEGATIVE_STATUS`。
+條件範例（皆在 JSON `when` 中）：`ROUND_EQUALS`、`TURN_HAS_USED_CATEGORY`、`SLOT_INDEX_EQUALS`、`PREVIOUS_SLOT_PLAYER_OFFENSE`、`CASTER_HAS_NEGATIVE_STATUS`、`OPPONENT_HAS_NEGATIVE_STATUS`、`OPPONENT_HAD_NO_SHIELD`（卡牌開始結算時對手無護盾，用於吸血／吸血鬼之牙）。
 
 UI 分類：`ActionCardCategory` — **ATTACK（攻擊）** / **CHANGE（變化）**，對應 `GameMessages` 英文標籤（面板標題）。
 

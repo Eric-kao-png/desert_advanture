@@ -281,7 +281,7 @@
     {
       "id": "VAMPIRISM",
       "name": "吸血",
-      "description": "造成 3 點傷害並恢復 3 點生命。",
+      "description": "造成 3 點傷害；若敵人沒有護盾則恢復 2 點生命。",
       "category": "OFFENSE",
       "cooldown": 3,
       "targeting": "ENEMY",
@@ -291,8 +291,11 @@
           "amount": 3
         },
         {
+          "when": {
+            "type": "OPPONENT_HAD_NO_SHIELD"
+          },
           "template": "HEAL_SELF",
-          "amount": 3
+          "amount": 2
         }
       ]
     },

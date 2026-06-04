@@ -95,7 +95,7 @@ class PositiveBuffCardsIntegrationTest {
     }
 
     @Test
-    void vampireFang_healsTwoWhenPlayerAttacks() {
+    void vampireFang_healsTwoWhenPlayerAttacksAndEnemyHadNoShield() {
         PlayerStats stats = new PlayerStats();
         stats.setHp(15f);
         CombatController combat = new CombatController(
@@ -120,6 +120,35 @@ class PositiveBuffCardsIntegrationTest {
         resolveFullRound(combat);
 
         assertEquals(17f, combat.getPlayer().getHp(), 0.001f);
+    }
+
+    @Test
+    void vampireFang_noHealWhenEnemyHadShieldBeforeAttack() {
+        PlayerStats stats = new PlayerStats();
+        stats.setHp(15f);
+        CombatController combat = new CombatController(
+                stats, new SequencedPlanRoller(new PlayerSlotPlan(0, 2)), candidates -> null, bound -> 0);
+
+        ActionCardDeck deck = CombatCardTestSupport.deckWithSingleCard(ActionCardType.VAMPIRE_FANG);
+        deck.addCard(ActionCardType.ATTACK);
+        combat.startCombat(0, false, 800f, 120f, deck, ignored -> {
+        });
+        combat.getEnemies().get(0).addShield(4);
+
+        int fangId = deck.getInstances().stream()
+                .filter(i -> i.getType() == ActionCardType.VAMPIRE_FANG)
+                .findFirst().orElseThrow().getInstanceId();
+        int attackId = deck.getInstances().stream()
+                .filter(i -> i.getType() == ActionCardType.ATTACK)
+                .findFirst().orElseThrow().getInstanceId();
+
+        int slot0 = CombatIntegrationTestSupport.firstPlayerSlot(combat);
+        combat.assignToPlayerSlot(slot0, fangId);
+        combat.assignToPlayerSlot(slot0 == 0 ? 2 : 0, attackId);
+        combat.confirmPlanning();
+        resolveFullRound(combat);
+
+        assertEquals(15f, combat.getPlayer().getHp(), 0.001f);
     }
 
     @Test

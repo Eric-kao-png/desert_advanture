@@ -97,7 +97,7 @@
     {
       "id": "VAMPIRE_FANG",
       "name": "吸血鬼之牙",
-      "description": "獲得 2 回合吸血鬼之牙：每次攻擊恢復 2 點生命。",
+      "description": "獲得 2 回合吸血鬼之牙：每次攻擊恢復 2 點生命（敵人有護盾時不觸發）。",
       "category": "UTILITY",
       "cooldown": 3,
       "targeting": "SELF",

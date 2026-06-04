@@ -177,9 +177,13 @@ public final class CombatTestCardDefs {
         damage.template = EffectTemplateId.DEAL_DAMAGE;
         damage.amount = 3;
 
+        CardEffectConditionDef when = new CardEffectConditionDef();
+        when.type = com.desertadventure.combat.system.effects.ConditionType.OPPONENT_HAD_NO_SHIELD;
+
         CardEffectStepDef heal = new CardEffectStepDef();
+        heal.when = when;
         heal.template = EffectTemplateId.HEAL_SELF;
-        heal.amount = 3;
+        heal.amount = 2;
 
         def.effects = List.of(damage, heal);
         return def;

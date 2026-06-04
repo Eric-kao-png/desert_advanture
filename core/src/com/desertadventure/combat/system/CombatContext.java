@@ -101,6 +101,10 @@ public final class CombatContext {
         return perspective.opponentHasNegativeStatus();
     }
 
+    public boolean opponentHadNoShieldAtCardStart() {
+        return combat.opponentHadNoShieldAtCardStart();
+    }
+
     public void healPlayer(float amount) {
         perspective.healPlayer(amount);
     }

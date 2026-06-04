@@ -321,13 +321,25 @@ public class CardEffectResolverTest {
     }
 
     @Test
-    void vampirism_deals3_andHeals3() {
+    void vampirism_deals3_andHeals2WhenOpponentHadNoShield() {
         FakeCombatController combat = new FakeCombatController();
+        combat.opponentShieldAtCardStart = 0;
 
         resolver.resolve(new CombatContext(combat, 1, 0), ActionCardType.VAMPIRISM);
 
         assertEquals(3f, combat.damageToEnemies, 0.001f);
-        assertEquals(3f, combat.healPlayerAmount, 0.001f);
+        assertEquals(2f, combat.healPlayerAmount, 0.001f);
+    }
+
+    @Test
+    void vampirism_doesNotHealWhenOpponentHadShield() {
+        FakeCombatController combat = new FakeCombatController();
+        combat.opponentShieldAtCardStart = 3;
+
+        resolver.resolve(new CombatContext(combat, 1, 0), ActionCardType.VAMPIRISM);
+
+        assertEquals(3f, combat.damageToEnemies, 0.001f);
+        assertEquals(0f, combat.healPlayerAmount, 0.001f);
     }
 
     @Test

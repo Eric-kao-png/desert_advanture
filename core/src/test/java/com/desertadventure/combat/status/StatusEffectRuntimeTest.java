@@ -86,11 +86,19 @@ class StatusEffectRuntimeTest {
     }
 
     @Test
-    void positive_vampireFangHealOnOffense() {
+    void positive_vampireFangHealOnOffenseWhenOpponentHadNoShield() {
         CombatEntity player = new CombatEntity(CombatEntity.Kind.PLAYER, 0f, 0f, 20f);
         player.setPositiveStatus(PositiveStatusType.VAMPIRE_FANG, 2);
 
-        assertEquals(2f, StatusEffectRuntime.outgoingOffenseHealCaster(player), 0.001f);
+        assertEquals(2f, StatusEffectRuntime.outgoingOffenseHealCaster(player, 0), 0.001f);
+    }
+
+    @Test
+    void positive_vampireFangNoHealWhenOpponentHadShield() {
+        CombatEntity player = new CombatEntity(CombatEntity.Kind.PLAYER, 0f, 0f, 20f);
+        player.setPositiveStatus(PositiveStatusType.VAMPIRE_FANG, 2);
+
+        assertEquals(0f, StatusEffectRuntime.outgoingOffenseHealCaster(player, 4), 0.001f);
     }
 
     @Test

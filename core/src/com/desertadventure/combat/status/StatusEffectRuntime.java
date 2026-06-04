@@ -93,7 +93,14 @@ public final class StatusEffectRuntime {
         return false;
     }
 
-    public static float outgoingOffenseHealCaster(CombatEntity caster) {
+    /**
+     * @param opponentShieldAtCardStart shield on primary opponent when card resolution began;
+     *                                  {@code -1} if unknown (no lifesteal gate)
+     */
+    public static float outgoingOffenseHealCaster(CombatEntity caster, int opponentShieldAtCardStart) {
+        if (opponentShieldAtCardStart > 0) {
+            return 0f;
+        }
         if (!caster.hasPositiveStatus()) {
             return 0f;
         }

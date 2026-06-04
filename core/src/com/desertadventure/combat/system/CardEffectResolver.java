@@ -52,6 +52,7 @@ final class CardEffectResolver {
                 (ctx, when) -> ctx.previousSlotIsPlayerOffense());
         registerCondition(ConditionType.CASTER_HAS_NEGATIVE_STATUS, (ctx, when) -> ctx.casterHasNegativeStatus());
         registerCondition(ConditionType.OPPONENT_HAS_NEGATIVE_STATUS, (ctx, when) -> ctx.opponentHasNegativeStatus());
+        registerCondition(ConditionType.OPPONENT_HAD_NO_SHIELD, (ctx, when) -> ctx.opponentHadNoShieldAtCardStart());
     }
 
     void resolve(CombatContext ctx, ActionCardType type) {
