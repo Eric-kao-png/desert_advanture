@@ -3,7 +3,6 @@ package com.desertadventure.combat.system.effects;
 /** Stable identifiers for conditions referenced by card JSON. */
 public enum ConditionType {
     ROUND_EQUALS,
-    TURN_HAS_RESOLVED_CATEGORY,
     TURN_HAS_USED_CATEGORY,
     SLOT_INDEX_EQUALS,
     /** Prior slot in resolve order (index - 1) holds a player offense card. */

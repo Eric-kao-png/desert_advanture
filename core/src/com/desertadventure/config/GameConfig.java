@@ -28,8 +28,6 @@ public final class GameConfig {
     public static final float COMBAT_PLAYER_X_RATIO = CombatConfig.COMBAT_PLAYER_X_RATIO;
     public static final float COMBAT_ENEMY_X_RATIO = CombatConfig.COMBAT_ENEMY_X_RATIO;
     public static final float COMBAT_BOSS_X_RATIO = CombatConfig.COMBAT_BOSS_X_RATIO;
-    public static final int ENEMY_HP_MIN = CombatConfig.ENEMY_HP_MIN;
-    public static final int ENEMY_HP_MAX = CombatConfig.ENEMY_HP_MAX;
     public static final float BOSS_BASE_HP = CombatConfig.BOSS_BASE_HP;
     public static final float BOSS_HP_PER_DISTANCE_BAND = CombatConfig.BOSS_HP_PER_DISTANCE_BAND;
 

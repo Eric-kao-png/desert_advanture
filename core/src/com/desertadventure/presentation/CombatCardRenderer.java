@@ -21,14 +21,6 @@ public final class CombatCardRenderer {
     private static final Color SLOT_BG = new Color(0.15f, 0.14f, 0.12f, 0.85f);
     private static final Color SLOT_BORDER = new Color(0.45f, 0.4f, 0.32f, 1f);
     private static final Color SLOT_ACTIVE = new Color(0.55f, 0.48f, 0.2f, 1f);
-    private static final Color CARD_ATTACK = new Color(0.75f, 0.28f, 0.22f, 1f);
-    private static final Color CARD_SHIELD = new Color(0.35f, 0.55f, 0.85f, 1f);
-    private static final Color CARD_FULL_POWER = new Color(0.85f, 0.35f, 0.20f, 1f);
-    private static final Color CARD_LIFE_MAGIC = new Color(0.55f, 0.25f, 0.75f, 1f);
-    private static final Color CARD_THRUST = new Color(0.70f, 0.45f, 0.22f, 1f);
-    private static final Color CARD_POISON = new Color(0.35f, 0.72f, 0.32f, 1f);
-    private static final Color CARD_STRONG = new Color(0.85f, 0.4f, 0.15f, 1f);
-    private static final Color CARD_HEAL = new Color(0.25f, 0.65f, 0.35f, 1f);
     private static final Color CARD_SELECTED = new Color(1f, 0.92f, 0.5f, 1f);
     private static final Color ENEMY_CARD = new Color(0.5f, 0.2f, 0.2f, 0.95f);
     private static final Color CONFIRM = new Color(0.22f, 0.5f, 0.32f, 1f);
@@ -90,7 +82,7 @@ public final class CombatCardRenderer {
         shapes.begin(ShapeRenderer.ShapeType.Filled);
         shapes.setColor(CARD_SELECTED);
         shapes.rect(x - 3f, y - 3f, layout.cardW + 6f, layout.cardH + 6f);
-        Color fill = colorFor(card.getType());
+        Color fill = CardColorRegistry.colorFor(card.getType());
         fill.a = 0.82f;
         drawCardShape(x, y, layout.cardW, layout.cardH, fill);
         fill.a = 1f;
@@ -147,7 +139,7 @@ public final class CombatCardRenderer {
                     shapes.setColor(CARD_SELECTED);
                     shapes.rect(innerX - 3f, innerY - 3f, innerW + 6f, innerH + 6f);
                 }
-                Color fill = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_FILL : colorFor(card.getType());
+                Color fill = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_FILL : CardColorRegistry.colorFor(card.getType());
                 drawCardShape(innerX, innerY, innerW, innerH, fill);
             }
         }
@@ -237,7 +229,7 @@ public final class CombatCardRenderer {
                 shapes.setColor(CARD_SELECTED);
                 shapes.rect(entry.x - 3f, entry.y - 3f, layout.cardW + 6f, layout.cardH + 6f);
             }
-            Color fill = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_FILL : colorFor(card.getType());
+            Color fill = card.isOnCooldown() ? UiColors.CARD_ON_COOLDOWN_FILL : CardColorRegistry.colorFor(card.getType());
             drawCardShape(entry.x, entry.y, layout.cardW, layout.cardH, fill);
         }
         shapes.end();
@@ -325,23 +317,6 @@ public final class CombatCardRenderer {
     private void drawCardShape(float x, float y, float w, float h, Color fill) {
         shapes.setColor(fill);
         shapes.rect(x, y, w, h);
-    }
-
-    private static Color colorFor(ActionCardType type) {
-        return switch (type) {
-            case ATTACK -> CARD_ATTACK;
-            case STRIKE -> CARD_STRONG;
-            case HEAL -> CARD_HEAL;
-            case SHIELD -> CARD_SHIELD;
-            case ASSAULT -> CARD_FULL_POWER;
-            case LIFE_MAGIC -> CARD_LIFE_MAGIC;
-            case AMBUSH -> CARD_THRUST;
-            case POISON_MAGIC -> CARD_POISON;
-            case HEAVY_STRIKE, SWIFT_STRIKE, SPELLBLADE, CHASE_ATTACK, DOUBLE_BLADE, CLAW, CHARGED_SLASH, BLADE,
-                    GREAT_BLADE, VAMPIRISM, MAGIC_BOLT, POISON_BOLT, MAGIC_ARROW, ARROW, POISON_ARROW ->
-                    CARD_STRONG;
-            case PURIFY, MAGIC_MIRROR -> CARD_HEAL;
-        };
     }
 
     private static ActionCardInstance findHandCard(CombatController combat, int instanceId) {

@@ -39,11 +39,6 @@ final class CardEffectResolver {
 
         registerCondition(ConditionType.ROUND_EQUALS,
                 (ctx, when) -> when.round != null && ctx.roundNumber() == when.round);
-        registerCondition(ConditionType.TURN_HAS_RESOLVED_CATEGORY, (ctx, when) -> {
-            ActionCardCategory category = ActionCardCategory.fromData(
-                    when.category != null ? when.category : CardCategoryId.UTILITY);
-            return ctx.turnHasResolvedCategory(category);
-        });
         registerCondition(ConditionType.TURN_HAS_USED_CATEGORY, (ctx, when) -> {
             ActionCardCategory category = ActionCardCategory.fromData(
                     when.category != null ? when.category : CardCategoryId.UTILITY);

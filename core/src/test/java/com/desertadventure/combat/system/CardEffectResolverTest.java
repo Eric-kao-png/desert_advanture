@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -35,7 +34,7 @@ public class CardEffectResolverTest {
     void attack_deals2Damage() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.ATTACK);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.ATTACK);
 
         assertEquals(2f, combat.damageToEnemies, 0.001f);
     }
@@ -45,7 +44,7 @@ public class CardEffectResolverTest {
         FakeCombatController combat = new FakeCombatController();
 
         resolver.resolve(
-                new CombatContext(combat, 1, Set.of(), -1, EffectCaster.ENEMY),
+                new CombatContext(combat, 1, -1, EffectCaster.ENEMY),
                 ActionCardType.ATTACK);
 
         assertEquals(2f, combat.damageToPlayer, 0.001f);
@@ -61,7 +60,7 @@ public class CardEffectResolverTest {
         combat.enemies.add(enemy);
 
         resolver.resolve(
-                new CombatContext(combat, 1, Set.of(), -1, EffectCaster.ENEMY),
+                new CombatContext(combat, 1, -1, EffectCaster.ENEMY),
                 ActionCardType.HEAL);
 
         assertEquals(7f, enemy.getHp(), 0.001f);
@@ -71,7 +70,7 @@ public class CardEffectResolverTest {
     void strongAttack_deals3Damage() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.STRIKE);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.STRIKE);
 
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
@@ -80,7 +79,7 @@ public class CardEffectResolverTest {
     void healSelf_heals4() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.HEAL);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.HEAL);
 
         assertEquals(4f, combat.healPlayerAmount, 0.001f);
     }
@@ -89,7 +88,7 @@ public class CardEffectResolverTest {
     void shield_adds4Shield() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.SHIELD);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.SHIELD);
 
         assertEquals(4, combat.playerEntity.getShield());
     }
@@ -98,7 +97,7 @@ public class CardEffectResolverTest {
     void poison_appliesPoisonFor2Turns() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON_MAGIC);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.POISON_MAGIC);
 
         assertEquals(com.desertadventure.combat.model.NegativeStatusType.POISON, combat.appliedNegativeStatus);
         assertEquals(2, combat.appliedNegativeStatusTurns);
@@ -108,7 +107,7 @@ public class CardEffectResolverTest {
     void lifeMagic_halvesEnemyHp() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.LIFE_MAGIC);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.LIFE_MAGIC);
 
         assertEquals(1, combat.halveEnemyHpCalls);
     }
@@ -116,7 +115,7 @@ public class CardEffectResolverTest {
     @Test
     void assault_noChangeCardUsed_executes6Damage() {
         FakeCombatController combat = new FakeCombatController();
-        CombatContext ctx = new CombatContext(combat, 1, Set.of());
+        CombatContext ctx = new CombatContext(combat, 1);
 
         resolver.resolve(ctx, ActionCardType.ASSAULT);
 
@@ -129,7 +128,7 @@ public class CardEffectResolverTest {
         combat.cardsByInstanceId.put(10, new ActionCardInstance(10, ActionCardType.HEAL));
         combat.setPlayerSlotInstanceForTest(2, 10);
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.ASSAULT);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.ASSAULT);
 
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
@@ -139,7 +138,7 @@ public class CardEffectResolverTest {
         FakeCombatController combat = new FakeCombatController();
         combat.cardsByInstanceId.put(10, new ActionCardInstance(10, ActionCardType.HEAL));
         combat.setPlayerSlotInstanceForTest(0, 10);
-        CombatContext ctx = new CombatContext(combat, 1, Set.of(10));
+        CombatContext ctx = new CombatContext(combat, 1);
 
         resolver.resolve(ctx, ActionCardType.ASSAULT);
 
@@ -149,18 +148,18 @@ public class CardEffectResolverTest {
     @Test
     void heavyStrike_deals4Damage() {
         FakeCombatController combat = new FakeCombatController();
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.HEAVY_STRIKE);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.HEAVY_STRIKE);
         assertEquals(4f, combat.damageToEnemies, 0.001f);
     }
 
     @Test
     void swiftStrike_slot1_executes6Damage_otherSlots3() {
         FakeCombatController combat = new FakeCombatController();
-        resolver.resolve(new CombatContext(combat, 1, Set.of(), 0), ActionCardType.SWIFT_STRIKE);
+        resolver.resolve(new CombatContext(combat, 1, 0), ActionCardType.SWIFT_STRIKE);
         assertEquals(6f, combat.damageToEnemies, 0.001f);
 
         combat.damageToEnemies = 0f;
-        resolver.resolve(new CombatContext(combat, 1, Set.of(), 2), ActionCardType.SWIFT_STRIKE);
+        resolver.resolve(new CombatContext(combat, 1, 2), ActionCardType.SWIFT_STRIKE);
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
 
@@ -169,14 +168,14 @@ public class CardEffectResolverTest {
         FakeCombatController combat = new FakeCombatController();
         combat.cardsByInstanceId.put(10, new ActionCardInstance(10, ActionCardType.HEAL));
         combat.setPlayerSlotInstanceForTest(0, 10);
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.SPELLBLADE);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.SPELLBLADE);
         assertEquals(6f, combat.damageToEnemies, 0.001f);
     }
 
     @Test
     void spellblade_noChangeCard_executes3Damage() {
         FakeCombatController combat = new FakeCombatController();
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.SPELLBLADE);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.SPELLBLADE);
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
 
@@ -185,32 +184,32 @@ public class CardEffectResolverTest {
         FakeCombatController combat = new FakeCombatController();
         combat.cardsByInstanceId.put(1, new ActionCardInstance(1, ActionCardType.ATTACK));
         combat.setPlayerSlotInstanceForTest(0, 1);
-        resolver.resolve(new CombatContext(combat, 1, Set.of(), 1), ActionCardType.CHASE_ATTACK);
+        resolver.resolve(new CombatContext(combat, 1, 1), ActionCardType.CHASE_ATTACK);
         assertEquals(6f, combat.damageToEnemies, 0.001f);
     }
 
     @Test
     void chaseAttack_noPreviousPlayerOffense_executes3Damage() {
         FakeCombatController combat = new FakeCombatController();
-        resolver.resolve(new CombatContext(combat, 1, Set.of(), 2), ActionCardType.CHASE_ATTACK);
+        resolver.resolve(new CombatContext(combat, 1, 2), ActionCardType.CHASE_ATTACK);
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
 
     @Test
     void doubleBlade_dealsTwoHitsOf2() {
         FakeCombatController combat = new FakeCombatController();
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.DOUBLE_BLADE);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.DOUBLE_BLADE);
         assertEquals(4f, combat.damageToEnemies, 0.001f);
     }
 
     @Test
     void thrust_round1_executes6Damage_otherRoundsExecutes3Damage() {
         FakeCombatController combat = new FakeCombatController();
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.AMBUSH);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.AMBUSH);
         assertEquals(6f, combat.damageToEnemies, 0.001f);
 
         combat.damageToEnemies = 0f;
-        resolver.resolve(new CombatContext(combat, 2, Set.of()), ActionCardType.AMBUSH);
+        resolver.resolve(new CombatContext(combat, 2), ActionCardType.AMBUSH);
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
 
@@ -218,7 +217,7 @@ public class CardEffectResolverTest {
     void claw_deals3Damage() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of(), 0), ActionCardType.CLAW);
+        resolver.resolve(new CombatContext(combat, 1, 0), ActionCardType.CLAW);
 
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
@@ -227,11 +226,11 @@ public class CardEffectResolverTest {
     void chargedSlash_slot4_deals6Damage_otherSlotsDeal3() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of(), 3), ActionCardType.CHARGED_SLASH);
+        resolver.resolve(new CombatContext(combat, 1, 3), ActionCardType.CHARGED_SLASH);
         assertEquals(6f, combat.damageToEnemies, 0.001f);
 
         combat.damageToEnemies = 0f;
-        resolver.resolve(new CombatContext(combat, 1, Set.of(), 2), ActionCardType.CHARGED_SLASH);
+        resolver.resolve(new CombatContext(combat, 1, 2), ActionCardType.CHARGED_SLASH);
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
 
@@ -239,7 +238,7 @@ public class CardEffectResolverTest {
     void blade_appliesBleedFor2Turns() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of(), 0), ActionCardType.BLADE);
+        resolver.resolve(new CombatContext(combat, 1, 0), ActionCardType.BLADE);
 
         assertEquals(com.desertadventure.combat.model.NegativeStatusType.BLEED, combat.appliedNegativeStatus);
         assertEquals(2, combat.appliedNegativeStatusTurns);
@@ -249,7 +248,7 @@ public class CardEffectResolverTest {
     void greatBlade_appliesFearFor2Turns() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of(), 0), ActionCardType.GREAT_BLADE);
+        resolver.resolve(new CombatContext(combat, 1, 0), ActionCardType.GREAT_BLADE);
 
         assertEquals(com.desertadventure.combat.model.NegativeStatusType.FEAR, combat.appliedNegativeStatus);
         assertEquals(2, combat.appliedNegativeStatusTurns);
@@ -259,7 +258,7 @@ public class CardEffectResolverTest {
     void vampirism_deals3_andHeals3() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of(), 0), ActionCardType.VAMPIRISM);
+        resolver.resolve(new CombatContext(combat, 1, 0), ActionCardType.VAMPIRISM);
 
         assertEquals(3f, combat.damageToEnemies, 0.001f);
         assertEquals(3f, combat.healPlayerAmount, 0.001f);
@@ -271,7 +270,7 @@ public class CardEffectResolverTest {
         combat.playerEntity.setNegativeStatus(
                 com.desertadventure.combat.model.NegativeStatusType.POISON, 2);
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.PURIFY);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.PURIFY);
 
         assertEquals(0, combat.playerEntity.getNegativeTurnsRemaining());
         assertEquals(0f, combat.healPlayerAmount, 0.001f);
@@ -281,7 +280,7 @@ public class CardEffectResolverTest {
     void purify_withoutDebuff_heals2() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.PURIFY);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.PURIFY);
 
         assertEquals(2f, combat.healPlayerAmount, 0.001f);
     }
@@ -290,7 +289,7 @@ public class CardEffectResolverTest {
     void magicBolt_deals3IgnoringShield() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.MAGIC_BOLT);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.MAGIC_BOLT);
 
         assertEquals(3f, combat.damageIgnoringShieldToEnemies, 0.001f);
     }
@@ -300,7 +299,7 @@ public class CardEffectResolverTest {
         FakeCombatController combat = new FakeCombatController();
         combat.setCardEffectRngForTests(bound -> bound == 100 ? 10 : 0);
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON_BOLT);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.POISON_BOLT);
 
         assertEquals(2f, combat.damageToEnemies, 0.001f);
         assertEquals(com.desertadventure.combat.model.NegativeStatusType.POISON, combat.appliedNegativeStatus);
@@ -312,7 +311,7 @@ public class CardEffectResolverTest {
         FakeCombatController combat = new FakeCombatController();
         combat.setCardEffectRngForTests(bound -> bound == 100 ? 60 : 0);
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON_BOLT);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.POISON_BOLT);
 
         assertEquals(2f, combat.damageToEnemies, 0.001f);
         assertEquals(null, combat.appliedNegativeStatus);
@@ -327,7 +326,7 @@ public class CardEffectResolverTest {
         combat.playerEntity.setNegativeStatus(
                 com.desertadventure.combat.model.NegativeStatusType.BLEED, 2);
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.MAGIC_MIRROR);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.MAGIC_MIRROR);
 
         assertEquals(0, combat.playerEntity.getNegativeTurnsRemaining());
         assertEquals(com.desertadventure.combat.model.NegativeStatusType.BLEED, enemy.getNegativeStatusType());
@@ -343,7 +342,7 @@ public class CardEffectResolverTest {
         combat.enemies.add(enemy);
 
         resolver.resolve(
-                new CombatContext(combat, 1, Set.of(), -1, EffectCaster.ENEMY),
+                new CombatContext(combat, 1, -1, EffectCaster.ENEMY),
                 ActionCardType.MAGIC_MIRROR);
 
         assertEquals(0, enemy.getNegativeTurnsRemaining());
@@ -356,7 +355,7 @@ public class CardEffectResolverTest {
     void arrow_deals3() {
         FakeCombatController combat = new FakeCombatController();
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.ARROW);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.ARROW);
 
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
@@ -366,7 +365,7 @@ public class CardEffectResolverTest {
         FakeCombatController combat = new FakeCombatController();
         combat.setCardEffectRngForTests(bound -> bound == 100 ? 49 : 0);
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON_ARROW);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.POISON_ARROW);
 
         assertEquals(2f, combat.damageToEnemies, 0.001f);
         assertEquals(com.desertadventure.combat.model.NegativeStatusType.POISON, combat.appliedNegativeStatus);
@@ -378,7 +377,7 @@ public class CardEffectResolverTest {
         FakeCombatController combat = new FakeCombatController();
         combat.setCardEffectRngForTests(bound -> bound == 100 ? 50 : 0);
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.POISON_ARROW);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.POISON_ARROW);
 
         assertEquals(2f, combat.damageToEnemies, 0.001f);
         assertEquals(null, combat.appliedNegativeStatus);
@@ -392,12 +391,12 @@ public class CardEffectResolverTest {
         enemy.setNegativeStatus(com.desertadventure.combat.model.NegativeStatusType.FEAR, 1);
         combat.enemies.add(enemy);
 
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.MAGIC_ARROW);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.MAGIC_ARROW);
         assertEquals(4f, combat.damageToEnemies, 0.001f);
 
         combat.damageToEnemies = 0f;
         enemy.clearNegativeStatus();
-        resolver.resolve(new CombatContext(combat, 1, Set.of()), ActionCardType.MAGIC_ARROW);
+        resolver.resolve(new CombatContext(combat, 1), ActionCardType.MAGIC_ARROW);
         assertEquals(3f, combat.damageToEnemies, 0.001f);
     }
 

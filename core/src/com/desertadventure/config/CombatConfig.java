@@ -13,35 +13,11 @@ public final class CombatConfig {
     public static final float COMBAT_ENEMY_X_RATIO = 0.72f;
     public static final float COMBAT_BOSS_X_RATIO = 0.78f;
 
-    public static final int ENEMY_HP_MIN = 1;
-    public static final int ENEMY_HP_MAX = 3;
     public static final float BOSS_BASE_HP = 35f;
     public static final float BOSS_HP_PER_DISTANCE_BAND = 8f;
 
-    // --- Turn-based action cards ---
-    public static final int CARD_ATTACK_DAMAGE = 2;
-    public static final int CARD_STRONG_ATTACK_DAMAGE = 3;
-    public static final int CARD_HEAL_AMOUNT = 4;
-    public static final int CARD_ATTACK_COOLDOWN_TURNS = 1;
-    public static final int CARD_STRONG_ATTACK_COOLDOWN_TURNS = 2;
-    public static final int CARD_HEAL_COOLDOWN_TURNS = 4;
-
-    public static final int CARD_SHIELD_AMOUNT = 4;
-    public static final int CARD_SHIELD_COOLDOWN_TURNS = 3;
-
-    public static final int CARD_FULL_POWER_DAMAGE_LOW = 3;
-    public static final int CARD_FULL_POWER_DAMAGE_HIGH = 6;
-    public static final int CARD_FULL_POWER_COOLDOWN_TURNS = 3;
-
-    public static final int CARD_LIFE_MAGIC_COOLDOWN_TURNS = 5;
-
-    public static final int CARD_THRUST_DAMAGE_ROUND_ONE = 6;
-    public static final int CARD_THRUST_DAMAGE_OTHER = 3;
-    public static final int CARD_THRUST_COOLDOWN_TURNS = 3;
-
-    public static final int CARD_POISON_DURATION_TURNS = 2;
+    /** Poison tick damage at round end (bypasses shield). */
     public static final int CARD_POISON_DAMAGE_PER_ROUND = 2;
-    public static final int CARD_POISON_COOLDOWN_TURNS = 2;
 
     /** Player slot pair roll weights per round (higher = more likely). */
     public static final int PLAYER_SLOTS_WEIGHT_13 = 70;
@@ -52,4 +28,3 @@ public final class CombatConfig {
     // --- Combat UI timing ---
     public static final float RESOLVE_SLOT_SECONDS = 0.45f;
 }
-
