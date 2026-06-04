@@ -6,7 +6,6 @@ import com.desertadventure.combat.card.ActionCardDeck;
 import com.desertadventure.combat.card.ActionCardDeckResetPolicy;
 import com.desertadventure.combat.card.DefaultActionCardDeckResetPolicy;
 import com.desertadventure.combat.system.CombatController;
-import com.desertadventure.item.Inventory;
 import com.desertadventure.player.PlayerStats;
 import com.desertadventure.run.RunProgress;
 import com.desertadventure.run.StageCatalog;
@@ -21,7 +20,6 @@ public class GameSession {
     private final ActionCardDeck actionCardDeck = new ActionCardDeck();
     private final ActionCardDeckResetPolicy actionCardDeckResetPolicy = new DefaultActionCardDeckResetPolicy();
     private final MessageFeed messageFeed = new MessageFeed();
-    private final Inventory inventory = new Inventory();
     private final StageCatalog stageCatalog;
     private final RunProgress runProgress;
     private final StageRunCoordinator stageRunCoordinator;
@@ -48,7 +46,6 @@ public class GameSession {
         hubPanel = HubPanel.MAIN;
         runProgress.resetForNewRun();
         messageFeed.clear();
-        inventory.clear();
         actionCardDeckResetPolicy.resetDeck(actionCardDeck);
     }
 
@@ -58,10 +55,6 @@ public class GameSession {
 
     public PermanentProgress getPermanentProgress() {
         return permanentProgress;
-    }
-
-    public Inventory getInventory() {
-        return inventory;
     }
 
     public CombatController getCombatController() {

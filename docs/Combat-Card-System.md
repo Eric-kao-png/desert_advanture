@@ -17,8 +17,6 @@ Combat is **turn-based** and **1v1** (player vs one enemy or boss). Each **round
 
 Cards are **not consumed**: after resolving, instances return to the deck with **turn-based cooldown** counters.
 
-Exploration **action cards** are separate from the **item inventory** (potions/gems).
-
 ---
 
 ## 2. Phases & Slots
@@ -108,11 +106,6 @@ Always plays **Attack** in slots 2 and 4 — same `ActionCardType.ATTACK` as the
 |----------|-------|
 | `PLAYER_INITIAL_MAX_HP` | 20 |
 | `PLAYER_LEVEL_HP_GAIN` | 2 |
-| `BASE_STEP_BUDGET` | 100 |
-| `ITEM_HEALTH_POTION_RESTORE` | 8 |
-| `ITEM_STAMINA_POTION_RESTORE` | 25 |
-| `ITEM_HEALTH_GEM_BONUS` | 4 |
-| `ITEM_STAMINA_GEM_BONUS` | 15 |
 | `ENEMY_HP_MIN` / `ENEMY_HP_MAX` | 1 / 3 (uniform roll per normal fight) |
 | `BOSS_BASE_HP` | 35 |
 | `BOSS_HP_PER_DISTANCE_BAND` | 8 |

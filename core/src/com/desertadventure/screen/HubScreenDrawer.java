@@ -1,6 +1,5 @@
 package com.desertadventure.screen;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -8,23 +7,21 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.desertadventure.combat.card.ActionCardInstance;
 import com.desertadventure.config.GameConfig;
 import com.desertadventure.config.UiColors;
-import com.desertadventure.item.ItemType;
 import com.desertadventure.run.RunProgress;
 import com.desertadventure.run.StageDef;
 import com.desertadventure.state.GameSession;
 import com.desertadventure.state.HubPanel;
 
-/** Simple text UI for the card-run hub and sub-panels. */
+/** Simple text UI for the card-run hub and deck sub-panel. */
 public final class HubScreenDrawer {
     private final GlyphLayout layout = new GlyphLayout();
 
     public void draw(SpriteBatch batch, BitmapFont font, GameSession session) {
         font.setColor(Color.WHITE);
-        HubPanel panel = session.getHubPanel();
-        switch (panel) {
-            case DECK -> drawDeck(batch, font, session);
-            case INVENTORY -> drawInventory(batch, font, session);
-            default -> drawMain(batch, font, session);
+        if (session.getHubPanel() == HubPanel.DECK) {
+            drawDeck(batch, font, session);
+        } else {
+            drawMain(batch, font, session);
         }
     }
 
@@ -35,18 +32,14 @@ public final class HubScreenDrawer {
         float centerX = GameConfig.VIEW_WIDTH / 2f;
         float buttonTop = GameConfig.VIEW_HEIGHT * 0.58f;
         float buttonH = GameConfig.HUD_LINE_STEP * 1.4f;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             float top = buttonTop - i * buttonH * 1.35f;
             float bottom = top - buttonH;
             if (Math.abs(screenX - centerX) < 220f && screenY >= bottom && screenY <= top) {
                 if (i == 0) {
                     return session.tryStartCurrentStageCombat();
                 }
-                if (i == 1) {
-                    session.setHubPanel(HubPanel.DECK);
-                } else {
-                    session.setHubPanel(HubPanel.INVENTORY);
-                }
+                session.setHubPanel(HubPanel.DECK);
                 return true;
             }
         }
@@ -69,8 +62,6 @@ public final class HubScreenDrawer {
         drawCentered(batch, font, "[1] Start Battle — " + stage.label(), y, 1f);
         y -= GameConfig.HUD_LINE_STEP * 1.35f;
         drawCentered(batch, font, "[2] Deck", y, 1f);
-        y -= GameConfig.HUD_LINE_STEP * 1.35f;
-        drawCentered(batch, font, "[3] Inventory (read-only)", y, 1f);
         font.setColor(Color.WHITE);
         drawCentered(batch, font, "Esc — Main menu  |  Click a line to select",
                 GameConfig.VIEW_HEIGHT * 0.22f, 0.85f);
@@ -92,19 +83,6 @@ public final class HubScreenDrawer {
             if (y < GameConfig.VIEW_HEIGHT * 0.2f) {
                 break;
             }
-        }
-        drawCentered(batch, font, "B / Esc — Back to hub", GameConfig.VIEW_HEIGHT * 0.14f, 0.85f);
-    }
-
-    private void drawInventory(SpriteBatch batch, BitmapFont font, GameSession session) {
-        drawCentered(batch, font, "Inventory", GameConfig.VIEW_HEIGHT * 0.86f, 1.1f);
-        font.getData().setScale(GameConfig.HUD_FONT_SCALE);
-        float y = GameConfig.VIEW_HEIGHT * 0.78f;
-        for (int i = 0; i < session.getInventory().getSlotCount(); i++) {
-            ItemType item = session.getInventory().getItemAt(i);
-            String label = item != null ? item.getDisplayName() : "(empty)";
-            font.draw(batch, (i + 1) + ". " + label, GameConfig.HUD_LEFT_MARGIN, y);
-            y -= GameConfig.HUD_LINE_STEP;
         }
         drawCentered(batch, font, "B / Esc — Back to hub", GameConfig.VIEW_HEIGHT * 0.14f, 0.85f);
     }

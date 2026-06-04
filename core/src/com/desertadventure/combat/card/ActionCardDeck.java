@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Exploration action cards (separate from item inventory). */
+/** Player action card instances for combat (cooldowns persist across stages in a run). */
 public final class ActionCardDeck {
     private final List<ActionCardInstance> instances = new ArrayList<>();
     private int nextInstanceId = 1;

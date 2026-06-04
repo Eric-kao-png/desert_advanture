@@ -8,7 +8,7 @@ import com.desertadventure.screen.MainMenuScreen;
 import com.desertadventure.state.GameSession;
 import com.desertadventure.state.HubPanel;
 
-/** Hub menu hotkeys: start battle, deck, inventory, back. */
+/** Hub menu hotkeys: start battle, deck, back. */
 public final class HubKeyboardInput {
     public void handle(DesertAdventure game, GameSession session) {
         HubPanel panel = session.getHubPanel();
@@ -25,9 +25,6 @@ public final class HubKeyboardInput {
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2) || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
             session.setHubPanel(HubPanel.DECK);
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3) || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_3)) {
-            session.setHubPanel(HubPanel.INVENTORY);
         }
         if (Gdx.input.isKeyJustPressed(GameInputBindings.BACK)) {
             game.setScreen(new MainMenuScreen(game));

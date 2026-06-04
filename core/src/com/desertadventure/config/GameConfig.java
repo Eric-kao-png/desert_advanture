@@ -40,8 +40,6 @@ public final class GameConfig {
     public static final float BOSS_HUD_RIGHT_OFFSET = 280f;
     public static final float HUD_STATUS_TOP_OFFSET = 16f;
 
-    public static final int INVENTORY_SLOT_COUNT = 12;
-
     /** Logical player size used for bounds / layout (legacy blue rectangle size). */
     public static final float PLAYER_WIDTH = PlayerConfig.WIDTH;
     public static final float PLAYER_HEIGHT = PlayerConfig.HEIGHT;
@@ -148,10 +146,6 @@ public final class GameConfig {
     public static final float COMBAT_LAYOUT_BLEND_SECONDS = CombatConfig.LAYOUT_BLEND_SECONDS;
     public static final float COMBAT_GROUND_Y = CombatConfig.COMBAT_GROUND_Y;
     public static final int VICTORY_EXPERIENCE = CombatConfig.VICTORY_EXPERIENCE;
-    public static final int ITEM_EXPERIENCE = 10;
-
-    public static final float ITEM_HEALTH_POTION_RESTORE = 8f;
-    public static final float ITEM_HEALTH_GEM_BONUS = 4f;
 
     public static final int PLAYER_INITIAL_LEVEL = PlayerConfig.INITIAL_LEVEL;
     public static final int PLAYER_INITIAL_EXPERIENCE_TO_NEXT = PlayerConfig.INITIAL_EXPERIENCE_TO_NEXT;
