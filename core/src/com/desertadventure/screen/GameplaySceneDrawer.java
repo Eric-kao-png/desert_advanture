@@ -20,7 +20,6 @@ final class GameplaySceneDrawer {
     private final GameplayRenderer renderer;
     private final GameViewport viewport;
     private final GameplayInputHandler input;
-    private final GameplayHud hud;
     private final BitmapFont uiFont;
     private final GameplayModeUpdater modeUpdater;
 
@@ -30,7 +29,6 @@ final class GameplaySceneDrawer {
             GameplayRenderer renderer,
             GameViewport viewport,
             GameplayInputHandler input,
-            GameplayHud hud,
             BitmapFont uiFont,
             GameplayModeUpdater modeUpdater) {
         this.game = game;
@@ -38,7 +36,6 @@ final class GameplaySceneDrawer {
         this.renderer = renderer;
         this.viewport = viewport;
         this.input = input;
-        this.hud = hud;
         this.uiFont = uiFont;
         this.modeUpdater = modeUpdater;
     }
@@ -54,14 +51,6 @@ final class GameplaySceneDrawer {
             case VICTORY -> game.setScreen(new VictoryScreen(game));
             default -> drawHub(batch, delta);
         }
-
-        if (mode == GameplayMode.VICTORY) {
-            return;
-        }
-
-        batch.begin();
-        hud.draw(batch, session, mode);
-        batch.end();
     }
 
     private void drawCombat(SpriteBatch batch, float delta, GameplayMode mode) {

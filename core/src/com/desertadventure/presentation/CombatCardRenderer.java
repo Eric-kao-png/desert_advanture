@@ -3,7 +3,6 @@ package com.desertadventure.presentation;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -42,7 +41,6 @@ public final class CombatCardRenderer {
     private final Matrix4 identityTransform = new Matrix4();
     private final Rectangle scissorBounds = new Rectangle();
     private final Rectangle scissorResult = new Rectangle();
-    private final GlyphLayout confirmGlyph = new GlyphLayout();
 
     public CombatCardRenderer(ShapeRenderer shapes) {
         this.shapes = shapes;
@@ -60,9 +58,6 @@ public final class CombatCardRenderer {
         drawHandZone(combat, layout, layout.attackPanel, batch, font);
         drawHandZone(combat, layout, layout.changePanel, batch, font);
         drawConfirmShape(layout, combat);
-        batch.begin();
-        drawConfirmText(batch, font, layout, combat);
-        batch.end();
     }
 
     /** Timeline slots and tooltips above fighters. */
@@ -76,11 +71,9 @@ public final class CombatCardRenderer {
         layout.rebuildHand(combat);
 
         drawSlotShapes(combat, layout, phase, resolvingSlot);
-        drawTooltipShapes(layout, combat, font);
 
         batch.begin();
         drawSlotNames(batch, font, layout, combat);
-        drawTooltipTexts(batch, font, layout, combat);
         batch.end();
     }
 
@@ -179,65 +172,6 @@ public final class CombatCardRenderer {
         shapes.end();
     }
 
-    private void drawTooltipShapes(CombatCardLayout layout, CombatController combat, BitmapFont font) {
-        shapes.begin(ShapeRenderer.ShapeType.Filled);
-        int hoveredHand = layout.getHoveredHandInstanceId();
-        if (hoveredHand >= 0) {
-            for (HandZonePanel panel : handPanels(layout)) {
-                for (CombatCardLayout.HandEntry entry : panel.getEntries()) {
-                    if (entry.instanceId == hoveredHand) {
-                        ActionCardInstance card = combat.findCard(hoveredHand);
-                        if (card != null) {
-                            drawTooltipPanel(font, ActionCardUiText.detailLines(card),
-                                    entry.x, entry.y, layout.cardW, layout.cardH);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-
-        int hoveredSlot = layout.getHoveredSlotIndex();
-        if (hoveredSlot >= 0) {
-            float innerX = layout.innerCardX(hoveredSlot);
-            float innerY = layout.innerCardY();
-            float innerW = layout.innerCardW();
-            float innerH = layout.innerCardH();
-            if (combat.isEnemySlotIndex(hoveredSlot)) {
-                drawTooltipPanel(
-                        font,
-                        ActionCardUiText.detailLines(combat.getPlannedEnemyCardForSlot(hoveredSlot)),
-                        innerX, innerY, innerW, innerH);
-                shapes.end();
-                return;
-            }
-            ActionCardInstance card = combat.getSlotCard(hoveredSlot);
-            if (card != null) {
-                drawTooltipPanel(font, ActionCardUiText.detailLines(card),
-                        innerX, innerY, innerW, innerH);
-            }
-        }
-        shapes.end();
-    }
-
-    private static HandZonePanel[] handPanels(CombatCardLayout layout) {
-        return new HandZonePanel[] { layout.attackPanel, layout.changePanel };
-    }
-
-    private void drawTooltipPanel(BitmapFont font, String[] lines, float cardX, float cardY, float cardW, float cardH) {
-        ActionCardUiText.TooltipBounds bounds = ActionCardUiText.measureTooltip(font, lines);
-        float panelX = ActionCardUiText.tooltipPanelXCentered(cardX, cardW, bounds.width());
-        float panelY = ActionCardUiText.tooltipPanelYAbove(cardY, cardH, bounds.height());
-        shapes.setColor(UiColors.CARD_TOOLTIP_FILL);
-        shapes.rect(panelX, panelY, bounds.width(), bounds.height());
-        shapes.setColor(UiColors.CARD_TOOLTIP_BORDER);
-        float t = 2f;
-        shapes.rect(panelX, panelY, bounds.width(), t);
-        shapes.rect(panelX, panelY + bounds.height() - t, bounds.width(), t);
-        shapes.rect(panelX, panelY, t, bounds.height());
-        shapes.rect(panelX + bounds.width() - t, panelY, t, bounds.height());
-    }
-
     private void drawConfirmShape(CombatCardLayout layout, CombatController combat) {
         boolean enabled = combat.canConfirmPlanning();
         shapes.begin(ShapeRenderer.ShapeType.Filled);
@@ -247,11 +181,7 @@ public final class CombatCardRenderer {
     }
 
     private void drawSlotNames(SpriteBatch batch, BitmapFont font, CombatCardLayout layout, CombatController combat) {
-        font.setColor(UiColors.MUTED_TEXT);
         for (int i = 0; i < 4; i++) {
-            font.draw(batch, String.valueOf(i + 1), layout.slotX[i] + layout.slotW / 2f - 4f,
-                    layout.slotY + layout.slotH + 14f);
-
             float innerX = layout.innerCardX(i);
             float innerY = layout.innerCardY();
             float innerW = layout.innerCardW();
@@ -288,67 +218,6 @@ public final class CombatCardRenderer {
             ActionCardUiText.drawCardFaceCentered(batch, font, card.getType(),
                     entry.x, entry.y, layout.cardW, layout.cardH, textColor);
         }
-    }
-
-    private void drawTooltipTexts(SpriteBatch batch, BitmapFont font, CombatCardLayout layout, CombatController combat) {
-        int hoveredHand = layout.getHoveredHandInstanceId();
-        if (hoveredHand >= 0) {
-            for (HandZonePanel panel : handPanels(layout)) {
-                for (CombatCardLayout.HandEntry entry : panel.getEntries()) {
-                    if (entry.instanceId == hoveredHand) {
-                        ActionCardInstance card = combat.findCard(hoveredHand);
-                        if (card != null) {
-                            drawTooltipForCard(batch, font, ActionCardUiText.detailLines(card),
-                                    entry.x, entry.y, layout.cardW, layout.cardH);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-
-        int hoveredSlot = layout.getHoveredSlotIndex();
-        if (hoveredSlot >= 0) {
-            float innerX = layout.innerCardX(hoveredSlot);
-            float innerY = layout.innerCardY();
-            float innerW = layout.innerCardW();
-            float innerH = layout.innerCardH();
-            if (combat.isEnemySlotIndex(hoveredSlot)) {
-                drawTooltipForCard(
-                        batch,
-                        font,
-                        ActionCardUiText.detailLines(combat.getPlannedEnemyCardForSlot(hoveredSlot)),
-                        innerX, innerY, innerW, innerH);
-                return;
-            }
-            ActionCardInstance card = combat.getSlotCard(hoveredSlot);
-            if (card != null) {
-                drawTooltipForCard(batch, font, ActionCardUiText.detailLines(card),
-                        innerX, innerY, innerW, innerH);
-            }
-        }
-    }
-
-    private void drawTooltipForCard(
-            SpriteBatch batch,
-            BitmapFont font,
-            String[] lines,
-            float cardX,
-            float cardY,
-            float cardW,
-            float cardH) {
-        ActionCardUiText.TooltipBounds bounds = ActionCardUiText.measureTooltip(font, lines);
-        float panelX = ActionCardUiText.tooltipPanelXCentered(cardX, cardW, bounds.width());
-        float panelY = ActionCardUiText.tooltipPanelYAbove(cardY, cardH, bounds.height());
-        ActionCardUiText.drawTooltipText(batch, font, lines, panelX, panelY, Color.WHITE);
-    }
-
-    private void drawConfirmText(SpriteBatch batch, BitmapFont font, CombatCardLayout layout, CombatController combat) {
-        font.setColor(Color.WHITE);
-        String label = combat.getPhase() == CombatPhase.RESOLVING ? "Resolving..." : "Confirm";
-        confirmGlyph.setText(font, label);
-        float textX = layout.confirmX + (layout.confirmW - confirmGlyph.width) / 2f;
-        font.draw(batch, label, textX, layout.confirmY + layout.confirmH / 2f + 6f);
     }
 
     private void drawCardShape(float x, float y, float w, float h, Color fill) {

@@ -82,7 +82,7 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
     public void renderCombatEntities(CombatController combat, List<CombatEntity> entities, SpriteBatch batch, BitmapFont font) {
         shapes.setProjectionMatrix(screenProjection);
         combatEntities.drawBodies(shapes, entities);
-        combatEntities.drawOverlays(shapes, entities, font);
+        combatEntities.drawOverlays(shapes, entities);
         batch.setProjectionMatrix(screenProjection);
         batch.begin();
         combatEntities.drawTexts(batch, entities, font, combat);

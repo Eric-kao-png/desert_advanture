@@ -6,7 +6,6 @@ import com.desertadventure.combat.card.ActionCardType;
 import com.desertadventure.combat.enemy.EnemyArchetypeId;
 import com.desertadventure.player.PlayerStats;
 import com.desertadventure.state.GameplayMode;
-import com.desertadventure.state.MessageFeed;
 import com.desertadventure.state.PermanentProgress;
 import com.desertadventure.combat.system.support.CombatTestDataBootstrap;
 import com.desertadventure.state.SessionModeAccess;
@@ -43,7 +42,6 @@ class StageRunCoordinatorTest {
                 runProgress,
                 playerStats,
                 new PermanentProgress(),
-                new MessageFeed(),
                 deck,
                 mode);
     }

@@ -27,7 +27,6 @@ final class GameplayModeUpdater {
         applyLayoutBlendToInput();
         syncCombatEntityGround();
         ensureCombatInitialized(mode);
-        session.getMessageFeed().update(delta);
 
         if (mode.isCombat()) {
             updateCombat(delta);

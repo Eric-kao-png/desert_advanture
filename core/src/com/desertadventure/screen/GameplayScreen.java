@@ -17,7 +17,6 @@ public class GameplayScreen extends ScreenAdapter {
     private final GameViewport gameViewport = new GameViewport();
     private final CombatSessionState combatState = new CombatSessionState();
 
-    private GameplayHud hud;
     private GameplayInputHandler input;
     private GameplayModeUpdater modeUpdater;
     private GameplaySceneDrawer sceneDrawer;
@@ -31,10 +30,9 @@ public class GameplayScreen extends ScreenAdapter {
     public void show() {
         font = new BitmapFont();
         font.getData().setScale(GameConfig.HUD_FONT_SCALE);
-        hud = new GameplayHud(font);
         input = new GameplayInputHandler(game, session, gameViewport);
         modeUpdater = new GameplayModeUpdater(session, input, combatState);
-        sceneDrawer = new GameplaySceneDrawer(game, session, renderer, gameViewport, input, hud, font, modeUpdater);
+        sceneDrawer = new GameplaySceneDrawer(game, session, renderer, gameViewport, input, font, modeUpdater);
         gameViewport.update();
         session.startNewGame();
     }

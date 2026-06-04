@@ -8,11 +8,7 @@ import com.desertadventure.combat.system.CombatController;
 
 import java.util.List;
 
-/**
- * Renders non-player combat bodies and combat overlays/text.
- *
- * <p>Behavior is intentionally identical to the previous inlined implementation in {@link GameplayRenderer}.</p>
- */
+/** Renders combat bodies, bars, and allowed numeric/name labels. */
 final class CombatEntityRenderer {
     void drawBodies(ShapeRenderer shapes, List<CombatEntity> entities) {
         shapes.begin(ShapeRenderer.ShapeType.Filled);
@@ -26,13 +22,12 @@ final class CombatEntityRenderer {
         shapes.end();
     }
 
-    void drawOverlays(ShapeRenderer shapes, List<CombatEntity> entities, BitmapFont font) {
+    void drawOverlays(ShapeRenderer shapes, List<CombatEntity> entities) {
         for (CombatEntity entity : entities) {
             if (!GameplayRenderer.shouldDrawCombatEntity(entity)) {
                 continue;
             }
             CombatHpBarDrawer.draw(shapes, entity);
-            CombatStatusDrawer.drawPanels(shapes, entity, font);
         }
     }
 
@@ -46,8 +41,6 @@ final class CombatEntityRenderer {
                 CombatHpBarDrawer.drawOpponentNameAboveBar(batch, font, entity, opponentName);
             }
             CombatHpBarDrawer.drawHpText(batch, font, entity);
-            CombatStatusDrawer.drawText(batch, font, entity);
         }
     }
 }
-

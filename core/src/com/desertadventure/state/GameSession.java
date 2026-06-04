@@ -19,7 +19,6 @@ public class GameSession {
     private final CombatController combatController;
     private final ActionCardDeck actionCardDeck = new ActionCardDeck();
     private final ActionCardDeckResetPolicy actionCardDeckResetPolicy = new DefaultActionCardDeckResetPolicy();
-    private final MessageFeed messageFeed = new MessageFeed();
     private final StageCatalog stageCatalog;
     private final RunProgress runProgress;
     private final StageRunCoordinator stageRunCoordinator;
@@ -33,7 +32,7 @@ public class GameSession {
         stageCatalog = StageCatalogDatabase.getRequired();
         runProgress = new RunProgress(stageCatalog);
         stageRunCoordinator = new StageRunCoordinator(
-                runProgress, playerStats, permanentProgress, messageFeed, actionCardDeck,
+                runProgress, playerStats, permanentProgress, actionCardDeck,
                 GameSessionDelegates.modeAccess(this));
         actionCardDeck.resetToDefault();
     }
@@ -43,7 +42,6 @@ public class GameSession {
         playerStats.resetForNewGame();
         mode = GameplayMode.HUB;
         runProgress.resetForNewRun();
-        messageFeed.clear();
         actionCardDeckResetPolicy.resetDeck(actionCardDeck);
     }
 
@@ -93,14 +91,6 @@ public class GameSession {
 
     public void setMode(GameplayMode mode) {
         this.mode = mode;
-    }
-
-    public MessageFeed getMessageFeed() {
-        return messageFeed;
-    }
-
-    public void setPendingMessage(String message) {
-        messageFeed.push(message);
     }
 
     /** Archetype from the current stage; cleared after combat session starts. */
