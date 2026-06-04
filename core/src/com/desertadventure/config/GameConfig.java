@@ -139,10 +139,8 @@ public final class GameConfig {
     public static final float COMBAT_HAND_SCROLL_THRESHOLD = 10f;
     public static final float COMBAT_CONFIRM_WIDTH = 130f;
     public static final float COMBAT_CONFIRM_HEIGHT = 40f;
-    /** Time between slot resolves (baseline; may be effectively extended by attack animation gating). */
+    /** Time between slot resolves. */
     public static final float COMBAT_RESOLVE_SLOT_SECONDS = CombatConfig.RESOLVE_SLOT_SECONDS;
-    /** Player attack animation duration used for resolve gating and sprite playback. */
-    public static final float COMBAT_PLAYER_ATTACK_ANIM_SECONDS = CombatConfig.PLAYER_ATTACK_ANIM_SECONDS;
     public static final float COMBAT_LAYOUT_BLEND_SECONDS = CombatConfig.LAYOUT_BLEND_SECONDS;
     public static final float COMBAT_GROUND_Y = CombatConfig.COMBAT_GROUND_Y;
     public static final int VICTORY_EXPERIENCE = CombatConfig.VICTORY_EXPERIENCE;

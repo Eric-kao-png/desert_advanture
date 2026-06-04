@@ -19,7 +19,6 @@ public class CombatEntity {
     private float speed;
     private float contactDamageCooldown;
     private boolean alive = true;
-    private float hurtFlash;
     private int shield;
     private PositiveStatusType positiveType;
     private int positiveTurnsRemaining;
@@ -108,10 +107,6 @@ public class CombatEntity {
         return alive;
     }
 
-    public float getHurtFlash() {
-        return hurtFlash;
-    }
-
     public Rectangle getBounds() {
         return new Rectangle(x - width / 2f, y, width, height);
     }
@@ -195,7 +190,6 @@ public class CombatEntity {
             amount -= absorbed;
         }
         if (amount <= 0f) {
-            hurtFlash = 0.15f;
             return;
         }
         applyDirectDamage(amount);
@@ -259,9 +253,6 @@ public class CombatEntity {
     }
 
     public void update(float delta, float arenaWidth) {
-        if (hurtFlash > 0f) {
-            hurtFlash -= delta;
-        }
         if (contactDamageCooldown > 0f) {
             contactDamageCooldown -= delta;
         }
@@ -283,7 +274,6 @@ public class CombatEntity {
 
     private void applyDirectDamage(float amount) {
         hp -= amount;
-        hurtFlash = 0.15f;
         if (hp <= 0f) {
             hp = 0f;
             alive = false;

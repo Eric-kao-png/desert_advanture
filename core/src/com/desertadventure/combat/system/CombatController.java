@@ -19,7 +19,6 @@ import com.desertadventure.combat.system.slots.PlayerSlotRoller;
 import com.desertadventure.combat.system.slots.RandomIntSource;
 import com.desertadventure.combat.system.slots.SlotRollWeights;
 import com.desertadventure.combat.system.slots.WeightedPlayerSlotRoller;
-import com.desertadventure.combat.system.presentation.PlayerAttackAnimation;
 import com.desertadventure.player.PlayerStats;
 
 import java.util.ArrayList;
@@ -63,9 +62,6 @@ public class CombatController {
     // --- Slot rolling (domain rule, swappable) ---
     private final PlayerSlotRoller playerSlotRoller;
 
-    // --- Presentation hints (owned externally; injected) ---
-    private PlayerAttackAnimation playerAttackAnimation = new NoopPlayerAttackAnimation();
-
     /** Which two slots the player may use this round (0-based indices). */
     private int playerSlotA = 0;
     private int playerSlotB = 2;
@@ -103,10 +99,6 @@ public class CombatController {
         this.enemyHpRng = enemyHpRng != null ? enemyHpRng : defaultEnemyHpRng();
     }
 
-    public void setPlayerAttackAnimation(PlayerAttackAnimation playerAttackAnimation) {
-        this.playerAttackAnimation = playerAttackAnimation != null ? playerAttackAnimation : new NoopPlayerAttackAnimation();
-    }
-
     public CombatOutcome getPendingOutcome() {
         return outcomeFinalization.getPendingOutcome();
     }
@@ -117,7 +109,7 @@ public class CombatController {
 
     /**
      * Finalizes a previously produced outcome: runs any deferred round-end cleanup and triggers the end callback.
-     * Presentation layer decides when to call this (e.g., after attack animation finishes).
+     * Presentation layer may defer this until the current frame's draw/update cycle completes.
      */
     public void finalizePendingOutcome() {
         CombatOutcomeFinalization.ConsumedOutcome consumed = outcomeFinalization.consume();
@@ -414,7 +406,6 @@ public class CombatController {
         }
         CombatOutcome outcome = checkCombatOutcomeIfFinished();
         if (outcome != null) {
-            // Defer end callback until presentation decides it's safe (e.g. let attack anim finish).
             outcomeFinalization.setPendingOutcome(outcome, true);
         }
     }
@@ -821,24 +812,8 @@ public class CombatController {
         if (card == null) {
             return;
         }
-        if (card.getType().getCategory() == ActionCardCategory.ATTACK) {
-            triggerPlayerAttackAnimation();
-        }
         applyCardEffect(card.getType());
         playedThisRound.add(instanceId);
-    }
-
-    public boolean isPlayerAttacking() {
-        return playerAttackAnimation.isAttacking();
-    }
-
-    /** Normalized progress for the current attack animation (0..1). */
-    public float getPlayerAttackProgress(float attackDurationSeconds) {
-        return playerAttackAnimation.getAttackProgress(attackDurationSeconds);
-    }
-
-    private void triggerPlayerAttackAnimation() {
-        playerAttackAnimation.triggerAttack(CombatConfig.PLAYER_ATTACK_ANIM_SECONDS);
     }
 
     private static PlayerSlotRoller defaultPlayerSlotRoller() {
@@ -861,22 +836,6 @@ public class CombatController {
 
     private static RandomIntSource defaultEnemyHpRng() {
         return bound -> ThreadLocalRandom.current().nextInt(bound);
-    }
-
-    private static final class NoopPlayerAttackAnimation implements PlayerAttackAnimation {
-        @Override
-        public void triggerAttack(float attackAnimSeconds) {
-        }
-
-        @Override
-        public boolean isAttacking() {
-            return false;
-        }
-
-        @Override
-        public float getAttackProgress(float attackDurationSeconds) {
-            return 1f;
-        }
     }
 
     private void syncPlayerStatsHp() {

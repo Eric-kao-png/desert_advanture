@@ -12,10 +12,7 @@ public final class CombatEntityColors {
     private CombatEntityColors() {
     }
 
-    public static Color forEntity(CombatEntity entity, boolean hurt) {
-        if (hurt) {
-            return Color.WHITE;
-        }
+    public static Color forEntity(CombatEntity entity) {
         return switch (entity.getKind()) {
             case PLAYER -> UiColors.PLAYER_BODY;
             case ENEMY -> ENEMY;

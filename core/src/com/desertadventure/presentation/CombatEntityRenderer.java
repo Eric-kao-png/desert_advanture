@@ -20,10 +20,7 @@ final class CombatEntityRenderer {
             if (!GameplayRenderer.shouldDrawCombatEntity(entity)) {
                 continue;
             }
-            if (entity.getKind() == CombatEntity.Kind.PLAYER) {
-                continue;
-            }
-            shapes.setColor(CombatEntityColors.forEntity(entity, entity.getHurtFlash() > 0f));
+            shapes.setColor(CombatEntityColors.forEntity(entity));
             shapes.rect(entity.getX() - entity.getWidth() / 2f, entity.getY(), entity.getWidth(), entity.getHeight());
         }
         shapes.end();

@@ -19,7 +19,6 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
     private final ShapeRenderer shapes = new ShapeRenderer();
     private final Matrix4 screenProjection = new Matrix4();
     private final DesertSpriteAtlas desertSprites;
-    private final PlayerSpriteRenderer playerSprites;
     private final CombatEntityRenderer combatEntities = new CombatEntityRenderer();
     private final SkyBackdrop sky;
     private final TextureRegion floorTile;
@@ -28,7 +27,6 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
     public GameplayRenderer() {
         screenProjection.setToOrtho2D(0, 0, GameConfig.VIEW_WIDTH, GameConfig.VIEW_HEIGHT);
         desertSprites = new DesertSpriteAtlas();
-        playerSprites = new PlayerSpriteRenderer();
         sky = new SkyBackdrop();
         floorTile = desertSprites.get(DesertSpriteAtlas.FLOOR_TILE);
         combatCards = new CombatCardRenderer(shapes);
@@ -39,7 +37,6 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         shapes.dispose();
         sky.dispose();
         desertSprites.dispose();
-        playerSprites.dispose();
     }
 
     public void setProjectionMatrix(Matrix4 projection) {
@@ -88,7 +85,6 @@ public class GameplayRenderer implements com.badlogic.gdx.utils.Disposable {
         combatEntities.drawOverlays(shapes, entities, font);
         batch.setProjectionMatrix(screenProjection);
         batch.begin();
-        playerSprites.drawCombatPlayerSprite(combat, batch);
         combatEntities.drawTexts(batch, entities, font, combat);
         batch.end();
     }

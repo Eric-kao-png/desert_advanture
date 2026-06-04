@@ -97,7 +97,7 @@ final class GameplayModeUpdater {
                 session.getActionCardDeck(),
                 session::onCombatEnd
         );
-        combatState.resetForCombatStart(session.getCombatController());
+        combatState.resetForCombatStart();
         combatState.combatInitialized = true;
     }
 }
